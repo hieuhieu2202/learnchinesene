@@ -58,46 +58,52 @@ class SectionListPage extends GetView<SectionListController> {
                   ),
                 ),
                 Expanded(
-                  child: ListView(
+                  child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-                    children: [
-                      _LevelSwitcher(controller: controller, selectedLevel: selectedLevel),
-                      const SizedBox(height: 20),
-                      _LevelHero(
-                        selectedLevel: selectedLevel,
-                        sectionCount: sectionCount,
-                        totalWords: totalWords,
-                        masteredWords: masteredWords,
-                        progress: progress,
-                        firstSection: sections.isEmpty ? null : sections.first,
-                      ),
-                      const SizedBox(height: 24),
-                      if (isLoading)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 40),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      else if (sections.isEmpty)
-                        const _EmptyState()
-                      else ...[
-                        Text(
-                          'Danh sách bài học',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _LevelSwitcher(controller: controller, selectedLevel: selectedLevel),
+                        const SizedBox(height: 20),
+                        _LevelHero(
+                          selectedLevel: selectedLevel,
+                          sectionCount: sectionCount,
+                          totalWords: totalWords,
+                          masteredWords: masteredWords,
+                          progress: progress,
+                          firstSection: sections.isEmpty ? null : sections.first,
                         ),
-                        const SizedBox(height: 16),
-                        ...List.generate(sections.length, (index) {
-                          final item = sections[index];
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: index == sections.length - 1 ? 0 : 16),
-                            child: _UnitCard(progress: item, level: selectedLevel),
-                          );
-                        }),
+                        const SizedBox(height: 24),
+                        if (isLoading)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 40),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        else if (sections.isEmpty)
+                          const _EmptyState()
+                        else ...[
+                          Text(
+                            'Danh sách bài học',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 16),
+                          for (var index = 0; index < sections.length; index++)
+                            Padding(
+                              padding: EdgeInsets.only(
+                                bottom: index == sections.length - 1 ? 0 : 16,
+                              ),
+                              child: _UnitCard(
+                                progress: sections[index],
+                                level: selectedLevel,
+                              ),
+                            ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ],
