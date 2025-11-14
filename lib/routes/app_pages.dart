@@ -184,7 +184,7 @@ class AppPages {
       binding: BindingsBuilder(() {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
         final words = (args['words'] as List<dynamic>? ?? []).cast<Word>();
-        final mode = args['mode'] as PracticeMode? ?? PracticeMode.flashcard;
+        final mode = args['mode'] as PracticeMode? ?? PracticeMode.journey;
         Get.put(PracticeSessionController(
           words: words,
           mode: mode,

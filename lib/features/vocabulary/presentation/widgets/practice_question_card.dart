@@ -21,8 +21,6 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
   String? _errorMessage;
   bool _showAnswer = false;
 
-  bool get _isTypingMode => _controller.isTypingMode;
-
   @override
   void initState() {
     super.initState();
@@ -34,7 +32,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
   void didUpdateWidget(covariant PracticeQuestionCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.question != widget.question) {
-      _textController.text = '';
+      _textController.clear();
       _errorMessage = null;
       _showAnswer = false;
     }
@@ -54,18 +52,15 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
         elevation: 3,
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: _isTypingMode
-              ? _TypingContent(
-                  question: widget.question,
-                  controller: _controller,
-                  textController: _textController,
-                  errorMessage: _errorMessage,
-                  showAnswer: _showAnswer,
-                  onChecked: _handleCheck,
-                  onShowAnswer: _handleShowAnswer,
-                  onSkip: _handleSkip,
-                )
-              : _StandardContent(question: widget.question),
+          child: _TypingContent(
+            question: widget.question,
+            textController: _textController,
+            errorMessage: _errorMessage,
+            showAnswer: _showAnswer,
+            onChecked: _handleCheck,
+            onShowAnswer: _handleShowAnswer,
+            onSkip: _handleSkip,
+          ),
         ),
       ),
     );
@@ -101,44 +96,9 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
   }
 }
 
-class _StandardContent extends StatelessWidget {
-  const _StandardContent({required this.question});
-
-  final PracticeQuestion question;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          question.prompt,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 24),
-        Text(
-          question.answer,
-          style: const TextStyle(fontSize: 20),
-          textAlign: TextAlign.center,
-        ),
-        if (question.hint != null) ...[
-          const SizedBox(height: 16),
-          Text(
-            'Gợi ý: ${question.hint}',
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ],
-    );
-  }
-}
-
 class _TypingContent extends StatelessWidget {
   const _TypingContent({
     required this.question,
-    required this.controller,
     required this.textController,
     required this.errorMessage,
     required this.showAnswer,
@@ -148,7 +108,6 @@ class _TypingContent extends StatelessWidget {
   });
 
   final PracticeQuestion question;
-  final PracticeSessionController controller;
   final TextEditingController textController;
   final String? errorMessage;
   final bool showAnswer;
@@ -158,32 +117,44 @@ class _TypingContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final inputLabel = controller.mode == PracticeMode.typingPinyin
-        ? 'Nhập lại câu bằng pinyin'
-        : 'Nhập lại câu bằng chữ Hán';
+    final theme = Theme.of(context);
+    final hintStyle = theme.textTheme.bodyMedium;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
+          question.title,
+          style: theme.textTheme.titleMedium,
+        ),
+        const SizedBox(height: 12),
+        Text(
           question.prompt,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         if (question.hint != null) ...[
           const SizedBox(height: 12),
           Text(
-            'Gợi ý nghĩa: ${question.hint}',
-            style: Theme.of(context).textTheme.bodyMedium,
+            question.hint!,
+            style: hintStyle,
           ),
+        ],
+        if (question.extraHints.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          for (final extra in question.extraHints)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(extra, style: hintStyle),
+            ),
         ],
         const SizedBox(height: 16),
         TextField(
           controller: textController,
-          minLines: 3,
+          minLines: 2,
           maxLines: 5,
           autofocus: true,
           decoration: InputDecoration(
-            labelText: inputLabel,
+            labelText: question.inputLabel,
             border: const OutlineInputBorder(),
             errorText: errorMessage,
           ),
@@ -202,9 +173,7 @@ class _TypingContent extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton(
-                onPressed: () {
-                  onShowAnswer();
-                },
+                onPressed: onShowAnswer,
                 child: const Text('Xem đáp án'),
               ),
             ),
@@ -224,13 +193,25 @@ class _TypingContent extends StatelessWidget {
           const Divider(),
           Text(
             'Đáp án đúng:',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: theme.textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           SelectableText(
             question.answer,
-            style: const TextStyle(fontSize: 18),
+            style: theme.textTheme.titleLarge,
           ),
+          if (question.example != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Pinyin: ${question.example!.sentencePinyin}',
+              style: hintStyle,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Nghĩa: ${question.example!.sentenceVi}',
+              style: hintStyle,
+            ),
+          ],
         ],
       ],
     );

@@ -34,7 +34,7 @@ class ReviewTodayPage extends GetView<ReviewTodayController> {
             : FloatingActionButton.extended(
                 onPressed: () => Get.toNamed(AppRoutes.practiceSession, arguments: {
                   'words': controller.words.toList(),
-                  'mode': PracticeMode.flashcard,
+                  'mode': PracticeMode.journey,
                 }),
                 icon: const Icon(Icons.play_circle),
                 label: const Text('Bắt đầu'),

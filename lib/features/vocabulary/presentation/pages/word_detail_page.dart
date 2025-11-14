@@ -129,12 +129,12 @@ class _PracticeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final modes = {
-      PracticeMode.flashcard: 'Flashcard',
-      PracticeMode.flashcardReverse: 'Flashcard ngược',
-      PracticeMode.pinyin: 'Pinyin',
-      PracticeMode.listening: 'Nghe',
-      PracticeMode.typingPinyin: 'Gõ câu (Pinyin)',
-      PracticeMode.typingHanzi: 'Gõ câu (Chữ Hán)',
+      PracticeMode.journey: 'Hành trình 5 cấp độ',
+      PracticeMode.typingMeaning: 'Level 1 · Gõ nghĩa',
+      PracticeMode.typingPinyin: 'Level 2 · Gõ pinyin',
+      PracticeMode.typingHanzi: 'Level 3 · Gõ chữ Hán',
+      PracticeMode.typingFillBlank: 'Level 4 · Điền từ vào câu',
+      PracticeMode.typingSentence: 'Level 5 · Chép lại câu',
     };
 
     return ListView(

@@ -34,7 +34,7 @@ class WordListPage extends GetView<WordListController> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Get.toNamed(AppRoutes.practiceSession, arguments: {
           'words': controller.words.toList(),
-          'mode': PracticeMode.flashcard,
+          'mode': PracticeMode.journey,
         }),
         icon: const Icon(Icons.play_circle),
         label: const Text('Luyện tập'),

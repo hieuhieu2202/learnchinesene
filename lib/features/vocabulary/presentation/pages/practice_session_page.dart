@@ -31,36 +31,27 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
           return const SizedBox.shrink();
         }
 
+        final progress =
+            (controller.currentIndex.value + 1) / controller.questions.length;
+
         return Column(
           children: [
-            LinearProgressIndicator(
-              value: (controller.currentIndex.value + 1) /
-                  controller.questions.length,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LinearProgressIndicator(value: progress),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Câu ${controller.currentIndex.value + 1}/${controller.questions.length} • Điểm: ${controller.score.value}',
+                  ),
+                ],
+              ),
             ),
             Expanded(
               child: PracticeQuestionCard(question: question),
             ),
-            if (!controller.isTypingMode)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: controller.markWrong,
-                        child: const Text('Sai'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: controller.markCorrect,
-                        child: const Text('Đúng'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
           ],
         );
       }),
@@ -69,25 +60,25 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
 
   Widget _buildResult(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.emoji_events, size: 64, color: Colors.amber),
-          const SizedBox(height: 16),
-          Text(
-            'Hoàn thành! Điểm số: ${controller.score}/${controller.questions.length}',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () {
-              controller.currentIndex.value = 0;
-              controller.isFinished.value = false;
-              controller.score.value = 0;
-            },
-            child: const Text('Làm lại'),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.emoji_events, size: 64, color: Colors.amber),
+            const SizedBox(height: 16),
+            Text(
+              'Hoàn thành! Điểm số: ${controller.score}/${controller.questions.length}',
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: controller.restart,
+              child: const Text('Làm lại'),
+            ),
+          ],
+        ),
       ),
     );
   }

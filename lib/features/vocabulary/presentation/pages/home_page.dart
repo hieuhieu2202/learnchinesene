@@ -80,7 +80,7 @@ class HomePage extends GetView<HomeController> {
               icon: Icons.flash_on,
               label: 'Luyện nhanh',
               onTap: () => Get.toNamed(AppRoutes.practiceSession, arguments: {
-                'mode': PracticeMode.flashcard,
+                'mode': PracticeMode.journey,
                 'words': const <Word>[],
               }),
             ),
