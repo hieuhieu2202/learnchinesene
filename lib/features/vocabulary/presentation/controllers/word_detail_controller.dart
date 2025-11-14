@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
-import '../../../domain/entities/example_sentence.dart';
-import '../../../domain/entities/word.dart';
-import '../../../domain/usecases/get_examples_by_word.dart';
-import '../../../domain/usecases/get_word_by_id.dart';
+import '../../domain/entities/example_sentence.dart';
+import '../../domain/entities/word.dart';
+import '../../domain/usecases/get_examples_by_word.dart';
+import '../../domain/usecases/get_word_by_id.dart';
 
 class WordDetailController extends GetxController {
   WordDetailController({

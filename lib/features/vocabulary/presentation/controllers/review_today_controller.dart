@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 
-import '../../../domain/entities/word.dart';
-import '../../../domain/usecases/get_word_by_id.dart';
-import '../../../domain/usecases/get_words_to_review_today.dart';
+import '../../domain/entities/word.dart';
+import '../../domain/usecases/get_word_by_id.dart';
+import '../../domain/usecases/get_words_to_review_today.dart';
 
 class ReviewTodayController extends GetxController {
   ReviewTodayController({

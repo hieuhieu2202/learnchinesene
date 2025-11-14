@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
 import '../../../../core/usecase/usecase.dart';
-import '../../../domain/entities/word.dart';
-import '../../../domain/usecases/get_sections.dart';
-import '../../../domain/usecases/get_words_by_section.dart';
+import '../../domain/entities/word.dart';
+import '../../domain/usecases/get_sections.dart';
+import '../../domain/usecases/get_words_by_section.dart';
 
 class SectionProgress {
   SectionProgress({
@@ -42,7 +42,7 @@ class SectionListController extends GetxController {
   Future<void> loadSections() async {
     isLoading.value = true;
     try {
-      final sectionIds = await getSections(NoParams());
+      final sectionIds = await getSections(const NoParams());
       final items = <SectionProgress>[];
       for (final id in sectionIds) {
         final words = await getWordsBySection(id);

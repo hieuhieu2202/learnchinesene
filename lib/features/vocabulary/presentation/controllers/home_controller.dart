@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 
 import '../../../../core/usecase/usecase.dart';
-import '../../../domain/usecases/get_sections.dart';
-import '../../../domain/usecases/get_words_to_review_today.dart';
+import '../../domain/usecases/get_sections.dart';
+import '../../domain/usecases/get_words_to_review_today.dart';
 
 class HomeController extends GetxController {
   HomeController({
@@ -30,7 +30,7 @@ class HomeController extends GetxController {
       final today = DateTime.now();
       final wordsToReview = await getWordsToReviewToday(today);
       reviewCount.value = wordsToReview.length;
-      sections.assignAll(await getSections(NoParams()));
+      sections.assignAll(await getSections(const NoParams()));
       if (sections.isNotEmpty) {
         currentSectionId.value = sections.first;
       }

@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
-import '../../../domain/entities/word.dart';
-import '../../../domain/usecases/get_words_by_section.dart';
+import '../../domain/entities/word.dart';
+import '../../domain/usecases/get_words_by_section.dart';
 
 class WordListController extends GetxController {
   WordListController({

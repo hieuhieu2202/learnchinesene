@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
-import '../../../domain/entities/progress_entity.dart';
-import '../../../domain/entities/word.dart';
-import '../../../domain/usecases/get_progress_for_word.dart';
-import '../../../domain/usecases/update_progress_after_quiz.dart';
+import '../../domain/entities/progress_entity.dart';
+import '../../domain/entities/word.dart';
+import '../../domain/usecases/get_progress_for_word.dart';
+import '../../domain/usecases/update_progress_after_quiz.dart';
 
 enum PracticeMode {
   flashcard,
