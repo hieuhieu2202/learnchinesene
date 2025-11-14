@@ -9,15 +9,18 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
 
   @override
   Widget build(BuildContext context) {
+    if (controller.questions.isEmpty) {
+      return const Scaffold(
+        body: Center(child: Text('Chưa có dữ liệu luyện tập.')),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Luyện tập'),
       ),
       body: Obx(
         () {
-          if (controller.questions.isEmpty) {
-            return const Center(child: Text('Chưa có dữ liệu luyện tập.'));
-          }
           if (controller.isFinished.value) {
             return _buildResult(context);
           }

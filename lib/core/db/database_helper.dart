@@ -20,7 +20,7 @@ class DatabaseHelper {
     final path = join(docsDir.path, _dbName);
 
     if (!await File(path).exists()) {
-      final data = await rootBundle.load('assets/db/\$_dbName');
+      final data = await rootBundle.load('assets/db/$_dbName');
       final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
       await File(path).writeAsBytes(bytes, flush: true);
     }

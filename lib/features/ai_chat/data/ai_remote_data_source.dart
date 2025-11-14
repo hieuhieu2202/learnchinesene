@@ -18,8 +18,11 @@ class AiRemoteDataSource implements AiRepository {
   @override
   Future<AiMessage> askAI({required String prompt, String? wordContext}) async {
     if (apiKey.isEmpty) {
-      throw StateError(
-        'Gemini API key is missing. Provide GEMINI_API_KEY via --dart-define.',
+      return AiMessage(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        text:
+            'Chưa cấu hình khóa Gemini. Thêm --dart-define=GEMINI_API_KEY=... khi build để kích hoạt AI.',
+        isUser: false,
       );
     }
     final requestBody = {
