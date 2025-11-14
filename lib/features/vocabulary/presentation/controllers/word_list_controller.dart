@@ -17,6 +17,9 @@ class WordListController extends GetxController {
   final words = <Word>[].obs;
   final isLoading = false.obs;
 
+  int get totalWords => words.length;
+  int get masteredCount => words.where((word) => word.mastered).length;
+
   @override
   void onInit() {
     super.onInit();

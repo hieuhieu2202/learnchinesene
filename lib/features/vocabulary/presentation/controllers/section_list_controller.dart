@@ -4,42 +4,27 @@ import '../../../../core/usecase/usecase.dart';
 import '../../domain/entities/word.dart';
 import '../../domain/usecases/get_sections.dart';
 import '../../domain/usecases/get_words_by_section.dart';
+import '../utils/hsk_utils.dart';
 
 class SectionProgress {
   SectionProgress({
     required this.sectionId,
     required this.hskLevel,
-    required this.unitTitle,
+    required this.sectionTitle,
+    required this.groupSubtitle,
     required this.totalWords,
     required this.masteredWords,
   });
 
   final int sectionId;
   final int hskLevel;
-  final String unitTitle;
+  final String sectionTitle;
+  final String groupSubtitle;
   final int totalWords;
   final int masteredWords;
 
-  double get progress => totalWords == 0 ? 0 : masteredWords / totalWords;
-}
-
-class HskGroup {
-  HskGroup({
-    required this.level,
-    required this.sections,
-  });
-
-  final int level;
-  final List<SectionProgress> sections;
-
-  String get title =>
-      level >= 1 && level <= 4 ? 'HSK $level' : 'Section $level';
-
-  int get totalWords =>
-      sections.fold<int>(0, (previousValue, element) => previousValue + element.totalWords);
-
-  int get masteredWords => sections
-      .fold<int>(0, (previousValue, element) => previousValue + element.masteredWords);
+  String get displayName =>
+      groupSubtitle.isNotEmpty ? groupSubtitle : sectionTitle;
 
   double get progress => totalWords == 0 ? 0 : masteredWords / totalWords;
 }
@@ -48,13 +33,19 @@ class SectionListController extends GetxController {
   SectionListController({
     required this.getSections,
     required this.getWordsBySection,
+    required this.hskLevel,
   });
 
   final GetSections getSections;
   final GetWordsBySection getWordsBySection;
+  final int hskLevel;
 
-  final hskGroups = <HskGroup>[].obs;
+  final sections = <SectionProgress>[].obs;
   final isLoading = false.obs;
+
+  int get totalWords => sections.fold<int>(0, (sum, item) => sum + item.totalWords);
+  int get masteredWords => sections.fold<int>(0, (sum, item) => sum + item.masteredWords);
+  double get progress => totalWords == 0 ? 0 : masteredWords / totalWords;
 
   @override
   void onInit() {
@@ -71,7 +62,11 @@ class SectionListController extends GetxController {
         final words = await getWordsBySection(id);
         items.add(_buildProgress(id, words));
       }
-      hskGroups.assignAll(_buildHskGroups(items));
+      final filtered = items
+          .where((item) => item.hskLevel == hskLevel)
+          .toList()
+        ..sort((a, b) => a.sectionId.compareTo(b.sectionId));
+      sections.assignAll(filtered);
     } finally {
       isLoading.value = false;
     }
@@ -80,51 +75,16 @@ class SectionListController extends GetxController {
   SectionProgress _buildProgress(int sectionId, List<Word> words) {
     final mastered = words.where((w) => w.mastered).length;
     final rawTitle = words.isNotEmpty ? words.first.sectionTitle : 'Section $sectionId';
-    final hskLevel = _parseHskLevel(rawTitle);
+    final subtitle =
+        words.isNotEmpty && words.first.groupSubtitle.isNotEmpty ? words.first.groupSubtitle : rawTitle;
+    final level = parseHskLevel(sectionId: sectionId, sectionTitle: rawTitle);
     return SectionProgress(
       sectionId: sectionId,
-      hskLevel: hskLevel,
-      unitTitle: rawTitle,
+      hskLevel: level,
+      sectionTitle: rawTitle,
+      groupSubtitle: subtitle,
       totalWords: words.length,
       masteredWords: mastered,
     );
-  }
-
-  List<HskGroup> _buildHskGroups(List<SectionProgress> items) {
-    final grouped = <int, List<SectionProgress>>{};
-    for (final item in items) {
-      final level = item.hskLevel;
-      grouped.putIfAbsent(level, () => []).add(item);
-    }
-
-    final groups = <HskGroup>[];
-    for (var level = 1; level <= 4; level++) {
-      final sections = grouped[level] ?? <SectionProgress>[];
-      sections.sort((a, b) => a.unitTitle.compareTo(b.unitTitle));
-      groups.add(HskGroup(level: level, sections: sections));
-    }
-
-    final otherLevels = grouped.keys
-        .where((level) => level < 1 || level > 4)
-        .toList()
-      ..sort();
-    for (final level in otherLevels) {
-      final sections = grouped[level]!;
-      sections.sort((a, b) => a.unitTitle.compareTo(b.unitTitle));
-      groups.add(HskGroup(level: level, sections: sections));
-    }
-
-    return groups;
-  }
-
-  int _parseHskLevel(String title) {
-    final match = RegExp(r'Section\s*(\d+)').firstMatch(title);
-    if (match != null) {
-      final value = int.tryParse(match.group(1)!);
-      if (value != null) {
-        return value.clamp(1, 999).toInt();
-      }
-    }
-    return 1;
   }
 }

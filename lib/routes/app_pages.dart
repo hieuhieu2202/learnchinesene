@@ -128,6 +128,7 @@ class AppPages {
         Get.put(HomeController(
           getWordsToReviewToday: Get.find(),
           getSections: Get.find(),
+          getWordsBySection: Get.find(),
         ));
       }),
     ),
@@ -135,9 +136,12 @@ class AppPages {
       name: AppRoutes.sections,
       page: () => const SectionListPage(),
       binding: BindingsBuilder(() {
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        final hskLevel = args['level'] as int? ?? 1;
         Get.put(SectionListController(
           getSections: Get.find(),
           getWordsBySection: Get.find(),
+          hskLevel: hskLevel,
         ));
       }),
     ),
