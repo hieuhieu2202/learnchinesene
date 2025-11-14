@@ -18,6 +18,75 @@ class HomePage extends GetView<HomeController> {
         final overview = controller.hskOverview.toList();
         final reviewCount = controller.reviewCount.value;
 
+        final quickItems = [
+          _NavigationItem(
+            icon: Icons.dashboard_customize_outlined,
+            title: 'Lộ trình HSK',
+            subtitle: 'Khám phá cấp độ và unit theo giáo trình.',
+            onTap: () => navigateAfterFrame(
+              () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
+            ),
+          ),
+          _NavigationItem(
+            icon: Icons.flash_on,
+            title: 'Luyện câu nhanh',
+            subtitle: 'Bắt đầu 10 vòng gõ với các câu tiêu biểu.',
+            onTap: () => navigateAfterFrame(() {
+              Get.toNamed(
+                AppRoutes.practiceSession,
+                arguments: {
+                  'words': const <Word>[],
+                },
+              );
+            }),
+          ),
+          _NavigationItem(
+            icon: Icons.check_circle_outline,
+            title: 'Ôn tập hôm nay',
+            subtitle: reviewCount > 0
+                ? 'Có $reviewCount từ đang chờ bạn củng cố.'
+                : 'Giữ nhịp học đều đặn mỗi ngày.',
+            onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
+          ),
+        ];
+
+        final aiItems = [
+          _NavigationItem(
+            icon: Icons.smart_toy_outlined,
+            title: 'AI trợ giảng',
+            subtitle: 'Đặt câu hỏi và xin thêm ví dụ về từ đang học.',
+            onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.aiChat)),
+          ),
+          _NavigationItem(
+            icon: Icons.lightbulb_outline,
+            title: 'AI gợi ý câu luyện tập',
+            subtitle: 'Nhận các biến thể câu để luyện gõ sâu hơn.',
+            onTap: () => navigateAfterFrame(
+                  () => Get.toNamed(
+                    AppRoutes.aiChat,
+                    arguments: {
+                      'context': 'Gợi ý thêm câu ví dụ dễ gõ cho từ vựng tôi đang học.',
+                    },
+                  ),
+                ),
+          ),
+        ];
+
+        final systemItems = [
+          _NavigationItem(
+            icon: Icons.settings_suggest_outlined,
+            title: 'Cài đặt hệ thống',
+            subtitle: 'Điều chỉnh TTS, giao diện và nhắc ôn tập.',
+            onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.settings)),
+          ),
+          _NavigationItem(
+            icon: Icons.insights_outlined,
+            title: 'Hồ sơ & thành tích',
+            subtitle: 'Theo dõi số từ đã thuần thục và chuỗi ngày học.',
+            onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.profile)),
+          ),
+        ];
+
         return Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -41,7 +110,12 @@ class HomePage extends GetView<HomeController> {
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   sliver: SliverToBoxAdapter(
-                    child: _QuickLaunchRow(),
+                    child: _NavigationGroup(
+                      title: 'Điều hướng nhanh',
+                      subtitle:
+                          'Chọn điểm bắt đầu cho phiên học gõ tiếng Trung hôm nay.',
+                      items: quickItems,
+                    ),
                   ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
@@ -67,7 +141,30 @@ class HomePage extends GetView<HomeController> {
                     ),
                   ),
                 ),
+                const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverToBoxAdapter(
+                    child: _NavigationGroup(
+                      title: 'AI trợ giảng',
+                      subtitle:
+                          'Sử dụng trí tuệ nhân tạo để mở rộng ngữ cảnh và biến thể câu.',
+                      items: aiItems,
+                    ),
+                  ),
+                ),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverToBoxAdapter(
+                    child: _NavigationGroup(
+                      title: 'Hệ thống & thống kê',
+                      subtitle: 'Quản lý cấu hình ứng dụng và xem tiến trình học tập.',
+                      items: systemItems,
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 48)),
               ],
             ),
           ),
@@ -185,82 +282,14 @@ class _ReviewCard extends StatelessWidget {
   }
 }
 
-class _QuickLaunchRow extends StatelessWidget {
-  const _QuickLaunchRow();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth;
-        final spacing = 16.0;
-        double itemWidth;
-        if (maxWidth >= 900) {
-          itemWidth = (maxWidth - spacing * 2) / 3;
-        } else if (maxWidth >= 600) {
-          itemWidth = (maxWidth - spacing) / 2;
-        } else {
-          itemWidth = maxWidth;
-        }
-
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
-          children: [
-            SizedBox(
-              width: itemWidth,
-              child: _QuickActionCard(
-                icon: Icons.dashboard_customize_outlined,
-                title: 'Lộ trình HSK',
-                subtitle: 'Theo dõi từng cấp độ và unit.',
-                onTap: () => navigateAfterFrame(
-                  () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
-                ),
-                background: theme.colorScheme.surface,
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: _QuickActionCard(
-                icon: Icons.flash_on,
-                title: 'Luyện câu nhanh',
-                subtitle: 'Gõ lại câu ví dụ cho các từ đã học.',
-                onTap: () => navigateAfterFrame(() {
-                  Get.toNamed(
-                    AppRoutes.practiceSession,
-                    arguments: {
-                      'words': const <Word>[],
-                    },
-                  );
-                }),
-                background: theme.colorScheme.surface,
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: _QuickActionCard(
-                icon: Icons.smart_toy_outlined,
-                title: 'AI trợ giảng',
-                subtitle: 'Nhờ AI tạo thêm ví dụ & giải thích.',
-                onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.aiChat)),
-                background: theme.colorScheme.surface,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _QuickActionCard extends StatelessWidget {
-  const _QuickActionCard({
+class _NavigationCard extends StatelessWidget {
+  const _NavigationCard({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
     required this.background,
+    this.accent,
   });
 
   final IconData icon;
@@ -268,10 +297,12 @@ class _QuickActionCard extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
   final Color background;
+  final Color? accent;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final accentColor = accent ?? theme.colorScheme.primary;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -296,8 +327,8 @@ class _QuickActionCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 26,
-                backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
-                child: Icon(icon, color: theme.colorScheme.primary, size: 26),
+                backgroundColor: accentColor.withOpacity(0.12),
+                child: Icon(icon, color: accentColor, size: 26),
               ),
               const SizedBox(height: 16),
               Text(
@@ -317,6 +348,91 @@ class _QuickActionCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _NavigationGroup extends StatelessWidget {
+  const _NavigationGroup({
+    required this.title,
+    required this.subtitle,
+    required this.items,
+  });
+
+  final String title;
+  final String subtitle;
+  final List<_NavigationItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          subtitle,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 20),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final maxWidth = constraints.maxWidth;
+            const spacing = 16.0;
+            double itemWidth;
+            if (maxWidth >= 1080) {
+              itemWidth = (maxWidth - spacing * 2) / 3;
+            } else if (maxWidth >= 720) {
+              itemWidth = (maxWidth - spacing) / 2;
+            } else {
+              itemWidth = maxWidth;
+            }
+
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                for (final item in items)
+                  SizedBox(
+                    width: itemWidth,
+                    child: _NavigationCard(
+                      icon: item.icon,
+                      title: item.title,
+                      subtitle: item.subtitle,
+                      onTap: item.onTap,
+                      background: item.background ?? theme.colorScheme.surface,
+                      accent: item.accent,
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _NavigationItem {
+  const _NavigationItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.background,
+    this.accent,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final Color? background;
+  final Color? accent;
 }
 
 class _LevelGrid extends StatelessWidget {

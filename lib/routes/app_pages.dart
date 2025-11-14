@@ -7,6 +7,8 @@ import '../features/ai_chat/domain/repositories/ai_repository.dart';
 import '../features/ai_chat/domain/usecases/ask_ai.dart';
 import '../features/ai_chat/presentation/controllers/ai_chat_controller.dart';
 import '../features/ai_chat/presentation/pages/ai_chat_page.dart';
+import '../features/system/presentation/pages/profile_page.dart';
+import '../features/system/presentation/pages/settings_page.dart';
 import '../features/vocabulary/domain/entities/word.dart';
 import '../features/vocabulary/data/datasources/example_local_data_source.dart';
 import '../features/vocabulary/data/datasources/progress_local_data_source.dart';
@@ -206,6 +208,14 @@ class AppPages {
           initialContext: args['context'] as String?,
         ));
       }),
+    ),
+    GetPage(
+      name: AppRoutes.settings,
+      page: () => const SettingsPage(),
+    ),
+    GetPage(
+      name: AppRoutes.profile,
+      page: () => const ProfilePage(),
     ),
   ];
 }
