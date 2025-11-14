@@ -33,79 +33,66 @@ class SectionListPage extends GetView<SectionListController> {
             ),
           ),
           child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                        onPressed: () => Navigator.of(context).maybePop(),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Hành trình HSK $selectedLevel',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w800),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Hành trình HSK $selectedLevel',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w800),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _LevelSwitcher(controller: controller, selectedLevel: selectedLevel),
-                        const SizedBox(height: 20),
-                        _LevelHero(
-                          selectedLevel: selectedLevel,
-                          sectionCount: sectionCount,
-                          totalWords: totalWords,
-                          masteredWords: masteredWords,
-                          progress: progress,
-                          firstSection: sections.isEmpty ? null : sections.first,
-                        ),
-                        const SizedBox(height: 24),
-                        if (isLoading)
-                          const Padding(
-                            padding: EdgeInsets.only(top: 40),
-                            child: Center(child: CircularProgressIndicator()),
-                          )
-                        else if (sections.isEmpty)
-                          const _EmptyState()
-                        else ...[
-                          Text(
-                            'Danh sách bài học',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: 16),
-                          for (var index = 0; index < sections.length; index++)
-                            Padding(
-                              padding: EdgeInsets.only(
-                                bottom: index == sections.length - 1 ? 0 : 16,
-                              ),
-                              child: _UnitCard(
-                                progress: sections[index],
-                                level: selectedLevel,
-                              ),
-                            ),
-                        ],
-                      ],
+                const SizedBox(height: 24),
+                _LevelSwitcher(controller: controller, selectedLevel: selectedLevel),
+                const SizedBox(height: 20),
+                _LevelHero(
+                  selectedLevel: selectedLevel,
+                  sectionCount: sectionCount,
+                  totalWords: totalWords,
+                  masteredWords: masteredWords,
+                  progress: progress,
+                  firstSection: sections.isEmpty ? null : sections.first,
+                ),
+                const SizedBox(height: 24),
+                if (isLoading) ...[
+                  const SizedBox(height: 40),
+                  const Center(child: CircularProgressIndicator()),
+                ] else if (sections.isEmpty) ...[
+                  const _EmptyState(),
+                ] else ...[
+                  Text(
+                    'Danh sách bài học',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 16),
+                  ...sections.asMap().entries.map(
+                    (entry) => Padding(
+                      padding: EdgeInsets.only(
+                        bottom: entry.key == sections.length - 1 ? 0 : 16,
+                      ),
+                      child: _UnitCard(
+                        progress: entry.value,
+                        level: selectedLevel,
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -257,74 +244,78 @@ class _UnitCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = HskPalette.accentForLevel(level, theme.colorScheme);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => navigateAfterFrame(() {
-          Get.toNamed(
-            AppRoutes.wordList,
-            arguments: {
-              'sectionId': progress.sectionId,
-              'sectionTitle': progress.sectionTitle,
-            },
-          );
-        }),
-        borderRadius: BorderRadius.circular(28),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: accent.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: accent.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      progress.unitLabel,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: accent,
+    return SizedBox(
+      width: double.infinity,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => navigateAfterFrame(() {
+            Get.toNamed(
+              AppRoutes.wordList,
+              arguments: {
+                'sectionId': progress.sectionId,
+                'sectionTitle': progress.sectionTitle,
+              },
+            );
+          }),
+          borderRadius: BorderRadius.circular(28),
+          child: Ink(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: accent.withOpacity(0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        progress.unitLabel,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: accent,
+                        ),
                       ),
                     ),
-                  ),
-                  const Spacer(),
-                  ProgressChip(progress: progress.progress),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Text(
-                progress.displayName,
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${progress.totalWords} từ • ${progress.masteredWords} đã thuộc',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                    const Spacer(),
+                    ProgressChip(progress: progress.progress),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Icon(Icons.arrow_forward_rounded, color: accent),
-              ),
-            ],
+                const SizedBox(height: 18),
+                Text(
+                  progress.displayName,
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${progress.totalWords} từ • ${progress.masteredWords} đã thuộc',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Icon(Icons.arrow_forward_rounded, color: accent),
+                ),
+              ],
+            ),
           ),
         ),
       ),
