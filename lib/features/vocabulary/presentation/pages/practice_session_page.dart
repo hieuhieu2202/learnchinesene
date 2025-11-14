@@ -9,34 +9,38 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
 
   @override
   Widget build(BuildContext context) {
-    if (controller.questions.isEmpty) {
-      return const Scaffold(
-        body: Center(child: Text('Chưa có dữ liệu luyện tập.')),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Luyện tập'),
       ),
-      body: Obx(
-        () {
-          if (controller.isFinished.value) {
-            return _buildResult(context);
-          }
-          final question = controller.currentQuestion;
-          if (question == null) {
-            return const SizedBox.shrink();
-          }
-          return Column(
-            children: [
-              LinearProgressIndicator(
-                value: (controller.currentIndex.value + 1) /
-                    controller.questions.length,
-              ),
-              Expanded(
-                child: PracticeQuestionCard(question: question),
-              ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (controller.questions.isEmpty) {
+          return const Center(child: Text('Chưa có dữ liệu luyện tập.'));
+        }
+
+        if (controller.isFinished.value) {
+          return _buildResult(context);
+        }
+
+        final question = controller.currentQuestion;
+        if (question == null) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          children: [
+            LinearProgressIndicator(
+              value: (controller.currentIndex.value + 1) /
+                  controller.questions.length,
+            ),
+            Expanded(
+              child: PracticeQuestionCard(question: question),
+            ),
+            if (!controller.isTypingMode)
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -57,10 +61,9 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
                   ],
                 ),
               ),
-            ],
-          );
-        },
-      ),
+          ],
+        );
+      }),
     );
   }
 

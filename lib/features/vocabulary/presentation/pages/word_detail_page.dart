@@ -133,6 +133,8 @@ class _PracticeTab extends StatelessWidget {
       PracticeMode.flashcardReverse: 'Flashcard ngược',
       PracticeMode.pinyin: 'Pinyin',
       PracticeMode.listening: 'Nghe',
+      PracticeMode.typingPinyin: 'Gõ câu (Pinyin)',
+      PracticeMode.typingHanzi: 'Gõ câu (Chữ Hán)',
     };
 
     return ListView(

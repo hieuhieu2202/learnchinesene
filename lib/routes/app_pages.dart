@@ -188,6 +188,7 @@ class AppPages {
         Get.put(PracticeSessionController(
           words: words,
           mode: mode,
+          getExamplesByWord: Get.find(),
           getProgressForWord: Get.find(),
           updateProgressAfterQuiz: Get.find(),
         ));
