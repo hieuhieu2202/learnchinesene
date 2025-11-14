@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 import '../features/ai_chat/data/ai_remote_data_source.dart';
+import '../features/ai_chat/domain/repositories/ai_repository.dart';
 import '../features/ai_chat/domain/usecases/ask_ai.dart';
 import '../features/ai_chat/presentation/controllers/ai_chat_controller.dart';
 import '../features/ai_chat/presentation/pages/ai_chat_page.dart';
@@ -12,6 +13,9 @@ import '../features/vocabulary/data/datasources/word_local_data_source.dart';
 import '../features/vocabulary/data/repositories/example_repository_impl.dart';
 import '../features/vocabulary/data/repositories/progress_repository_impl.dart';
 import '../features/vocabulary/data/repositories/word_repository_impl.dart';
+import '../features/vocabulary/domain/repositories/example_repository.dart';
+import '../features/vocabulary/domain/repositories/progress_repository.dart';
+import '../features/vocabulary/domain/repositories/word_repository.dart';
 import '../features/vocabulary/domain/usecases/get_examples_by_word.dart';
 import '../features/vocabulary/domain/usecases/get_progress_for_word.dart';
 import '../features/vocabulary/domain/usecases/get_sections.dart';
@@ -38,28 +42,79 @@ class AppBindings extends Bindings {
   void dependencies() {
     Get.lazyPut<http.Client>(() => http.Client(), fenix: true);
 
-    Get.lazyPut<WordLocalDataSource>(() => WordLocalDataSourceImpl(), fenix: true);
-    Get.lazyPut<ExampleLocalDataSource>(() => ExampleLocalDataSourceImpl(), fenix: true);
-    Get.lazyPut<ProgressLocalDataSource>(() => ProgressLocalDataSourceImpl(), fenix: true);
+    Get.lazyPut<WordLocalDataSource>(
+      () => WordLocalDataSourceImpl(),
+      fenix: true,
+    );
+    Get.lazyPut<ExampleLocalDataSource>(
+      () => ExampleLocalDataSourceImpl(),
+      fenix: true,
+    );
+    Get.lazyPut<ProgressLocalDataSource>(
+      () => ProgressLocalDataSourceImpl(),
+      fenix: true,
+    );
 
-    Get.lazyPut(() => WordRepositoryImpl(Get.find(), Get.find()), fenix: true);
-    Get.lazyPut(() => ExampleRepositoryImpl(Get.find()), fenix: true);
-    Get.lazyPut(() => ProgressRepositoryImpl(Get.find()), fenix: true);
+    Get.lazyPut<WordRepository>(
+      () => WordRepositoryImpl(
+        Get.find<WordLocalDataSource>(),
+        Get.find<ProgressLocalDataSource>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut<ExampleRepository>(
+      () => ExampleRepositoryImpl(
+        Get.find<ExampleLocalDataSource>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut<ProgressRepository>(
+      () => ProgressRepositoryImpl(
+        Get.find<ProgressLocalDataSource>(),
+      ),
+      fenix: true,
+    );
 
-    Get.lazyPut(() => GetSections(Get.find()), fenix: true);
-    Get.lazyPut(() => GetWordsBySection(Get.find()), fenix: true);
-    Get.lazyPut(() => GetWordById(Get.find()), fenix: true);
-    Get.lazyPut(() => GetExamplesByWord(Get.find()), fenix: true);
-    Get.lazyPut(() => GetWordsToReviewToday(Get.find()), fenix: true);
-    Get.lazyPut(() => GetProgressForWord(Get.find()), fenix: true);
-    Get.lazyPut(() => UpdateProgressAfterQuiz(Get.find()), fenix: true);
+    Get.lazyPut(
+      () => GetSections(Get.find<WordRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetWordsBySection(Get.find<WordRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetWordById(Get.find<WordRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetExamplesByWord(Get.find<ExampleRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetWordsToReviewToday(Get.find<ProgressRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetProgressForWord(Get.find<ProgressRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => UpdateProgressAfterQuiz(Get.find<ProgressRepository>()),
+      fenix: true,
+    );
 
-    Get.lazyPut<AiRemoteDataSource>(() => AiRemoteDataSource(
-          client: Get.find<http.Client>(),
-          apiKey: const String.fromEnvironment('GEMINI_API_KEY', defaultValue: ''),
-        ),
-        fenix: true);
-    Get.lazyPut(() => AskAI(Get.find<AiRemoteDataSource>()), fenix: true);
+    Get.lazyPut<AiRepository>(
+      () => AiRemoteDataSource(
+        client: Get.find<http.Client>(),
+        apiKey: const String.fromEnvironment('GEMINI_API_KEY', defaultValue: ''),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => AskAI(Get.find<AiRepository>()),
+      fenix: true,
+    );
   }
 }
 
