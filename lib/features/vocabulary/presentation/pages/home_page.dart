@@ -7,169 +7,332 @@ import '../controllers/home_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/navigation_utils.dart';
 
+const _homeBackgroundGradient = LinearGradient(
+  colors: [Color(0xFFFFF5F7), Color(0xFFF5FBFF)],
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+);
+
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Obx(() {
-        final isLoading = controller.isLoading.value;
-        final overview = controller.hskOverview.toList();
-        final reviewCount = controller.reviewCount.value;
+    return Obx(() {
+      final index = controller.selectedTab.value;
+      final pages = <Widget>[
+        _DashboardTab(controller: controller),
+        const _AiHubTab(),
+        _SystemHubTab(controller: controller),
+      ];
 
-        final quickItems = [
-          _NavigationItem(
-            icon: Icons.dashboard_customize_outlined,
-            title: 'Lộ trình HSK',
-            subtitle: 'Khám phá cấp độ và unit theo giáo trình.',
-            onTap: () => navigateAfterFrame(
-              () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
+      return Scaffold(
+        body: IndexedStack(
+          index: index,
+          children: pages,
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: index,
+          onDestinationSelected: controller.changeTab,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.school_outlined),
+              selectedIcon: Icon(Icons.school),
+              label: 'Học',
             ),
-          ),
-          _NavigationItem(
-            icon: Icons.flash_on,
-            title: 'Luyện câu nhanh',
-            subtitle: 'Bắt đầu 10 vòng gõ với các câu tiêu biểu.',
-            onTap: () => navigateAfterFrame(() {
-              Get.toNamed(
-                AppRoutes.practiceSession,
-                arguments: {
-                  'words': const <Word>[],
-                },
-              );
-            }),
-          ),
-          _NavigationItem(
-            icon: Icons.check_circle_outline,
-            title: 'Ôn tập hôm nay',
-            subtitle: reviewCount > 0
-                ? 'Có $reviewCount từ đang chờ bạn củng cố.'
-                : 'Giữ nhịp học đều đặn mỗi ngày.',
-            onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
-          ),
-        ];
-
-        final aiItems = [
-          _NavigationItem(
-            icon: Icons.smart_toy_outlined,
-            title: 'AI trợ giảng',
-            subtitle: 'Đặt câu hỏi và xin thêm ví dụ về từ đang học.',
-            onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.aiChat)),
-          ),
-          _NavigationItem(
-            icon: Icons.lightbulb_outline,
-            title: 'AI gợi ý câu luyện tập',
-            subtitle: 'Nhận các biến thể câu để luyện gõ sâu hơn.',
-            onTap: () => navigateAfterFrame(
-                  () => Get.toNamed(
-                    AppRoutes.aiChat,
-                    arguments: {
-                      'context': 'Gợi ý thêm câu ví dụ dễ gõ cho từ vựng tôi đang học.',
-                    },
-                  ),
-                ),
-          ),
-        ];
-
-        final systemItems = [
-          _NavigationItem(
-            icon: Icons.settings_suggest_outlined,
-            title: 'Cài đặt hệ thống',
-            subtitle: 'Điều chỉnh TTS, giao diện và nhắc ôn tập.',
-            onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.settings)),
-          ),
-          _NavigationItem(
-            icon: Icons.insights_outlined,
-            title: 'Hồ sơ & thành tích',
-            subtitle: 'Theo dõi số từ đã thuần thục và chuỗi ngày học.',
-            onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.profile)),
-          ),
-        ];
-
-        return Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFFFF5F7), Color(0xFFF5FBFF)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+            NavigationDestination(
+              icon: Icon(Icons.smart_toy_outlined),
+              selectedIcon: Icon(Icons.smart_toy),
+              label: 'AI',
             ),
-          ),
-          child: SafeArea(
-            bottom: false,
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: _HomeIntro(reviewCount: reviewCount),
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverToBoxAdapter(
-                    child: _NavigationGroup(
-                      title: 'Điều hướng nhanh',
-                      subtitle:
-                          'Chọn điểm bắt đầu cho phiên học gõ tiếng Trung hôm nay.',
-                      items: quickItems,
-                    ),
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverToBoxAdapter(
-                    child: Text(
-                      'Chọn cấp độ HSK',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverToBoxAdapter(
-                    child: _LevelGrid(
-                      isLoading: isLoading,
-                      overview: overview,
-                    ),
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 40)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverToBoxAdapter(
-                    child: _NavigationGroup(
-                      title: 'AI trợ giảng',
-                      subtitle:
-                          'Sử dụng trí tuệ nhân tạo để mở rộng ngữ cảnh và biến thể câu.',
-                      items: aiItems,
-                    ),
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverToBoxAdapter(
-                    child: _NavigationGroup(
-                      title: 'Hệ thống & thống kê',
-                      subtitle: 'Quản lý cấu hình ứng dụng và xem tiến trình học tập.',
-                      items: systemItems,
-                    ),
-                  ),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 48)),
-              ],
+            NavigationDestination(
+              icon: Icon(Icons.settings_outlined),
+              selectedIcon: Icon(Icons.settings),
+              label: 'Hệ thống',
             ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _DashboardTab extends StatelessWidget {
+  const _DashboardTab({required this.controller});
+
+  final HomeController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final isLoading = controller.isLoading.value;
+      final overview = controller.hskOverview.toList();
+      final reviewCount = controller.reviewCount.value;
+
+      final quickItems = [
+        _NavigationItem(
+          icon: Icons.dashboard_customize_outlined,
+          title: 'Lộ trình HSK',
+          subtitle: 'Khám phá cấp độ và unit theo giáo trình.',
+          onTap: () => navigateAfterFrame(
+            () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
           ),
-        );
-      }),
+        ),
+        _NavigationItem(
+          icon: Icons.flash_on,
+          title: 'Luyện câu nhanh',
+          subtitle: 'Bắt đầu 10 vòng gõ với các câu tiêu biểu.',
+          onTap: () => navigateAfterFrame(() {
+            Get.toNamed(
+              AppRoutes.practiceSession,
+              arguments: {
+                'words': const <Word>[],
+              },
+            );
+          }),
+        ),
+        _NavigationItem(
+          icon: Icons.check_circle_outline,
+          title: 'Ôn tập hôm nay',
+          subtitle: reviewCount > 0
+              ? 'Có $reviewCount từ đang chờ bạn củng cố.'
+              : 'Giữ nhịp học đều đặn mỗi ngày.',
+          onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
+        ),
+      ];
+
+      return _GradientBackground(
+        child: CustomScrollView(
+          key: const PageStorageKey('home-dashboard'),
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+              sliver: SliverToBoxAdapter(
+                child: _HomeIntro(reviewCount: reviewCount),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverToBoxAdapter(
+                child: _NavigationGroup(
+                  title: 'Điều hướng nhanh',
+                  subtitle:
+                      'Chọn điểm bắt đầu cho phiên học gõ tiếng Trung hôm nay.',
+                  items: quickItems,
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverToBoxAdapter(
+                child: Text(
+                  'Chọn cấp độ HSK',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverToBoxAdapter(
+                child: _LevelGrid(
+                  isLoading: isLoading,
+                  overview: overview,
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _AiHubTab extends StatelessWidget {
+  const _AiHubTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final aiAssistItems = [
+      _NavigationItem(
+        icon: Icons.smart_toy_outlined,
+        title: 'AI trợ giảng',
+        subtitle: 'Đặt câu hỏi và xin thêm ví dụ về từ đang học.',
+        onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.aiChat)),
+      ),
+      _NavigationItem(
+        icon: Icons.question_answer_outlined,
+        title: 'Giải thích ngữ pháp',
+        subtitle: 'Nhờ AI phân tích cấu trúc câu khó hiểu.',
+        onTap: () => navigateAfterFrame(
+          () => Get.toNamed(
+            AppRoutes.aiChat,
+            arguments: {
+              'context': 'Giải thích chi tiết ngữ pháp và cấu trúc của câu sau.',
+            },
+          ),
+        ),
+      ),
+    ];
+
+    final aiPracticeItems = [
+      _NavigationItem(
+        icon: Icons.auto_awesome_outlined,
+        title: 'AI gợi ý câu luyện tập',
+        subtitle: 'Nhận các biến thể câu để luyện gõ sâu hơn.',
+        onTap: () => navigateAfterFrame(
+          () => Get.toNamed(
+            AppRoutes.aiChat,
+            arguments: {
+              'context':
+                  'Hãy tạo các câu ví dụ mới dễ gõ có chứa từ vựng tôi đang học.',
+            },
+          ),
+        ),
+      ),
+      _NavigationItem(
+        icon: Icons.hearing_outlined,
+        title: 'Luyện nghe cùng AI',
+        subtitle: 'Xin audio và câu hỏi kiểm tra nghe - gõ.',
+        onTap: () => navigateAfterFrame(
+          () => Get.toNamed(
+            AppRoutes.aiChat,
+            arguments: {
+              'context':
+                  'Hãy đóng vai giáo viên và cho tôi nghe - gõ với từ vựng này.',
+            },
+          ),
+        ),
+      ),
+    ];
+
+    return _GradientBackground(
+      child: ListView(
+        key: const PageStorageKey('ai-hub'),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+        children: [
+          Text(
+            'Trung tâm AI trợ giảng',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Sử dụng AI để mở rộng ngữ cảnh, giải thích chi tiết và tạo bài luyện gõ cá nhân hóa.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 28),
+          _NavigationGroup(
+            title: 'Hỏi đáp tức thì',
+            subtitle: 'Trò chuyện với trợ giảng AI để hiểu sâu từng cấu trúc.',
+            items: aiAssistItems,
+          ),
+          const SizedBox(height: 32),
+          _NavigationGroup(
+            title: 'Sinh bài luyện từ AI',
+            subtitle: 'Nhận thêm câu ví dụ và bài nghe để luyện gõ liên tục.',
+            items: aiPracticeItems,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SystemHubTab extends StatelessWidget {
+  const _SystemHubTab({required this.controller});
+
+  final HomeController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final systemItems = [
+      _NavigationItem(
+        icon: Icons.settings_suggest_outlined,
+        title: 'Cài đặt hệ thống',
+        subtitle: 'Điều chỉnh TTS, giao diện và nhắc ôn tập.',
+        onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.settings)),
+      ),
+      _NavigationItem(
+        icon: Icons.insights_outlined,
+        title: 'Hồ sơ & thành tích',
+        subtitle: 'Theo dõi số từ đã thuần thục và chuỗi ngày học.',
+        onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.profile)),
+      ),
+      _NavigationItem(
+        icon: Icons.check_circle_outline,
+        title: 'Ôn tập hôm nay',
+        subtitle: 'Vào lại danh sách từ cần củng cố trong ngày.',
+        onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
+      ),
+    ];
+
+    final supportItems = [
+      _NavigationItem(
+        icon: Icons.info_outline,
+        title: 'Giới thiệu lộ trình',
+        subtitle: 'Xem tổng quan 10 bước gõ cho mỗi từ vựng.',
+        onTap: () => controller.changeTab(0),
+      ),
+    ];
+
+    return _GradientBackground(
+      child: ListView(
+        key: const PageStorageKey('system-hub'),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+        children: [
+          Text(
+            'Trung tâm hệ thống',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Quản lý cấu hình học tập, xem thống kê và truy cập nhanh các tiện ích.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 28),
+          _NavigationGroup(
+            title: 'Quản lý ứng dụng',
+            subtitle: 'Tùy chỉnh trải nghiệm học và xem tiến trình chi tiết.',
+            items: systemItems,
+          ),
+          const SizedBox(height: 32),
+          _NavigationGroup(
+            title: 'Hỗ trợ nhanh',
+            subtitle: 'Quay lại trang tổng quan để tiếp tục hành trình gõ.',
+            items: supportItems,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GradientBackground extends StatelessWidget {
+  const _GradientBackground({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(gradient: _homeBackgroundGradient),
+      child: SafeArea(
+        bottom: false,
+        child: child,
+      ),
     );
   }
 }
