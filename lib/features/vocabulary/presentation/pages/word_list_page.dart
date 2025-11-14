@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../routes/app_routes.dart';
+import '../../domain/entities/word.dart';
 import '../controllers/word_list_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/hsk_utils.dart';
@@ -25,8 +26,18 @@ class WordListPage extends GetView<WordListController> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final words = controller.words;
+        final words = controller.words.toList();
+        final introducedWords = words.where((word) => !word.mastered).toList();
+        final reusedWords = words.where((word) => word.mastered).toList();
         final scheme = Theme.of(context).colorScheme;
+        void openWord(Word word) {
+          navigateAfterFrame(() {
+            Get.toNamed(
+              AppRoutes.wordDetail,
+              arguments: {'wordId': word.id},
+            );
+          });
+        }
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -68,32 +79,22 @@ class WordListPage extends GetView<WordListController> {
                         if (words.isEmpty)
                           const _EmptyWordState()
                         else ...[
-                          Text(
-                            'Từ vựng trong unit',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: 16),
-                          ...List.generate(words.length, (index) {
-                            final word = words[index];
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                bottom: index == words.length - 1 ? 0 : 12,
-                              ),
-                              child: WordListItem(
-                                word: word,
-                                level: level,
-                                onTap: () => navigateAfterFrame(() {
-                                  Get.toNamed(
-                                    AppRoutes.wordDetail,
-                                    arguments: {'wordId': word.id},
-                                  );
-                                }),
-                              ),
-                            );
-                          }),
+                          if (introducedWords.isNotEmpty)
+                            _WordCluster(
+                              title: 'Introduced in this unit',
+                              words: introducedWords,
+                              level: level,
+                              onTap: openWord,
+                            ),
+                          if (introducedWords.isNotEmpty && reusedWords.isNotEmpty)
+                            const SizedBox(height: 24),
+                          if (reusedWords.isNotEmpty)
+                            _WordCluster(
+                              title: 'Used in new words',
+                              words: reusedWords,
+                              level: level,
+                              onTap: openWord,
+                            ),
                         ],
                       ],
                     ),
@@ -233,6 +234,68 @@ class _UnitSummary extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _WordCluster extends StatelessWidget {
+  const _WordCluster({
+    required this.title,
+    required this.words,
+    required this.level,
+    required this.onTap,
+  });
+
+  final String title;
+  final List<Word> words;
+  final int level;
+  final ValueChanged<Word> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        double tileWidth;
+        if (maxWidth >= 680) {
+          tileWidth = 220;
+        } else if (maxWidth >= 520) {
+          tileWidth = 188;
+        } else {
+          tileWidth = 156;
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: words
+                  .map(
+                    (word) => WordListItem(
+                      word: word,
+                      level: level,
+                      onTap: () => onTap(word),
+                      maxWidth: tileWidth,
+                      showTransliteration: false,
+                      progress: word.mastered ? 1.0 : 0.0,
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        );
+      },
     );
   }
 }
