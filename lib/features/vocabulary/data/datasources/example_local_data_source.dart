@@ -19,6 +19,8 @@ class ExampleLocalDataSourceImpl implements ExampleLocalDataSource {
       whereArgs: [wordId],
       orderBy: 'order_index ASC',
     );
-    return result.map(ExampleModel.fromMap).toList();
+    return result
+        .map((row) => ExampleModel.fromMap(Map<String, Object?>.from(row)))
+        .toList();
   }
 }

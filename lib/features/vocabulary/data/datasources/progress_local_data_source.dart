@@ -23,7 +23,7 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
       limit: 1,
     );
     if (result.isEmpty) return null;
-    return ProgressModel.fromMap(result.first);
+    return ProgressModel.fromMap(Map<String, Object?>.from(result.first));
   }
 
   @override
@@ -36,7 +36,8 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
       ''', [sectionId]);
     return {
       for (final row in result)
-        row['word_id'] as int: ProgressModel.fromMap(row),
+        row['word_id'] as int:
+            ProgressModel.fromMap(Map<String, Object?>.from(row)),
     };
   }
 

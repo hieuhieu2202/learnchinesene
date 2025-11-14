@@ -13,16 +13,16 @@ class WordModel extends Word {
     required super.mastered,
   });
 
-  factory WordModel.fromMap(Map<String, dynamic> map, {bool mastered = false}) {
+  factory WordModel.fromMap(Map<String, Object?> map, {bool mastered = false}) {
     return WordModel(
       id: map['id'] as int,
       sectionId: map['section_id'] as int,
-      sectionTitle: (map['section_title'] ?? '') as String,
-      groupSubtitle: (map['group_subtitle'] ?? '') as String,
-      word: (map['word'] ?? '') as String,
-      translation: (map['translation'] ?? '') as String,
-      transliteration: (map['transliteration'] ?? '') as String,
-      ttsUrl: (map['tts_url'] ?? '') as String,
+      sectionTitle: map['section_title'] as String? ?? '',
+      groupSubtitle: map['group_subtitle'] as String? ?? '',
+      word: map['word'] as String? ?? '',
+      translation: map['translation'] as String? ?? '',
+      transliteration: map['transliteration'] as String? ?? '',
+      ttsUrl: map['tts_url'] as String? ?? '',
       mastered: mastered,
     );
   }

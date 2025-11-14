@@ -9,13 +9,13 @@ class CharacterModel extends CharacterEntity {
     required super.strokePaths,
   });
 
-  factory CharacterModel.fromMap(Map<String, dynamic> map) {
+  factory CharacterModel.fromMap(Map<String, Object?> map) {
     return CharacterModel(
       id: map['id'] as int,
-      character: (map['character'] ?? '') as String,
-      strokeWidth: (map['stroke_width'] ?? 0) as int,
-      strokeHeight: (map['stroke_height'] ?? 0) as int,
-      strokePaths: (map['stroke_paths'] ?? '') as String,
+      character: map['character'] as String? ?? '',
+      strokeWidth: map['stroke_width'] as int? ?? 0,
+      strokeHeight: map['stroke_height'] as int? ?? 0,
+      strokePaths: map['stroke_paths'] as String? ?? '',
     );
   }
 }

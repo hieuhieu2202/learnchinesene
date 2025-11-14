@@ -33,7 +33,7 @@ class WordLocalDataSourceImpl implements WordLocalDataSource {
       limit: 1,
     );
     if (result.isEmpty) return '';
-    return (result.first['section_title'] ?? '') as String;
+    return result.first['section_title'] as String? ?? '';
   }
 
   @override
@@ -45,7 +45,9 @@ class WordLocalDataSourceImpl implements WordLocalDataSource {
       whereArgs: [sectionId],
       orderBy: 'id ASC',
     );
-    return result.map(WordModel.fromMap).toList();
+    return result
+        .map((row) => WordModel.fromMap(Map<String, Object?>.from(row)))
+        .toList();
   }
 
   @override
@@ -60,6 +62,6 @@ class WordLocalDataSourceImpl implements WordLocalDataSource {
     if (result.isEmpty) {
       return null;
     }
-    return WordModel.fromMap(result.first);
+    return WordModel.fromMap(Map<String, Object?>.from(result.first));
   }
 }

@@ -17,6 +17,11 @@ class AiRemoteDataSource implements AiRepository {
 
   @override
   Future<AiMessage> askAI({required String prompt, String? wordContext}) async {
+    if (apiKey.isEmpty) {
+      throw const StateError(
+        'Gemini API key is missing. Provide GEMINI_API_KEY via --dart-define.',
+      );
+    }
     final requestBody = {
       'contents': [
         {
@@ -45,12 +50,18 @@ class AiRemoteDataSource implements AiRepository {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final candidates = data['candidates'] as List<dynamic>?;
-      final content = candidates != null && candidates.isNotEmpty
-          ? candidates.first['content'] as Map<String, dynamic>?
-          : null;
-      final parts = content != null ? content['parts'] as List<dynamic>? : null;
-      final text = parts != null && parts.isNotEmpty
-          ? (parts.first['text'] as String? ?? '')
+      List<dynamic>? partList;
+      if (candidates != null && candidates.isNotEmpty) {
+        final candidate = candidates.first;
+        if (candidate is Map<String, dynamic>) {
+          final content = candidate['content'];
+          if (content is Map<String, dynamic>) {
+            partList = content['parts'] as List<dynamic>?;
+          }
+        }
+      }
+      final text = partList != null && partList.isNotEmpty
+          ? (partList.first['text'] as String? ?? '')
           : '';
 
       return AiMessage(
@@ -60,6 +71,20 @@ class AiRemoteDataSource implements AiRepository {
       );
     }
 
-    throw Exception('Failed to contact AI: ${response.statusCode}');
+    final error = _readError(response.body);
+    throw Exception('Failed to contact AI: ${response.statusCode} $error');
+  }
+
+  String _readError(String body) {
+    try {
+      final decoded = jsonDecode(body) as Map<String, dynamic>;
+      final error = decoded['error'];
+      if (error is Map<String, dynamic>) {
+        return error['message'] as String? ?? '';
+      }
+      return error == null ? '' : error.toString();
+    } catch (_) {
+      return '';
+    }
   }
 }

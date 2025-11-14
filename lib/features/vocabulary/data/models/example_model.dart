@@ -10,14 +10,14 @@ class ExampleModel extends ExampleSentence {
     required super.sentenceVi,
   });
 
-  factory ExampleModel.fromMap(Map<String, dynamic> map) {
+  factory ExampleModel.fromMap(Map<String, Object?> map) {
     return ExampleModel(
       id: map['id'] as int,
       wordId: map['word_id'] as int,
       orderIndex: map['order_index'] as int,
-      sentenceCn: (map['sentence_cn'] ?? '') as String,
-      sentencePinyin: (map['sentence_pinyin'] ?? '') as String,
-      sentenceVi: (map['sentence_vi'] ?? '') as String,
+      sentenceCn: map['sentence_cn'] as String? ?? '',
+      sentencePinyin: map['sentence_pinyin'] as String? ?? '',
+      sentenceVi: map['sentence_vi'] as String? ?? '',
     );
   }
 }

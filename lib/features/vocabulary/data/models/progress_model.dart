@@ -10,16 +10,16 @@ class ProgressModel extends Progress {
     required super.mastered,
   });
 
-  factory ProgressModel.fromMap(Map<String, dynamic> map) {
+  factory ProgressModel.fromMap(Map<String, Object?> map) {
     return ProgressModel(
       wordId: map['word_id'] as int,
-      correctCount: (map['correct_count'] ?? 0) as int,
-      wrongCount: (map['wrong_count'] ?? 0) as int,
+      correctCount: map['correct_count'] as int? ?? 0,
+      wrongCount: map['wrong_count'] as int? ?? 0,
       lastPractice: map['last_practice'] == null
           ? null
           : DateTime.tryParse(map['last_practice'] as String),
-      level: (map['level'] ?? 0) as int,
-      mastered: (map['mastered'] ?? 0) == 1,
+      level: map['level'] as int? ?? 0,
+      mastered: (map['mastered'] as int? ?? 0) == 1,
     );
   }
 

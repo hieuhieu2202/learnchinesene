@@ -20,6 +20,6 @@ class CharacterLocalDataSourceImpl implements CharacterLocalDataSource {
       limit: 1,
     );
     if (result.isEmpty) return null;
-    return CharacterModel.fromMap(result.first);
+    return CharacterModel.fromMap(Map<String, Object?>.from(result.first));
   }
 }
