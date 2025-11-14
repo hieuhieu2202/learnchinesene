@@ -14,8 +14,26 @@ class SectionListPage extends GetView<SectionListController> {
     return Scaffold(
       body: Obx(() {
         final isLoading = controller.isLoading.value;
-        final sections = controller.sections;
+        final sections = controller.sections.toList();
         final selectedLevel = controller.selectedLevel.value;
+        final sectionCount = sections.length;
+        final totalWords = controller.totalWords;
+        final masteredWords = controller.masteredWords;
+        final progress = controller.progress;
+        VoidCallback? onStartLearning;
+        if (sections.isNotEmpty) {
+          final firstSection = sections.first;
+          onStartLearning = () {
+            Get.toNamed(
+              AppRoutes.wordList,
+              arguments: {
+                'sectionId': firstSection.sectionId,
+                'sectionTitle': firstSection.sectionTitle,
+              },
+            );
+          };
+        }
+
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -28,63 +46,73 @@ class SectionListPage extends GetView<SectionListController> {
             ),
           ),
           child: SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  title: const Text('Lộ trình bài học'),
-                  centerTitle: false,
-                  pinned: true,
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: theme.colorScheme.onSurface,
-                  elevation: 0,
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _LevelSwitcher(
-                          controller: controller,
-                          selectedLevel: selectedLevel,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Lộ trình bài học',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
                         ),
-                        const SizedBox(height: 20),
-                        _LevelHeader(
-                          controller: controller,
-                          selectedLevel: selectedLevel,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (isLoading)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (sections.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _EmptyState(),
-                    ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) => Padding(
-                          padding: EdgeInsets.only(
-                            bottom: index == sections.length - 1 ? 0 : 16,
-                          ),
-                          child: _UnitCard(progress: sections[index]),
-                        ),
-                        childCount: sections.length,
                       ),
-                    ),
+                      const Spacer(),
+                      IconButton(
+                        tooltip: 'Quay lại',
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
                   ),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    children: [
+                      _LevelSwitcher(
+                        controller: controller,
+                        selectedLevel: selectedLevel,
+                      ),
+                      const SizedBox(height: 20),
+                      _LevelHeader(
+                        selectedLevel: selectedLevel,
+                        sectionCount: sectionCount,
+                        totalWords: totalWords,
+                        masteredWords: masteredWords,
+                        progress: progress,
+                        onStartLearning: onStartLearning,
+                      ),
+                      const SizedBox(height: 24),
+                      if (isLoading)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 40),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (sections.isEmpty)
+                        const _EmptyState()
+                      else ...[
+                        Text(
+                          'Chọn bài học',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ...List.generate(sections.length, (index) {
+                          final item = sections[index];
+                          final bottomSpacing = index == sections.length - 1 ? 0.0 : 16.0;
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: bottomSpacing),
+                            child: _UnitCard(progress: item),
+                          );
+                        }),
+                      ],
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -141,18 +169,24 @@ class _LevelSwitcher extends StatelessWidget {
 
 class _LevelHeader extends StatelessWidget {
   const _LevelHeader({
-    required this.controller,
     required this.selectedLevel,
+    required this.sectionCount,
+    required this.totalWords,
+    required this.masteredWords,
+    required this.progress,
+    this.onStartLearning,
   });
 
-  final SectionListController controller;
   final int selectedLevel;
+  final int sectionCount;
+  final int totalWords;
+  final int masteredWords;
+  final double progress;
+  final VoidCallback? onStartLearning;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final totalWords = controller.totalWords;
-    final masteredWords = controller.masteredWords;
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -177,7 +211,7 @@ class _LevelHeader extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           LinearProgressIndicator(
-            value: controller.progress,
+            value: progress.clamp(0.0, 1.0).toDouble(),
             minHeight: 8,
             borderRadius: BorderRadius.circular(8),
             backgroundColor: theme.colorScheme.onPrimary.withOpacity(0.15),
@@ -190,7 +224,7 @@ class _LevelHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${controller.sections.length} bài học',
+                      '$sectionCount bài học',
                       style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),
@@ -202,18 +236,7 @@ class _LevelHeader extends StatelessWidget {
                 ),
               ),
               FilledButton.tonal(
-                onPressed: controller.sections.isEmpty
-                    ? null
-                    : () {
-                        final firstSection = controller.sections.first;
-                        Get.toNamed(
-                          AppRoutes.wordList,
-                          arguments: {
-                            'sectionId': firstSection.sectionId,
-                            'sectionTitle': firstSection.sectionTitle,
-                          },
-                        );
-                      },
+                onPressed: onStartLearning,
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
@@ -308,6 +331,8 @@ class _UnitCard extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
+  const _EmptyState({super.key});
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
