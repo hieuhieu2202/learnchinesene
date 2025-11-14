@@ -254,15 +254,20 @@ class _LevelSection extends StatelessWidget {
                 : constraints.maxWidth > 600
                     ? 3
                     : 2;
+            const spacing = 16.0;
+            final availableWidth = constraints.maxWidth - spacing * (crossAxisCount - 1);
+            final itemWidth = availableWidth / crossAxisCount;
+            final targetHeight = crossAxisCount >= 3 ? 220.0 : 240.0;
+            final childAspectRatio = itemWidth / targetHeight;
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: overview.isEmpty ? 4 : overview.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 0.85,
+                mainAxisSpacing: spacing,
+                crossAxisSpacing: spacing,
+                childAspectRatio: childAspectRatio,
               ),
               itemBuilder: (context, index) {
                 final item = overview.isEmpty
@@ -339,11 +344,15 @@ class _HskLevelCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              Text(
-                description,
-                style: theme.textTheme.bodyMedium,
+              Expanded(
+                child: Text(
+                  description,
+                  style: theme.textTheme.bodyMedium,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const Spacer(),
+              const SizedBox(height: 12),
               LinearProgressIndicator(value: item.progress),
               const SizedBox(height: 8),
               Text(
@@ -355,6 +364,7 @@ class _HskLevelCard extends StatelessWidget {
                 alignment: Alignment.bottomRight,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Khám phá',
