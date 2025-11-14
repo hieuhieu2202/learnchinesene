@@ -215,7 +215,7 @@ class PracticeSessionController extends GetxController {
   }
 
   static final _punctuationRegex =
-      RegExp(r"[，,。\.！!？\?；;：“”\"'()（）·…—-]");
+      RegExp(r"""[，,。.!！？?；;：“”"'()（）·…—-]""");
 
   Future<void> _updateProgress({required bool correct}) async {
     final current = currentQuestion;
