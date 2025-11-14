@@ -14,6 +14,11 @@ enum PracticeMode {
   typingHanzi,
   typingFillBlank,
   typingSentence,
+  typingSentenceTransform,
+  typingSecondExample,
+  typingAiExplanation,
+  typingRecap,
+  typingConversation,
 }
 
 class PracticeQuestion {
@@ -44,6 +49,36 @@ class PracticeQuestion {
   final List<String> acceptableAnswers;
 }
 
+class GeneratedSentence {
+  const GeneratedSentence({
+    required this.chinese,
+    required this.pinyin,
+    required this.translation,
+  });
+
+  final String chinese;
+  final String pinyin;
+  final String translation;
+}
+
+class ConversationPrompt {
+  const ConversationPrompt({
+    required this.speakerAChinese,
+    required this.speakerAPinyin,
+    required this.speakerAMeaning,
+    required this.speakerBChinese,
+    required this.speakerBPinyin,
+    required this.speakerBMeaning,
+  });
+
+  final String speakerAChinese;
+  final String speakerAPinyin;
+  final String speakerAMeaning;
+  final String speakerBChinese;
+  final String speakerBPinyin;
+  final String speakerBMeaning;
+}
+
 class PracticeSessionController extends GetxController {
   PracticeSessionController({
     required this.words,
@@ -68,12 +103,20 @@ class PracticeSessionController extends GetxController {
   final Map<int, Progress> _progressCache = {};
   final Map<int, List<ExampleSentence>> _examplesCache = {};
 
+  late final Worker _finishWorker;
+  bool _hasAutoClosed = false;
+
   static const _orderedStages = <PracticeMode>[
     PracticeMode.typingMeaning,
     PracticeMode.typingPinyin,
     PracticeMode.typingHanzi,
     PracticeMode.typingFillBlank,
     PracticeMode.typingSentence,
+    PracticeMode.typingSentenceTransform,
+    PracticeMode.typingSecondExample,
+    PracticeMode.typingAiExplanation,
+    PracticeMode.typingRecap,
+    PracticeMode.typingConversation,
   ];
 
   PracticeQuestion? get currentQuestion =>
@@ -84,7 +127,14 @@ class PracticeSessionController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _finishWorker = ever<bool>(isFinished, _handleFinishedState);
     _prepareQuestions();
+  }
+
+  @override
+  void onClose() {
+    _finishWorker.dispose();
+    super.onClose();
   }
 
   Future<void> markCorrect() async {
@@ -93,13 +143,14 @@ class PracticeSessionController extends GetxController {
     await _handleResult(question: question, correct: true);
   }
 
-  Future<void> markWrong({bool advance = true}) async {
+  Future<void> markWrong({bool advance = true, bool requeue = false}) async {
     final question = currentQuestion;
     if (question == null) return;
     await _handleResult(
       question: question,
       correct: false,
       advanceOnWrong: advance,
+      requeueOnWrong: requeue,
     );
   }
 
@@ -127,16 +178,57 @@ class PracticeSessionController extends GetxController {
     }
   }
 
+  void _handleFinishedState(bool finished) {
+    if (!finished || _hasAutoClosed) {
+      return;
+    }
+    _hasAutoClosed = true;
+
+    final completedWords = <String>{};
+    for (final question in questions) {
+      completedWords.add(question.word.word);
+    }
+
+    final summaryLabel = completedWords.isEmpty
+        ? 'từ vựng'
+        : completedWords.length == 1
+            ? completedWords.first
+            : '${completedWords.length} từ';
+
+    Get.snackbar(
+      'Hoàn thành',
+      'Bạn đã luyện xong $summaryLabel trong 10 bước!',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+    );
+
+    final completedWordIds = <int>{};
+    for (final question in questions) {
+      completedWordIds.add(question.word.id);
+    }
+
+    Future.delayed(const Duration(milliseconds: 400), () {
+      final navigator = Get.key.currentState;
+      if (navigator != null && navigator.canPop()) {
+        navigator.pop({
+          'completedWordIds': completedWordIds.toList(),
+          'score': score.value,
+          'total': questions.length,
+        });
+      }
+    });
+  }
+
   Future<void> _buildJourneyQuestions() async {
     for (final word in words) {
       final progress = await _loadProgress(word.id);
       if (progress.mastered ||
-          progress.level >= _stageToLevel(PracticeMode.typingSentence)) {
+          progress.level >= _stageToLevel(PracticeMode.typingConversation)) {
         continue;
       }
 
       final highestCompleted = progress.level
-          .clamp(0, _stageToLevel(PracticeMode.typingSentence))
+          .clamp(0, _stageToLevel(PracticeMode.typingConversation))
           .toInt();
       for (final stage in _orderedStages) {
         final stageLevel = _stageToLevel(stage);
@@ -167,7 +259,7 @@ class PracticeSessionController extends GetxController {
         return PracticeQuestion(
           word: word,
           stage: stage,
-          title: 'Level 1 · Gõ nghĩa',
+          title: 'Bước 1 · Gõ nghĩa',
           prompt: '${word.word}\n(${word.transliteration})',
           inputLabel: 'Nhập nghĩa tiếng Việt / Anh',
           answer: word.translation,
@@ -178,7 +270,7 @@ class PracticeSessionController extends GetxController {
         return PracticeQuestion(
           word: word,
           stage: stage,
-          title: 'Level 2 · Gõ pinyin',
+          title: 'Bước 2 · Gõ pinyin',
           prompt: word.word,
           inputLabel: 'Nhập pinyin có dấu hoặc không dấu',
           answer: word.transliteration,
@@ -190,7 +282,7 @@ class PracticeSessionController extends GetxController {
         return PracticeQuestion(
           word: word,
           stage: stage,
-          title: 'Level 3 · Gõ chữ Hán',
+          title: 'Bước 3 · Gõ chữ Hán',
           prompt: 'Nghĩa: ${word.translation}\nPinyin: ${word.transliteration}',
           inputLabel: 'Nhập chữ Hán tương ứng',
           answer: word.word,
@@ -208,7 +300,7 @@ class PracticeSessionController extends GetxController {
         return PracticeQuestion(
           word: word,
           stage: stage,
-          title: 'Level 4 · Điền từ vào câu',
+          title: 'Bước 4 · Điền từ vào câu',
           prompt: masked,
           inputLabel: 'Nhập từ còn thiếu',
           answer: word.word,
@@ -227,7 +319,7 @@ class PracticeSessionController extends GetxController {
         return PracticeQuestion(
           word: word,
           stage: stage,
-          title: 'Level 5 · Chép lại câu',
+          title: 'Bước 5 · Gõ lại câu ví dụ',
           prompt: example.sentenceVi,
           inputLabel: 'Gõ lại câu tiếng Trung',
           answer: example.sentenceCn,
@@ -236,6 +328,88 @@ class PracticeSessionController extends GetxController {
             'Pinyin tham khảo: ${example.sentencePinyin}',
           ],
           targetLevel: 5,
+        );
+      case PracticeMode.typingSentenceTransform:
+        final baseExample = await _pickExample(word);
+        final transformed = _generateTransformedSentence(word);
+        return PracticeQuestion(
+          word: word,
+          stage: stage,
+          title: 'Bước 6 · Biến đổi câu',
+          prompt:
+              'Hãy gõ lại câu tiếng Trung mới dựa trên ý nghĩa sau:\n${transformed.translation}',
+          inputLabel: 'Nhập câu biến đổi',
+          answer: transformed.chinese,
+          example: baseExample,
+          extraHints: [
+            'Gợi ý pinyin: ${transformed.pinyin}',
+          ],
+          targetLevel: 6,
+        );
+      case PracticeMode.typingSecondExample:
+        var example = await _pickExample(word, index: 1);
+        example ??= await _pickExample(word);
+        if (example == null) {
+          return null;
+        }
+        return PracticeQuestion(
+          word: word,
+          stage: stage,
+          title: 'Bước 7 · Ví dụ thứ hai',
+          prompt: example.sentenceVi,
+          inputLabel: 'Gõ lại câu ví dụ thứ hai',
+          answer: example.sentenceCn,
+          example: example,
+          extraHints: [
+            'Pinyin tham khảo: ${example.sentencePinyin}',
+          ],
+          targetLevel: 7,
+        );
+      case PracticeMode.typingAiExplanation:
+        final explanation = _generateExplanationSentence(word);
+        return PracticeQuestion(
+          word: word,
+          stage: stage,
+          title: 'Bước 8 · Câu giải thích',
+          prompt:
+              'Gõ lại câu giải thích giúp bạn hiểu từ sâu hơn:\n${explanation.translation}',
+          inputLabel: 'Nhập câu giải thích',
+          answer: explanation.chinese,
+          extraHints: [
+            'Pinyin câu: ${explanation.pinyin}',
+          ],
+          targetLevel: 8,
+        );
+      case PracticeMode.typingRecap:
+        final recapAnswer = _buildRecapAnswer(word);
+        return PracticeQuestion(
+          word: word,
+          stage: stage,
+          title: 'Bước 9 · Ôn tổng hợp',
+          prompt:
+              'Gõ lại đầy đủ chữ Hán + pinyin + nghĩa của từ này theo thứ tự.',
+          inputLabel: 'Ví dụ: 水 shui water',
+          answer: recapAnswer,
+          extraHints: [
+            'Gợi ý: ${word.word} ${_normalizePinyinSpacing(word.transliteration)} ${word.translation}',
+          ],
+          targetLevel: 9,
+        );
+      case PracticeMode.typingConversation:
+        final conversation = _generateConversation(word);
+        return PracticeQuestion(
+          word: word,
+          stage: stage,
+          title: 'Bước 10 · Hội thoại ngắn',
+          prompt:
+              'A: ${conversation.speakerAChinese}\n(${conversation.speakerAMeaning})\nB: ______\n\nGõ lại câu trả lời của B.',
+          inputLabel: 'Nhập câu trả lời của B',
+          answer: conversation.speakerBChinese,
+          extraHints: [
+            'Pinyin đáp án: ${conversation.speakerBPinyin}',
+            'Nghĩa: ${conversation.speakerBMeaning}',
+          ],
+          targetLevel: 10,
         );
       case PracticeMode.journey:
         return null;
@@ -261,6 +435,7 @@ class PracticeSessionController extends GetxController {
     required PracticeQuestion question,
     required bool correct,
     bool advanceOnWrong = false,
+    bool requeueOnWrong = false,
   }) async {
     if (correct) {
       score.value++;
@@ -270,6 +445,7 @@ class PracticeSessionController extends GetxController {
       question: question,
       correct: correct,
       advanceOnWrong: advanceOnWrong,
+      requeueOnWrong: requeueOnWrong,
     );
   }
 
@@ -305,17 +481,61 @@ class PracticeSessionController extends GetxController {
     return examples;
   }
 
-  Future<ExampleSentence?> _pickExample(Word word) async {
+  Future<ExampleSentence?> _pickExample(Word word, {int index = 0}) async {
     final examples = await _loadExamples(word.id);
     if (examples.isEmpty) {
       return null;
     }
-    for (final example in examples) {
-      if (example.sentenceCn.contains(word.word)) {
-        return example;
-      }
+
+    final matching = examples
+        .where((example) => example.sentenceCn.contains(word.word))
+        .toList();
+    final source = matching.isEmpty ? examples : matching;
+
+    if (index >= 0 && index < source.length) {
+      return source[index];
     }
-    return examples.first;
+
+    return source.isNotEmpty ? source.last : null;
+  }
+
+  GeneratedSentence _generateTransformedSentence(Word word) {
+    final pinyinWord = _normalizePinyinSpacing(word.transliteration);
+    final chinese = '他很喜欢${word.word}。';
+    final pinyin = 'tā hěn xǐhuan $pinyinWord.';
+    return GeneratedSentence(
+      chinese: chinese,
+      pinyin: pinyin,
+      translation: 'Anh ấy rất thích ${word.translation}.',
+    );
+  }
+
+  GeneratedSentence _generateExplanationSentence(Word word) {
+    final pinyinWord = _normalizePinyinSpacing(word.transliteration);
+    final sanitizedMeaning = _sanitizeForPinyin(word.translation);
+    return GeneratedSentence(
+      chinese: '${word.word} 表示${word.translation}。',
+      pinyin: '$pinyinWord biǎoshì $sanitizedMeaning.',
+      translation: '${word.word} là từ dùng để diễn tả "${word.translation}".',
+    );
+  }
+
+  ConversationPrompt _generateConversation(Word word) {
+    final pinyinWord = _normalizePinyinSpacing(word.transliteration);
+    return ConversationPrompt(
+      speakerAChinese: '你想要什么？',
+      speakerAPinyin: 'nǐ xiǎng yào shénme?',
+      speakerAMeaning: 'Bạn muốn gì?',
+      speakerBChinese: '我想要${word.word}。',
+      speakerBPinyin: 'wǒ xiǎng yào $pinyinWord.',
+      speakerBMeaning: 'Tôi muốn ${word.translation}.',
+    );
+  }
+
+  String _buildRecapAnswer(Word word) {
+    final pinyinWord = _normalizePinyinSpacing(word.transliteration);
+    final meaning = word.translation.trim();
+    return '${word.word} $pinyinWord $meaning';
   }
 
   String? _maskWord(String sentence, String word) {
@@ -354,7 +574,13 @@ class PracticeSessionController extends GetxController {
       case PracticeMode.typingFillBlank:
         return _normalizeHanzi(value);
       case PracticeMode.typingSentence:
+      case PracticeMode.typingSentenceTransform:
+      case PracticeMode.typingSecondExample:
+      case PracticeMode.typingAiExplanation:
+      case PracticeMode.typingConversation:
         return _normalizeSentence(value);
+      case PracticeMode.typingRecap:
+        return _normalizeRecap(value);
       case PracticeMode.journey:
         return value.trim();
     }
@@ -378,6 +604,20 @@ class PracticeSessionController extends GetxController {
 
   String _normalizeSentence(String value) => _normalizeHanzi(value);
 
+  String _normalizeRecap(String value) {
+    final cleaned = _removeDiacritics(value).toLowerCase();
+    final withoutPunctuation = cleaned.replaceAll(_punctuationRegex, ' ');
+    return withoutPunctuation.replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  String _normalizePinyinSpacing(String value) => value.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+  String _sanitizeForPinyin(String value) {
+    final cleaned = _removeDiacritics(value);
+    final ascii = cleaned.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), ' ');
+    return ascii.replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
   Future<void> _updateProgress({
     required PracticeQuestion question,
     required bool correct,
@@ -390,7 +630,7 @@ class PracticeSessionController extends GetxController {
     final stageLevel = question.targetLevel;
     final nextLevel =
         correct ? (progress.level >= stageLevel ? progress.level : stageLevel) : progress.level;
-    final mastered = correct && question.stage == PracticeMode.typingSentence
+    final mastered = correct && question.targetLevel >= 10
         ? true
         : progress.mastered;
 
@@ -417,12 +657,13 @@ class PracticeSessionController extends GetxController {
     required PracticeQuestion question,
     required bool correct,
     required bool advanceOnWrong,
+    required bool requeueOnWrong,
   }) {
     if (!correct && !advanceOnWrong) {
       return;
     }
 
-    if (!correct && advanceOnWrong) {
+    if (!correct && advanceOnWrong && requeueOnWrong) {
       questions.add(question);
     }
 
@@ -445,6 +686,16 @@ class PracticeSessionController extends GetxController {
         return 4;
       case PracticeMode.typingSentence:
         return 5;
+      case PracticeMode.typingSentenceTransform:
+        return 6;
+      case PracticeMode.typingSecondExample:
+        return 7;
+      case PracticeMode.typingAiExplanation:
+        return 8;
+      case PracticeMode.typingRecap:
+        return 9;
+      case PracticeMode.typingConversation:
+        return 10;
       case PracticeMode.journey:
         return 0;
     }

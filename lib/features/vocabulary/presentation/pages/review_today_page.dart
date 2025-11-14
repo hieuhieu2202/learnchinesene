@@ -162,7 +162,7 @@ class _ReviewSummary extends StatelessWidget {
           Text(
             total == 0
                 ? 'Hãy quay lại các bài học để tiếp tục hành trình.'
-                : 'Hoàn thành đủ 5 cấp độ gõ để giữ vững phong độ.',
+                : 'Hoàn thành đủ 10 bước gõ để giữ vững phong độ.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),

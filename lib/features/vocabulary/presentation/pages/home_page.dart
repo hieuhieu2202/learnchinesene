@@ -97,7 +97,7 @@ class _HomeIntro extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Hoàn thành 5 cấp độ gõ để thuộc lòng từng từ vựng trong giáo trình HSK.',
+          'Hoàn thành 10 bước gõ để thuộc lòng từng từ vựng trong giáo trình HSK.',
           style: theme.textTheme.bodyMedium,
         ),
         const SizedBox(height: 24),

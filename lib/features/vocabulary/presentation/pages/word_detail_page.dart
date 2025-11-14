@@ -247,7 +247,7 @@ class _PrimaryActions extends StatelessWidget {
                     });
                   }),
                   icon: const Icon(Icons.route),
-                  label: const Text('Luyện hành trình 5 cấp'),
+                  label: const Text('Luyện hành trình 10 bước'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -282,49 +282,64 @@ class _PracticeTimeline extends StatelessWidget {
     final accent = HskPalette.accentForLevel(level, theme.colorScheme);
     final options = <_PracticeItem>[
       _PracticeItem(
-        title: 'Level 1 · Gõ nghĩa',
+        title: 'Bước 1 · Gõ nghĩa',
         description: 'Nhìn chữ Hán và gõ nghĩa tiếng Việt/Anh.',
         icon: Icons.translate,
         mode: PracticeMode.typingMeaning,
       ),
       _PracticeItem(
-        title: 'Level 2 · Gõ Pinyin',
+        title: 'Bước 2 · Gõ Pinyin',
         description: 'Ghi nhớ cách đọc bằng cách gõ chuẩn pinyin.',
-        icon: Icons.keyboard_alt_outlined,
+        icon: Icons.record_voice_over_outlined,
         mode: PracticeMode.typingPinyin,
       ),
       _PracticeItem(
-        title: 'Level 3 · Gõ chữ Hán',
+        title: 'Bước 3 · Gõ chữ Hán',
         description: 'Dùng bàn phím tiếng Trung để gõ lại chữ.',
         icon: Icons.edit_square,
         mode: PracticeMode.typingHanzi,
       ),
       _PracticeItem(
-        title: 'Level 4 · Điền vào câu',
+        title: 'Bước 4 · Điền vào câu',
         description: 'Bổ sung từ còn thiếu dựa trên câu ví dụ.',
         icon: Icons.menu_book_outlined,
         mode: PracticeMode.typingFillBlank,
       ),
       _PracticeItem(
-        title: 'Level 5 · Gõ cả câu',
+        title: 'Bước 5 · Gõ lại câu ví dụ',
         description: 'Chép lại câu ví dụ hoàn chỉnh để ghi nhớ sâu.',
         icon: Icons.edit_note,
         mode: PracticeMode.typingSentence,
       ),
-      const _PracticeItem(
-        title: 'Nghe & gõ lại (Soon)',
-        description: 'Nghe audio rồi nhập lại câu hoàn chỉnh.',
-        icon: Icons.hearing,
+      _PracticeItem(
+        title: 'Bước 6 · Biến đổi câu',
+        description: 'Viết lại câu mới dựa trên từ khoá đã học.',
+        icon: Icons.sync_alt_rounded,
+        mode: PracticeMode.typingSentenceTransform,
       ),
-      const _PracticeItem(
-        title: 'Đọc mở rộng (Soon)',
-        description: 'Đọc thêm ví dụ mở rộng cho từ này.',
-        icon: Icons.chrome_reader_mode,
+      _PracticeItem(
+        title: 'Bước 7 · Ví dụ thứ hai',
+        description: 'Ghi nhớ thêm ngữ cảnh khác của từ.',
+        icon: Icons.library_books_outlined,
+        mode: PracticeMode.typingSecondExample,
       ),
-      const _PracticeItem(
-        title: 'Luyện nét chữ (Soon)',
-        description: 'Theo dõi thứ tự nét và tập viết lại.',
-        icon: Icons.gesture,
+      _PracticeItem(
+        title: 'Bước 8 · Câu giải thích',
+        description: 'Tóm tắt lại ý nghĩa của từ bằng tiếng Trung.',
+        icon: Icons.lightbulb_outline,
+        mode: PracticeMode.typingAiExplanation,
+      ),
+      _PracticeItem(
+        title: 'Bước 9 · Ôn tổng hợp',
+        description: 'Nhập lại chữ Hán + pinyin + nghĩa để củng cố.',
+        icon: Icons.fact_check_outlined,
+        mode: PracticeMode.typingRecap,
+      ),
+      _PracticeItem(
+        title: 'Bước 10 · Hội thoại ngắn',
+        description: 'Gõ lại câu trả lời trong đoạn hội thoại.',
+        icon: Icons.chat_bubble_outline,
+        mode: PracticeMode.typingConversation,
       ),
     ];
 

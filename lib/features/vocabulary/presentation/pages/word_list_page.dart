@@ -175,20 +175,42 @@ class _UnitSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 380;
+              final title = Text(
                 'HSK $level • ${controller.sectionTitle}',
                 style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const Spacer(),
-              if (onPractice != null)
-                FilledButton.icon(
-                  onPressed: onPractice,
-                  icon: const Icon(Icons.play_circle),
-                  label: const Text('Luyện 5 cấp độ'),
-                ),
-            ],
+              );
+              final practiceButton = onPractice == null
+                  ? null
+                  : FilledButton.icon(
+                      onPressed: onPractice,
+                      icon: const Icon(Icons.play_circle),
+                      label: const Text('Luyện hành trình 10 bước'),
+                    );
+
+              if (isCompact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    title,
+                    if (practiceButton != null) ...[
+                      const SizedBox(height: 12),
+                      practiceButton,
+                    ],
+                  ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: title),
+                  if (practiceButton != null) practiceButton,
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           LinearProgressIndicator(

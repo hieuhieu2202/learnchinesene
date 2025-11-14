@@ -23,6 +23,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
   late final TextEditingController _textController;
   String? _errorMessage;
   bool _showAnswer = false;
+  int _attempts = 0;
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
       _textController.clear();
       _errorMessage = null;
       _showAnswer = false;
+      _attempts = 0;
     }
   }
 
@@ -89,13 +91,37 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
   Future<void> _handleCheck() async {
     final success = await _controller.submitTypedAnswer(_textController.text);
     if (!mounted) return;
-    setState(() {
-      _errorMessage = success ? null : 'Chưa đúng, thử lại nhé!';
-      if (success) {
-        _textController.clear();
+    if (success) {
+      setState(() {
+        _errorMessage = null;
         _showAnswer = false;
-      }
+        _attempts = 0;
+        _textController.clear();
+      });
+      return;
+    }
+
+    setState(() {
+      _errorMessage = 'Chưa đúng, thử lại nhé!';
+      _attempts += 1;
     });
+
+    if (_attempts >= 3) {
+      await _controller.markWrong(advance: true);
+      if (!mounted) return;
+      setState(() {
+        _textController.clear();
+        _errorMessage = null;
+        _showAnswer = false;
+        _attempts = 0;
+      });
+      Get.snackbar(
+        'Chuyển bài',
+        'Sai 3 lần rồi, chuyển sang thử thách khác nhé!',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+    }
   }
 
   void _handleShowAnswer() {
@@ -112,6 +138,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
       _textController.clear();
       _errorMessage = null;
       _showAnswer = false;
+      _attempts = 0;
     });
   }
 }

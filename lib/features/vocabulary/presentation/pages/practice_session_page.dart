@@ -146,17 +146,27 @@ class _PracticeHeader extends StatelessWidget {
   String _stageLabel(PracticeMode? mode) {
     switch (mode) {
       case PracticeMode.typingMeaning:
-        return 'Level 1 • Gõ nghĩa';
+        return 'Bước 1 • Gõ nghĩa';
       case PracticeMode.typingPinyin:
-        return 'Level 2 • Gõ Pinyin';
+        return 'Bước 2 • Gõ Pinyin';
       case PracticeMode.typingHanzi:
-        return 'Level 3 • Gõ chữ Hán';
+        return 'Bước 3 • Gõ chữ Hán';
       case PracticeMode.typingFillBlank:
-        return 'Level 4 • Điền vào câu';
+        return 'Bước 4 • Điền vào câu';
       case PracticeMode.typingSentence:
-        return 'Level 5 • Gõ cả câu';
+        return 'Bước 5 • Gõ lại câu ví dụ';
+      case PracticeMode.typingSentenceTransform:
+        return 'Bước 6 • Biến đổi câu';
+      case PracticeMode.typingSecondExample:
+        return 'Bước 7 • Ví dụ thứ hai';
+      case PracticeMode.typingAiExplanation:
+        return 'Bước 8 • Câu giải thích';
+      case PracticeMode.typingRecap:
+        return 'Bước 9 • Ôn tổng hợp';
+      case PracticeMode.typingConversation:
+        return 'Bước 10 • Hội thoại ngắn';
       default:
-        return 'Luyện tập hành trình';
+        return 'Hành trình 10 bước';
     }
   }
 }
@@ -200,19 +210,32 @@ class _ResultView extends StatelessWidget {
                   const Icon(Icons.emoji_events, size: 72, color: Colors.amber),
                   const SizedBox(height: 16),
                   Text(
-                    'Hoàn thành!',
+                    'Hoàn thành 10 bước!',
                     style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Điểm số: ${controller.score.value}/${controller.questions.length}',
                     style: theme.textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Bạn đã đi hết hành trình 10 bước cho từ vựng này.',
+                    style: theme.textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
                   FilledButton.icon(
                     onPressed: controller.restart,
                     icon: const Icon(Icons.replay),
-                    label: const Text('Luyện lại'),
+                    label: const Text('Luyện lại 10 bước'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton.icon(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    label: const Text('Quay về'),
                   ),
                 ],
               ),
