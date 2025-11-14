@@ -141,7 +141,7 @@ class AppPages {
         Get.put(SectionListController(
           getSections: Get.find(),
           getWordsBySection: Get.find(),
-          hskLevel: hskLevel,
+          initialLevel: hskLevel,
         ));
       }),
     ),

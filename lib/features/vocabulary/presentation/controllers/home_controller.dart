@@ -67,22 +67,20 @@ class HomeController extends GetxController {
 
     for (final sectionId in sectionIds) {
       final words = await getWordsBySection(sectionId);
+      final referenceTitle =
+          words.isNotEmpty ? words.first.sectionTitle : 'Section $sectionId';
+      final level = parseHskLevel(
+        sectionId: sectionId,
+        sectionTitle: referenceTitle,
+      );
+      final aggregate = aggregates.putIfAbsent(level, _LevelAggregate.new);
+
       if (words.isEmpty) {
-        final level = parseHskLevel(sectionId: sectionId, sectionTitle: 'Section $sectionId');
-        aggregates.putIfAbsent(level, _LevelAggregate.new).register();
+        aggregate.registerEmpty(sectionId);
         continue;
       }
 
-      final Word firstWord = words.first;
-      final level = parseHskLevel(
-        sectionId: sectionId,
-        sectionTitle: firstWord.sectionTitle,
-      );
-      final aggregate = aggregates.putIfAbsent(level, _LevelAggregate.new);
-      aggregate.register(
-        totalWords: words.length,
-        masteredWords: words.where((w) => w.mastered).length,
-      );
+      aggregate.registerSection(sectionId, words);
     }
 
     final overviewItems = <HskLevelOverview>[];
@@ -119,16 +117,25 @@ class HomeController extends GetxController {
 }
 
 class _LevelAggregate {
-  int sectionCount = 0;
-  int totalWords = 0;
-  int masteredWords = 0;
+  final Set<int> _sectionIds = {};
+  final Set<int> _wordIds = {};
+  final Map<int, bool> _masteredState = {};
 
-  void register({
-    int totalWords = 0,
-    int masteredWords = 0,
-  }) {
-    sectionCount += 1;
-    this.totalWords += totalWords;
-    this.masteredWords += masteredWords;
+  void registerEmpty(int sectionId) {
+    _sectionIds.add(sectionId);
   }
+
+  void registerSection(int sectionId, Iterable<Word> words) {
+    _sectionIds.add(sectionId);
+    for (final word in words) {
+      _wordIds.add(word.id);
+      final previous = _masteredState[word.id] ?? false;
+      _masteredState[word.id] = previous || word.mastered;
+    }
+  }
+
+  int get sectionCount => _sectionIds.length;
+  int get totalWords => _wordIds.length;
+  int get masteredWords =>
+      _masteredState.values.where((isMastered) => isMastered).length;
 }

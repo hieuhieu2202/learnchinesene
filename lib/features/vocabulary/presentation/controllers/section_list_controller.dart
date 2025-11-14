@@ -11,7 +11,9 @@ class SectionProgress {
     required this.sectionId,
     required this.hskLevel,
     required this.sectionTitle,
-    required this.groupSubtitle,
+    required this.topicTitle,
+    required this.sectionNumber,
+    required this.unitNumber,
     required this.totalWords,
     required this.masteredWords,
   });
@@ -19,13 +21,14 @@ class SectionProgress {
   final int sectionId;
   final int hskLevel;
   final String sectionTitle;
-  final String groupSubtitle;
+  final String topicTitle;
+  final int sectionNumber;
+  final int unitNumber;
   final int totalWords;
   final int masteredWords;
 
-  String get displayName =>
-      groupSubtitle.isNotEmpty ? groupSubtitle : sectionTitle;
-
+  String get displayName => topicTitle.isNotEmpty ? topicTitle : sectionTitle;
+  String get unitLabel => 'Unit $unitNumber';
   double get progress => totalWords == 0 ? 0 : masteredWords / totalWords;
 }
 
@@ -33,14 +36,17 @@ class SectionListController extends GetxController {
   SectionListController({
     required this.getSections,
     required this.getWordsBySection,
-    required this.hskLevel,
-  });
+    required int initialLevel,
+  }) {
+    selectedLevel.value = initialLevel;
+  }
 
   final GetSections getSections;
   final GetWordsBySection getWordsBySection;
-  final int hskLevel;
 
   final sections = <SectionProgress>[].obs;
+  final _allSections = <SectionProgress>[];
+  final selectedLevel = 1.obs;
   final isLoading = false.obs;
 
   int get totalWords => sections.fold<int>(0, (sum, item) => sum + item.totalWords);
@@ -62,29 +68,57 @@ class SectionListController extends GetxController {
         final words = await getWordsBySection(id);
         items.add(_buildProgress(id, words));
       }
-      final filtered = items
-          .where((item) => item.hskLevel == hskLevel)
-          .toList()
-        ..sort((a, b) => a.sectionId.compareTo(b.sectionId));
-      sections.assignAll(filtered);
+      _allSections
+        ..clear()
+        ..addAll(items);
+      _applyFilter();
     } finally {
       isLoading.value = false;
     }
   }
 
+  void changeLevel(int level) {
+    if (selectedLevel.value == level) {
+      return;
+    }
+    selectedLevel.value = level;
+    _applyFilter();
+  }
+
+  void _applyFilter() {
+    final filtered = _allSections
+        .where((item) => item.hskLevel == selectedLevel.value)
+        .toList()
+      ..sort((a, b) => a.unitNumber.compareTo(b.unitNumber));
+    sections.assignAll(filtered);
+  }
+
   SectionProgress _buildProgress(int sectionId, List<Word> words) {
     final mastered = words.where((w) => w.mastered).length;
     final rawTitle = words.isNotEmpty ? words.first.sectionTitle : 'Section $sectionId';
-    final subtitle =
-        words.isNotEmpty && words.first.groupSubtitle.isNotEmpty ? words.first.groupSubtitle : rawTitle;
+    final topicTitle = words.isNotEmpty && words.first.groupSubtitle.isNotEmpty
+        ? words.first.groupSubtitle
+        : rawTitle;
     final level = parseHskLevel(sectionId: sectionId, sectionTitle: rawTitle);
+    final sectionNumber = _extractNumber(rawTitle, 'Section') ?? level;
+    final unitNumber = _extractNumber(rawTitle, 'Unit') ?? sectionId + 1;
     return SectionProgress(
       sectionId: sectionId,
       hskLevel: level,
       sectionTitle: rawTitle,
-      groupSubtitle: subtitle,
+      topicTitle: topicTitle,
+      sectionNumber: sectionNumber,
+      unitNumber: unitNumber,
       totalWords: words.length,
       masteredWords: mastered,
     );
   }
+}
+
+int? _extractNumber(String source, String label) {
+  final match = RegExp('$label\\s*(\\d+)', caseSensitive: false).firstMatch(source);
+  if (match == null) {
+    return null;
+  }
+  return int.tryParse(match.group(1)!);
 }
