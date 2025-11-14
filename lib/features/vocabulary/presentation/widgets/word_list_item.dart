@@ -26,24 +26,24 @@ class WordListItem extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(24),
         child: Ink(
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: accent.withOpacity(0.18),
-              width: 1.2,
+              color: accent.withOpacity(0.14),
+              width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: accent.withOpacity(0.08),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
+                color: theme.colorScheme.onSurface.withOpacity(0.04),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -51,22 +51,23 @@ class WordListItem extends StatelessWidget {
                 accent: accent,
                 glyph: word.word,
               ),
-              const SizedBox(width: 18),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
                           child: Text(
-                            word.transliteration,
+                            word.translation,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w700,
-                              letterSpacing: 0.4,
+                              letterSpacing: 0.2,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -74,18 +75,20 @@ class WordListItem extends StatelessWidget {
                         _LevelDot(color: accent),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
-                      word.translation,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        height: 1.35,
-                        color: theme.colorScheme.onSurface.withOpacity(0.78),
+                      word.transliteration,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface.withOpacity(0.65),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 18),
+              const SizedBox(width: 16),
               _StatusBadge(
                 label: statusLabel,
                 accent: statusColor,
@@ -112,25 +115,27 @@ class _GlyphBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      width: 70,
-      height: 82,
+      width: 58,
+      height: 58,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            accent.withOpacity(0.28),
+            accent.withOpacity(0.32),
             accent.withOpacity(0.08),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(18),
       ),
       alignment: Alignment.center,
       child: Text(
         glyph,
-        style: theme.textTheme.displaySmall?.copyWith(
-          fontWeight: FontWeight.w800,
-          fontSize: 36,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+          fontSize: 26,
           color: theme.colorScheme.onSurface,
         ),
       ),
@@ -146,8 +151,8 @@ class _LevelDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 12,
-      height: 12,
+      width: 10,
+      height: 10,
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
@@ -170,30 +175,36 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final background = mastered
+        ? accent.withOpacity(0.16)
+        : theme.colorScheme.surfaceVariant.withOpacity(0.55);
+    final borderColor = mastered ? accent.withOpacity(0.4) : Colors.transparent;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: accent.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: accent.withOpacity(0.32),
-          width: 1,
-        ),
+        color: background,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: borderColor, width: mastered ? 1 : 0),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            mastered ? Icons.check_rounded : Icons.brightness_1_outlined,
-            size: 18,
-            color: accent,
+            mastered ? Icons.check_rounded : Icons.radio_button_unchecked,
+            size: 16,
+            color: mastered
+                ? accent
+                : theme.colorScheme.onSurface.withOpacity(0.45),
           ),
           const SizedBox(width: 6),
           Text(
             label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: accent,
-              fontWeight: FontWeight.w700,
+              color: mastered
+                  ? accent
+                  : theme.colorScheme.onSurface.withOpacity(0.6),
+              fontWeight: FontWeight.w600,
               letterSpacing: 0.2,
             ),
           ),
