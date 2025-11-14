@@ -34,49 +34,54 @@ class ReviewTodayPage extends GetView<ReviewTodayController> {
               children: [
                 const _ReviewHeader(),
                 Expanded(
-                  child: ListView(
+                  child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-                    children: [
-                      _ReviewSummary(
-                        total: words.length,
-                        onStart: words.isEmpty
-                            ? null
-                            : () => navigateAfterFrame(() {
-                                  Get.toNamed(
-                                    AppRoutes.practiceSession,
-                                    arguments: {
-                                      'words': words.toList(),
-                                      'mode': PracticeMode.journey,
-                                    },
-                                  );
-                                }),
-                      ),
-                      const SizedBox(height: 24),
-                      if (words.isEmpty)
-                        const _EmptyReviewState()
-                      else ...[
-                        Text(
-                          'Danh sách cần ôn',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _ReviewSummary(
+                          total: words.length,
+                          onStart: words.isEmpty
+                              ? null
+                              : () => navigateAfterFrame(() {
+                                    Get.toNamed(
+                                      AppRoutes.practiceSession,
+                                      arguments: {
+                                        'words': words.toList(),
+                                        'mode': PracticeMode.journey,
+                                      },
+                                    );
+                                  }),
                         ),
-                        const SizedBox(height: 16),
-                        ...List.generate(words.length, (index) {
-                          final word = words[index];
-                          final level = parseHskLevel(
-                            sectionId: word.sectionId,
-                            sectionTitle: word.sectionTitle,
-                          );
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: index == words.length - 1 ? 0 : 12),
-                            child: WordListItem(word: word, level: level),
-                          );
-                        }),
+                        const SizedBox(height: 24),
+                        if (words.isEmpty)
+                          const _EmptyReviewState()
+                        else ...[
+                          Text(
+                            'Danh sách cần ôn',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 16),
+                          ...List.generate(words.length, (index) {
+                            final word = words[index];
+                            final level = parseHskLevel(
+                              sectionId: word.sectionId,
+                              sectionTitle: word.sectionTitle,
+                            );
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: index == words.length - 1 ? 0 : 12,
+                              ),
+                              child: WordListItem(word: word, level: level),
+                            );
+                          }),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ],

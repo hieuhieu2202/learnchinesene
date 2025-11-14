@@ -40,54 +40,60 @@ class WordListPage extends GetView<WordListController> {
               children: [
                 _Header(title: controller.sectionTitle),
                 Expanded(
-                  child: ListView(
+                  child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-                    children: [
-                      _UnitSummary(
-                        controller: controller,
-                        level: level,
-                        onPractice: words.isEmpty
-                            ? null
-                            : () => navigateAfterFrame(() {
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _UnitSummary(
+                          controller: controller,
+                          level: level,
+                          onPractice: words.isEmpty
+                              ? null
+                              : () => navigateAfterFrame(() {
+                                    Get.toNamed(
+                                      AppRoutes.practiceSession,
+                                      arguments: {
+                                        'words': words.toList(),
+                                        'mode': PracticeMode.journey,
+                                      },
+                                    );
+                                  }),
+                        ),
+                        const SizedBox(height: 24),
+                        if (words.isEmpty)
+                          const _EmptyWordState()
+                        else ...[
+                          Text(
+                            'Từ vựng trong unit',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 16),
+                          ...List.generate(words.length, (index) {
+                            final word = words[index];
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: index == words.length - 1 ? 0 : 12,
+                              ),
+                              child: WordListItem(
+                                word: word,
+                                level: level,
+                                onTap: () => navigateAfterFrame(() {
                                   Get.toNamed(
-                                    AppRoutes.practiceSession,
-                                    arguments: {
-                                      'words': words.toList(),
-                                      'mode': PracticeMode.journey,
-                                    },
+                                    AppRoutes.wordDetail,
+                                    arguments: {'wordId': word.id},
                                   );
                                 }),
-                      ),
-                      const SizedBox(height: 24),
-                      if (words.isEmpty)
-                        const _EmptyWordState()
-                      else ...[
-                        Text(
-                          'Từ vựng trong unit',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 16),
-                        ...List.generate(words.length, (index) {
-                          final word = words[index];
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: index == words.length - 1 ? 0 : 12),
-                            child: WordListItem(
-                              word: word,
-                              level: level,
-                              onTap: () => navigateAfterFrame(() {
-                                Get.toNamed(AppRoutes.wordDetail, arguments: {
-                                  'wordId': word.id,
-                                });
-                              }),
-                            ),
-                          );
-                        }),
+                              ),
+                            );
+                          }),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ],
