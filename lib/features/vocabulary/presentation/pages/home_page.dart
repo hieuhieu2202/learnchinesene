@@ -355,6 +355,8 @@ class _LevelGrid extends StatelessWidget {
                 : 2;
         const spacing = 16.0;
         final cardWidth = (width - spacing * (crossAxisCount - 1)) / crossAxisCount;
+        final cardHeight =
+            (cardWidth * 0.72).clamp(220.0, 280.0).toDouble();
         return Wrap(
           spacing: spacing,
           runSpacing: spacing,
@@ -362,7 +364,11 @@ class _LevelGrid extends StatelessWidget {
             for (final item in items)
               SizedBox(
                 width: cardWidth,
-                child: _LevelCard(item: item, disabled: overview.isEmpty && isLoading),
+                height: cardHeight,
+                child: _LevelCard(
+                  item: item,
+                  disabled: overview.isEmpty && isLoading,
+                ),
               ),
           ],
         );
@@ -389,28 +395,29 @@ class _LevelCard extends StatelessWidget {
       opacity: disabled ? 0.6 : 1,
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(28),
-          onTap: disabled
-              ? null
-              : () => navigateAfterFrame(() {
-                    Get.toNamed(
-                      AppRoutes.sections,
-                      arguments: {'level': item.level},
-                    );
-                  }),
-          child: Ink(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: gradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        child: SizedBox.expand(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(28),
+            onTap: disabled
+                ? null
+                : () => navigateAfterFrame(() {
+                      Get.toNamed(
+                        AppRoutes.sections,
+                        arguments: {'level': item.level},
+                      );
+                    }),
+            child: Ink(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: gradient,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: badge.withOpacity(0.2)),
               ),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: badge.withOpacity(0.2)),
-            ),
-            padding: const EdgeInsets.all(24),
-            child: Column(
+              padding: const EdgeInsets.all(24),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -457,6 +464,7 @@ class _LevelCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ],
+              ),
             ),
           ),
         ),
