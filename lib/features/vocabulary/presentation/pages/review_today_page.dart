@@ -20,8 +20,13 @@ class ReviewTodayPage extends GetView<ReviewTodayController> {
         }
 
         final words = controller.words;
-        final gradient = const LinearGradient(
-          colors: [Color(0xFFFFF5EC), Color(0xFFEFF9FF), Colors.white],
+        final scheme = Theme.of(context).colorScheme;
+        final gradient = LinearGradient(
+          colors: [
+            scheme.background,
+            Color.lerp(scheme.surface, scheme.background, 0.5)!,
+            scheme.surface,
+          ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         );
@@ -134,13 +139,16 @@ class _ReviewSummary extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: LinearGradient(
-          colors: [accent.withOpacity(0.1), Colors.white],
+          colors: [
+            theme.colorScheme.surface,
+            theme.colorScheme.surfaceVariant,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.08),
+            color: accent.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 12),
           ),

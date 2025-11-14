@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,10 +17,7 @@ class ChineseLearningApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Chinese Learning',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light(),
       initialRoute: AppRoutes.home,
       initialBinding: AppBindings(),
       getPages: AppPages.pages,

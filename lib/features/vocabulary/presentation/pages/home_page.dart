@@ -7,12 +7,6 @@ import '../controllers/home_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/navigation_utils.dart';
 
-const _homeBackgroundGradient = LinearGradient(
-  colors: [Color(0xFFFFF5F7), Color(0xFFF5FBFF)],
-  begin: Alignment.topCenter,
-  end: Alignment.bottomCenter,
-);
-
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
 
@@ -327,8 +321,18 @@ class _GradientBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(gradient: _homeBackgroundGradient),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            scheme.background,
+            scheme.surface,
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
       child: SafeArea(
         bottom: false,
         child: child,
@@ -379,14 +383,17 @@ class _ReviewCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFDE7EF), Color(0xFFEFF6FF)],
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.surface,
+            theme.colorScheme.surfaceVariant,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: theme.colorScheme.primary.withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 12),
           ),
@@ -477,9 +484,9 @@ class _NavigationCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 12,
-                offset: const Offset(0, 8),
+                color: accentColor.withOpacity(0.12),
+                blurRadius: 18,
+                offset: const Offset(0, 12),
               ),
             ],
           ),

@@ -67,15 +67,18 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(32),
           gradient: LinearGradient(
-            colors: [theme.colorScheme.surface, Colors.white],
+            colors: [
+              theme.colorScheme.surface,
+              theme.colorScheme.surfaceVariant,
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: accent.withOpacity(0.12),
-              blurRadius: 28,
-              offset: const Offset(0, 18),
+              color: accent.withOpacity(0.08),
+              blurRadius: 24,
+              offset: const Offset(0, 16),
             ),
           ],
         ),

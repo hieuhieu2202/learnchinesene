@@ -28,11 +28,16 @@ class WordDetailPage extends GetView<WordDetailController> {
           sectionTitle: word.sectionTitle,
         );
         final gradient = HskPalette.gradientForLevel(level);
+        final scheme = Theme.of(context).colorScheme;
 
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradient.first, gradient.last, Colors.white],
+              colors: [
+                gradient.first,
+                gradient.last,
+                scheme.surface,
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -111,13 +116,16 @@ class _WordHero extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
         gradient: LinearGradient(
-          colors: [accent.withOpacity(0.12), Colors.white],
+          colors: [
+            theme.colorScheme.surface,
+            theme.colorScheme.surfaceVariant,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.08),
+            color: accent.withOpacity(0.12),
             blurRadius: 24,
             offset: const Offset(0, 16),
           ),
@@ -131,7 +139,7 @@ class _WordHero extends StatelessWidget {
             height: 120,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: accent.withOpacity(0.18),
+              color: theme.colorScheme.background.withOpacity(0.8),
               borderRadius: BorderRadius.circular(32),
             ),
             child: Text(

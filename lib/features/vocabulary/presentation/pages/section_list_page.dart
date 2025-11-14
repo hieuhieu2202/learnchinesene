@@ -198,15 +198,15 @@ class _LevelSummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         gradient: LinearGradient(
           colors: [
-            accent.withOpacity(0.18),
-            Colors.white.withOpacity(0.92),
+            colorScheme.surface,
+            colorScheme.surfaceVariant,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.18),
+            color: accent.withOpacity(0.16),
             blurRadius: 28,
             offset: const Offset(0, 18),
           ),
@@ -377,15 +377,15 @@ class _UnitCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(26),
             gradient: LinearGradient(
               colors: [
-                accent.withOpacity(0.16),
                 theme.colorScheme.surface,
+                theme.colorScheme.surfaceVariant,
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: accent.withOpacity(0.14),
+                color: accent.withOpacity(0.12),
                 blurRadius: 28,
                 offset: const Offset(0, 18),
               ),
@@ -402,7 +402,7 @@ class _UnitCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.75),
+                        color: theme.colorScheme.background.withOpacity(0.8),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(

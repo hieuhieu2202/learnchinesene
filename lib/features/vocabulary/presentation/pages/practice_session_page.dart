@@ -39,6 +39,7 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
           sectionTitle: word?.sectionTitle ?? '',
         );
         final gradient = HskPalette.gradientForLevel(level);
+        final scheme = Theme.of(context).colorScheme;
         final progress = total == 0
             ? 0.0
             : (controller.currentIndex.value + 1) / total;
@@ -46,7 +47,11 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradient.first, gradient.last, Colors.white],
+              colors: [
+                gradient.first,
+                gradient.last,
+                scheme.surface,
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -188,9 +193,12 @@ class _ResultView extends StatelessWidget {
     final theme = Theme.of(context);
     final total = controller.totalExercises;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFFDE7EF), Color(0xFFEFF9FF)],
+          colors: [
+            theme.colorScheme.background,
+            theme.colorScheme.surface,
+          ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -206,7 +214,7 @@ class _ResultView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: theme.colorScheme.primary.withOpacity(0.08),
                     blurRadius: 26,
                     offset: const Offset(0, 18),
                   ),
@@ -215,7 +223,11 @@ class _ResultView extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.emoji_events, size: 72, color: Colors.amber),
+                  Icon(
+                    Icons.emoji_events,
+                    size: 72,
+                    color: theme.colorScheme.secondary,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Hoàn thành luyện gõ câu!',
@@ -260,10 +272,14 @@ class _EmptyPracticeState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFFDE7EF), Color(0xFFEFF9FF)],
+          colors: [
+            scheme.background,
+            scheme.surface,
+          ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -275,7 +291,11 @@ class _EmptyPracticeState extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.self_improvement_outlined, size: 72, color: Colors.grey),
+                Icon(
+                  Icons.self_improvement_outlined,
+                  size: 72,
+                  color: scheme.secondary,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Chưa có dữ liệu luyện tập',
