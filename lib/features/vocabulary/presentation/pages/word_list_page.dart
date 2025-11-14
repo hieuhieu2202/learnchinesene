@@ -6,6 +6,7 @@ import '../controllers/practice_session_controller.dart';
 import '../controllers/word_list_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/hsk_utils.dart';
+import '../utils/navigation_utils.dart';
 import '../widgets/word_list_item.dart';
 
 class WordListPage extends GetView<WordListController> {
@@ -48,13 +49,15 @@ class WordListPage extends GetView<WordListController> {
                         level: level,
                         onPractice: words.isEmpty
                             ? null
-                            : () => Get.toNamed(
-                                  AppRoutes.practiceSession,
-                                  arguments: {
-                                    'words': words.toList(),
-                                    'mode': PracticeMode.journey,
-                                  },
-                                ),
+                            : () => navigateAfterFrame(() {
+                                  Get.toNamed(
+                                    AppRoutes.practiceSession,
+                                    arguments: {
+                                      'words': words.toList(),
+                                      'mode': PracticeMode.journey,
+                                    },
+                                  );
+                                }),
                       ),
                       const SizedBox(height: 24),
                       if (words.isEmpty)
@@ -75,8 +78,10 @@ class WordListPage extends GetView<WordListController> {
                             child: WordListItem(
                               word: word,
                               level: level,
-                              onTap: () => Get.toNamed(AppRoutes.wordDetail, arguments: {
-                                'wordId': word.id,
+                              onTap: () => navigateAfterFrame(() {
+                                Get.toNamed(AppRoutes.wordDetail, arguments: {
+                                  'wordId': word.id,
+                                });
                               }),
                             ),
                           );

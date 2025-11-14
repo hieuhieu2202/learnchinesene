@@ -6,6 +6,7 @@ import '../../domain/entities/word.dart';
 import '../controllers/home_controller.dart';
 import '../controllers/practice_session_controller.dart';
 import '../theme/hsk_palette.dart';
+import '../utils/navigation_utils.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -170,8 +171,10 @@ class _ReviewCard extends StatelessWidget {
           const SizedBox(width: 16),
           FilledButton(
             onPressed: hasReview
-                ? () => Get.toNamed(AppRoutes.reviewToday)
-                : () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
+                ? () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday))
+                : () => navigateAfterFrame(
+                      () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
+                    ),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
@@ -212,7 +215,9 @@ class _QuickLaunchRow extends StatelessWidget {
                 icon: Icons.dashboard_customize_outlined,
                 title: 'Lộ trình HSK',
                 subtitle: 'Theo dõi từng cấp độ và unit.',
-                onTap: () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
+                onTap: () => navigateAfterFrame(
+                  () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
+                ),
                 background: theme.colorScheme.surface,
               ),
             ),
@@ -222,13 +227,15 @@ class _QuickLaunchRow extends StatelessWidget {
                 icon: Icons.flash_on,
                 title: 'Luyện nhanh',
                 subtitle: 'Chạy đủ 5 mode cho các từ đã chọn.',
-                onTap: () => Get.toNamed(
-                  AppRoutes.practiceSession,
-                  arguments: {
-                    'mode': PracticeMode.journey,
-                    'words': const <Word>[],
-                  },
-                ),
+                onTap: () => navigateAfterFrame(() {
+                  Get.toNamed(
+                    AppRoutes.practiceSession,
+                    arguments: {
+                      'mode': PracticeMode.journey,
+                      'words': const <Word>[],
+                    },
+                  );
+                }),
                 background: theme.colorScheme.surface,
               ),
             ),
@@ -238,7 +245,7 @@ class _QuickLaunchRow extends StatelessWidget {
                 icon: Icons.smart_toy_outlined,
                 title: 'AI trợ giảng',
                 subtitle: 'Nhờ AI tạo thêm ví dụ & giải thích.',
-                onTap: () => Get.toNamed(AppRoutes.aiChat),
+                onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.aiChat)),
                 background: theme.colorScheme.surface,
               ),
             ),
@@ -386,10 +393,12 @@ class _LevelCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(28),
           onTap: disabled
               ? null
-              : () => Get.toNamed(
-                    AppRoutes.sections,
-                    arguments: {'level': item.level},
-                  ),
+              : () => navigateAfterFrame(() {
+                    Get.toNamed(
+                      AppRoutes.sections,
+                      arguments: {'level': item.level},
+                    );
+                  }),
           child: Ink(
             decoration: BoxDecoration(
               gradient: LinearGradient(

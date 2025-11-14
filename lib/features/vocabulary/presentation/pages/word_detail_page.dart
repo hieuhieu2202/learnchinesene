@@ -7,6 +7,7 @@ import '../controllers/practice_session_controller.dart';
 import '../controllers/word_detail_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/hsk_utils.dart';
+import '../utils/navigation_utils.dart';
 
 class WordDetailPage extends GetView<WordDetailController> {
   const WordDetailPage({super.key});
@@ -239,9 +240,11 @@ class _PrimaryActions extends StatelessWidget {
             children: [
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () => Get.toNamed(AppRoutes.practiceSession, arguments: {
-                    'mode': PracticeMode.journey,
-                    'words': [word],
+                  onPressed: () => navigateAfterFrame(() {
+                    Get.toNamed(AppRoutes.practiceSession, arguments: {
+                      'mode': PracticeMode.journey,
+                      'words': [word],
+                    });
                   }),
                   icon: const Icon(Icons.route),
                   label: const Text('Luyện hành trình 5 cấp'),
@@ -250,8 +253,10 @@ class _PrimaryActions extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => Get.toNamed(AppRoutes.aiChat, arguments: {
-                    'context': contextText,
+                  onPressed: () => navigateAfterFrame(() {
+                    Get.toNamed(AppRoutes.aiChat, arguments: {
+                      'context': contextText,
+                    });
                   }),
                   icon: const Icon(Icons.smart_toy_outlined),
                   label: const Text('Hỏi AI'),
@@ -387,9 +392,11 @@ class _PracticeTile extends StatelessWidget {
       trailing: enabled ? const Icon(Icons.arrow_forward_ios, size: 16) : null,
       enabled: enabled,
       onTap: enabled
-          ? () => Get.toNamed(AppRoutes.practiceSession, arguments: {
-                'mode': item.mode,
-                'words': [word],
+          ? () => navigateAfterFrame(() {
+                Get.toNamed(AppRoutes.practiceSession, arguments: {
+                  'mode': item.mode,
+                  'words': [word],
+                });
               })
           : null,
     );

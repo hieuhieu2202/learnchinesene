@@ -5,6 +5,8 @@ import '../../../../routes/app_routes.dart';
 import '../controllers/section_list_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../widgets/progress_chip.dart';
+import '../utils/hsk_utils.dart';
+import '../utils/navigation_utils.dart';
 
 class SectionListPage extends GetView<SectionListController> {
   const SectionListPage({super.key});
@@ -214,13 +216,18 @@ class _LevelHero extends StatelessWidget {
               ),
               if (firstSection != null)
                 FilledButton.tonal(
-                  onPressed: () => Get.toNamed(
-                    AppRoutes.wordList,
-                    arguments: {
-                      'sectionId': firstSection!.sectionId,
-                      'sectionTitle': firstSection!.sectionTitle,
-                    },
-                  ),
+                  onPressed: () {
+                    if (firstSection == null) return;
+                    navigateAfterFrame(() {
+                      Get.toNamed(
+                        AppRoutes.wordList,
+                        arguments: {
+                          'sectionId': firstSection!.sectionId,
+                          'sectionTitle': firstSection!.sectionTitle,
+                        },
+                      );
+                    });
+                  },
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
@@ -247,13 +254,15 @@ class _UnitCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => Get.toNamed(
-          AppRoutes.wordList,
-          arguments: {
-            'sectionId': progress.sectionId,
-            'sectionTitle': progress.sectionTitle,
-          },
-        ),
+        onTap: () => navigateAfterFrame(() {
+          Get.toNamed(
+            AppRoutes.wordList,
+            arguments: {
+              'sectionId': progress.sectionId,
+              'sectionTitle': progress.sectionTitle,
+            },
+          );
+        }),
         borderRadius: BorderRadius.circular(28),
         child: Ink(
           decoration: BoxDecoration(
