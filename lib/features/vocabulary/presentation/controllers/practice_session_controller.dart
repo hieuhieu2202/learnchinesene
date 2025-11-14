@@ -136,7 +136,8 @@ class PracticeSessionController extends GetxController {
       }
 
       final highestCompleted = progress.level
-          .clamp(0, _stageToLevel(PracticeMode.typingSentence)) as int;
+          .clamp(0, _stageToLevel(PracticeMode.typingSentence))
+          .toInt();
       for (final stage in _orderedStages) {
         final stageLevel = _stageToLevel(stage);
         if (stageLevel <= highestCompleted) {
@@ -487,10 +488,16 @@ class PracticeSessionController extends GetxController {
     return buffer.toString();
   }
 
-  static final _punctuationRegex =
-      RegExp(r"[，,。\.！!？?；;：“”\"'()（）·…—\-《》〈〉、:_【】\[\]]");
+  static final _punctuationRegex = RegExp(
+    r'''[，,。.?!？！；;：“”"'()（）·…—《》〈〉、:_【】\[\]-]''',
+  );
 
   static final Map<String, String> _diacriticMap = {
+    ..._vietnameseDiacritics,
+    ..._pinyinDiacritics,
+  };
+
+  static const Map<String, String> _vietnameseDiacritics = {
     'à': 'a',
     'á': 'a',
     'ả': 'a',
@@ -625,51 +632,34 @@ class PracticeSessionController extends GetxController {
     'Ỵ': 'Y',
     'đ': 'd',
     'Đ': 'D',
+  };
+
+  static const Map<String, String> _pinyinDiacritics = {
     'ā': 'a',
-    'á': 'a',
     'ǎ': 'a',
-    'à': 'a',
     'ē': 'e',
-    'é': 'e',
     'ě': 'e',
-    'è': 'e',
     'ī': 'i',
-    'í': 'i',
     'ǐ': 'i',
-    'ì': 'i',
     'ō': 'o',
-    'ó': 'o',
     'ǒ': 'o',
-    'ò': 'o',
     'ū': 'u',
-    'ú': 'u',
     'ǔ': 'u',
-    'ù': 'u',
     'ǖ': 'v',
     'ǘ': 'v',
     'ǚ': 'v',
     'ǜ': 'v',
     'ü': 'v',
     'Ā': 'A',
-    'Á': 'A',
     'Ǎ': 'A',
-    'À': 'A',
     'Ē': 'E',
-    'É': 'E',
     'Ě': 'E',
-    'È': 'E',
     'Ī': 'I',
-    'Í': 'I',
     'Ǐ': 'I',
-    'Ì': 'I',
     'Ō': 'O',
-    'Ó': 'O',
     'Ǒ': 'O',
-    'Ò': 'O',
     'Ū': 'U',
-    'Ú': 'U',
     'Ǔ': 'U',
-    'Ù': 'U',
     'Ǖ': 'V',
     'Ǘ': 'V',
     'Ǚ': 'V',
