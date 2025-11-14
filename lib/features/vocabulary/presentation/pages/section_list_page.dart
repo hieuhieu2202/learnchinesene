@@ -5,7 +5,6 @@ import '../../../../routes/app_routes.dart';
 import '../controllers/section_list_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../widgets/progress_chip.dart';
-import '../utils/hsk_utils.dart';
 import '../utils/navigation_utils.dart';
 
 class SectionListPage extends GetView<SectionListController> {

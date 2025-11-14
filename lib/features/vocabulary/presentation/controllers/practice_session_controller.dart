@@ -1,8 +1,6 @@
 import 'dart:math';
 
-import 'package:get/get.dart';
-
-import '../../domain/entities/example_sentence.dart';
+import 'package:get/get.dart' hide Progress;
 import '../../domain/entities/practice_models.dart';
 import '../../domain/entities/progress_entity.dart';
 import '../../domain/entities/word.dart';
@@ -347,7 +345,7 @@ class PracticeSessionController extends GetxController {
           isFromAI: true,
         ),
       );
-      if (suggestions.length >= 1) {
+      if (suggestions.isNotEmpty) {
         break;
       }
     }
@@ -413,8 +411,10 @@ class PracticeSessionController extends GetxController {
         normalized = normalized.replaceAll(RegExp(r'\s+'), '');
         break;
       default:
+        const punctuationPattern =
+            r"""[，,。.?!？！；;：“”"'()（）·…—《》〈〉、:_【】\[\]-]""";
         normalized = normalized
-            .replaceAll(RegExp(r'[，,。.?!？！；;：“”"\'()（）·…—《》〈〉、:_【】\[\]-]'), '')
+            .replaceAll(RegExp(punctuationPattern), '')
             .replaceAll(RegExp(r'\s+'), '')
             .toLowerCase();
         break;
