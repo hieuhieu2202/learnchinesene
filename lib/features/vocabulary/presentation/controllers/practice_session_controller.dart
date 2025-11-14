@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Progress;
 
 import '../../domain/entities/progress_entity.dart';
 import '../../domain/entities/word.dart';
@@ -122,28 +122,30 @@ class PracticeSessionController extends GetxController {
     final wordId = current.word.id;
     var progress = _progressCache[wordId];
 
-    progress ??= await getProgressForWord(wordId) ??
-        Progress(
-          wordId: wordId,
-          correctCount: 0,
-          wrongCount: 0,
-          lastPractice: null,
-          level: 0,
-          mastered: false,
-        );
-
-    progress = progress.copyWith(
-      correctCount: correct ? progress.correctCount + 1 : progress.correctCount,
-      wrongCount: correct ? progress.wrongCount : progress.wrongCount + 1,
-      mastered: correct ? (progress.correctCount + 1) >= 5 : false,
+    progress ??= await getProgressForWord(wordId) ?? Progress(
+      wordId: wordId,
+      correctCount: 0,
+      wrongCount: 0,
+      lastPractice: null,
+      level: 0,
+      mastered: false,
     );
 
-    _progressCache[wordId] = progress;
+    final nextCorrect = correct ? progress.correctCount + 1 : progress.correctCount;
+    final nextWrong = correct ? progress.wrongCount : progress.wrongCount + 1;
+
+    final updated = progress.copyWith(
+      correctCount: nextCorrect,
+      wrongCount: nextWrong,
+      lastPractice: DateTime.now(),
+      mastered: correct ? nextCorrect >= 5 : false,
+    );
+
+    _progressCache[wordId] = updated;
 
     await updateProgressAfterQuiz(
       UpdateProgressParams(
-        progress: progress,
-        lastPractice: DateTime.now(),
+        progress: updated,
       ),
     );
   }

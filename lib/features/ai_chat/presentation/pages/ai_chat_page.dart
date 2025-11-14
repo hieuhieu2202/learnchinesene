@@ -46,7 +46,9 @@ class _AiChatPageState extends State<AiChatPage> {
                       : Alignment.centerLeft;
                   final color = message.isUser
                       ? Theme.of(context).colorScheme.primaryContainer
-                      : Theme.of(context).colorScheme.surfaceVariant;
+                      : Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest;
                   return Align(
                     alignment: alignment,
                     child: Container(
