@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
+import '../core/config/app_config.dart';
 import '../features/ai_chat/data/ai_remote_data_source.dart';
 import '../features/ai_chat/domain/repositories/ai_repository.dart';
 import '../features/ai_chat/domain/usecases/ask_ai.dart';
@@ -107,7 +108,7 @@ class AppBindings extends Bindings {
     Get.lazyPut<AiRepository>(
       () => AiRemoteDataSource(
         client: Get.find<http.Client>(),
-        apiKey: const String.fromEnvironment('GEMINI_API_KEY', defaultValue: ''),
+        apiKey: AppConfig.geminiApiKey,
       ),
       fenix: true,
     );
