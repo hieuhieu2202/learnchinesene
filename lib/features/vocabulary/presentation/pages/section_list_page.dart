@@ -72,16 +72,10 @@ class SectionListPage extends GetView<SectionListController> {
                   ),
                   const SizedBox(height: 24),
                   Expanded(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      child: isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : sections.isEmpty
-                              ? const _EmptyState()
-                              : _SectionList(
-                                  sections: sections,
-                                  level: selectedLevel,
-                                ),
+                    child: _SectionListBody(
+                      isLoading: isLoading,
+                      sections: sections,
+                      level: selectedLevel,
                     ),
                   ),
                 ],
@@ -94,20 +88,35 @@ class SectionListPage extends GetView<SectionListController> {
   }
 }
 
-class _SectionList extends StatelessWidget {
-  const _SectionList({required this.sections, required this.level});
+class _SectionListBody extends StatelessWidget {
+  const _SectionListBody({
+    required this.isLoading,
+    required this.sections,
+    required this.level,
+  });
 
+  final bool isLoading;
   final List<SectionProgress> sections;
   final int level;
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (sections.isEmpty) {
+      return const _EmptyState();
+    }
+
     return ListView.separated(
+      key: ValueKey('hsk-$level-${sections.length}'),
       padding: const EdgeInsets.only(bottom: 8),
-      physics: const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       itemBuilder: (context, index) {
+        final progress = sections[index];
         return _UnitCard(
-          progress: sections[index],
+          progress: progress,
           level: level,
         );
       },
