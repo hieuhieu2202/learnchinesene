@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../domain/entities/practice_models.dart';
+import '../../domain/entities/word.dart';
 import '../controllers/practice_session_controller.dart';
 import '../theme/hsk_palette.dart';
 
 class PracticeQuestionCard extends StatefulWidget {
   const PracticeQuestionCard({
     super.key,
-    required this.question,
+    required this.exercise,
+    required this.word,
     required this.accentLevel,
+    required this.index,
+    required this.total,
   });
 
-  final PracticeQuestion question;
+  final SentenceExercise exercise;
+  final Word? word;
   final int accentLevel;
+  final int index;
+  final int total;
 
   @override
   State<PracticeQuestionCard> createState() => _PracticeQuestionCardState();
@@ -35,7 +43,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
   @override
   void didUpdateWidget(covariant PracticeQuestionCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.question != widget.question) {
+    if (oldWidget.exercise != widget.exercise) {
       _textController.clear();
       _errorMessage = null;
       _showAnswer = false;
@@ -74,7 +82,10 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: _TypingContent(
-            question: widget.question,
+            exercise: widget.exercise,
+            word: widget.word,
+            index: widget.index,
+            total: widget.total,
             textController: _textController,
             errorMessage: _errorMessage,
             showAnswer: _showAnswer,
@@ -117,7 +128,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
       });
       Get.snackbar(
         'Chuyển bài',
-        'Sai 3 lần rồi, chuyển sang thử thách khác nhé!',
+        'Sai 3 lần rồi, chuyển sang câu tiếp theo nhé!',
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(seconds: 2),
       );
@@ -145,7 +156,10 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
 
 class _TypingContent extends StatelessWidget {
   const _TypingContent({
-    required this.question,
+    required this.exercise,
+    required this.word,
+    required this.index,
+    required this.total,
     required this.textController,
     required this.errorMessage,
     required this.showAnswer,
@@ -155,7 +169,10 @@ class _TypingContent extends StatelessWidget {
     required this.accent,
   });
 
-  final PracticeQuestion question;
+  final SentenceExercise exercise;
+  final Word? word;
+  final int index;
+  final int total;
   final TextEditingController textController;
   final String? errorMessage;
   final bool showAnswer;
@@ -168,6 +185,10 @@ class _TypingContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final hintStyle = theme.textTheme.bodyMedium;
+    final title = _titleForType(exercise.type, word);
+    final prompt = _promptForType(exercise);
+    final inputLabel = _inputLabelForType(exercise.type);
+    final extraHints = _buildExtraHints(exercise);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -181,32 +202,25 @@ class _TypingContent extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                question.title,
+                title,
                 style: theme.textTheme.labelLarge?.copyWith(color: accent, fontWeight: FontWeight.w700),
               ),
             ),
             const Spacer(),
             Text(
-              'Mục tiêu Level ${question.targetLevel}',
+              'Câu ${index + 1}/$total',
               style: theme.textTheme.labelMedium,
             ),
           ],
         ),
         const SizedBox(height: 16),
         Text(
-          question.prompt,
+          prompt,
           style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
-        if (question.hint != null) ...[
+        if (extraHints.isNotEmpty) ...[
           const SizedBox(height: 12),
-          Text(
-            question.hint!,
-            style: hintStyle,
-          ),
-        ],
-        if (question.extraHints.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          ...question.extraHints.map(
+          ...extraHints.map(
             (extra) => Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(extra, style: hintStyle),
@@ -216,11 +230,11 @@ class _TypingContent extends StatelessWidget {
         const SizedBox(height: 20),
         TextField(
           controller: textController,
-          minLines: 2,
+          minLines: exercise.type == ExerciseType.typeMissingWord ? 1 : 2,
           maxLines: 5,
           autofocus: true,
           decoration: InputDecoration(
-            labelText: question.inputLabel,
+            labelText: inputLabel,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
             errorText: errorMessage,
           ),
@@ -265,23 +279,80 @@ class _TypingContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           SelectableText(
-            question.answer,
+            _answerText(exercise),
             style: theme.textTheme.titleLarge,
           ),
-          if (question.example != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Pinyin: ${question.example!.sentencePinyin}',
-              style: hintStyle,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Nghĩa: ${question.example!.sentenceVi}',
-              style: hintStyle,
-            ),
-          ],
+          const SizedBox(height: 8),
+          Text('Pinyin: ${exercise.sentence.pinyin}', style: hintStyle),
+          const SizedBox(height: 4),
+          Text('Nghĩa: ${exercise.sentence.vietnamese}', style: hintStyle),
         ],
       ],
     );
+  }
+
+  String _titleForType(ExerciseType type, Word? word) {
+    final wordLabel = word?.word ?? '';
+    switch (type) {
+      case ExerciseType.typeFromVietnamese:
+        return 'Từ nghĩa → gõ câu';
+      case ExerciseType.typeFromPinyin:
+        return 'Từ pinyin → gõ câu';
+      case ExerciseType.typeMissingWord:
+        return 'Điền từ "$wordLabel"';
+      case ExerciseType.typeFullSentenceCopy:
+        return 'Chép lại câu tiếng Trung';
+      case ExerciseType.typeTransformed:
+        return 'Câu biến đổi/AI';
+    }
+  }
+
+  String _promptForType(SentenceExercise exercise) {
+    final sentence = exercise.sentence;
+    switch (exercise.type) {
+      case ExerciseType.typeFromVietnamese:
+        return sentence.vietnamese;
+      case ExerciseType.typeFromPinyin:
+        return sentence.pinyin;
+      case ExerciseType.typeMissingWord:
+        return sentence.chinese.replaceFirst(
+          exercise.hiddenWord ?? '',
+          '___',
+        );
+      case ExerciseType.typeFullSentenceCopy:
+        return sentence.vietnamese;
+      case ExerciseType.typeTransformed:
+        return '${sentence.vietnamese}\n\n(Hãy gõ lại câu tiếng Trung)';
+    }
+  }
+
+  String _inputLabelForType(ExerciseType type) {
+    switch (type) {
+      case ExerciseType.typeMissingWord:
+        return 'Nhập từ còn thiếu';
+      default:
+        return 'Gõ câu tiếng Trung tại đây';
+    }
+  }
+
+  List<String> _buildExtraHints(SentenceExercise exercise) {
+    final hints = <String>[];
+    if (exercise.type != ExerciseType.typeFromPinyin) {
+      hints.add('Pinyin: ${exercise.sentence.pinyin}');
+    }
+    if (exercise.type != ExerciseType.typeFromVietnamese) {
+      hints.add('Nghĩa: ${exercise.sentence.vietnamese}');
+    }
+    if (exercise.type == ExerciseType.typeMissingWord && exercise.hintPinyin != null) {
+      hints.add('Gợi ý pinyin từ: ${exercise.hintPinyin}');
+    }
+    return hints;
+  }
+
+  String _answerText(SentenceExercise exercise) {
+    if (exercise.type == ExerciseType.typeMissingWord) {
+      return exercise.correctAnswer;
+    }
+    return exercise.sentence.chinese;
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../domain/entities/practice_models.dart';
+import '../../domain/entities/word.dart';
 import '../controllers/practice_session_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/hsk_utils.dart';
@@ -17,7 +19,8 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (controller.questions.isEmpty) {
+        final total = controller.totalExercises;
+        if (total == 0) {
           return const _EmptyPracticeState();
         }
 
@@ -25,18 +28,20 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
           return _ResultView(controller: controller);
         }
 
-        final question = controller.currentQuestion;
-        if (question == null) {
+        final exercise = controller.currentExercise.value;
+        if (exercise == null) {
           return const SizedBox.shrink();
         }
 
+        final word = controller.currentWord;
         final level = parseHskLevel(
-          sectionId: question.word.sectionId,
-          sectionTitle: question.word.sectionTitle,
+          sectionId: word?.sectionId ?? 0,
+          sectionTitle: word?.sectionTitle ?? '',
         );
         final gradient = HskPalette.gradientForLevel(level);
-        final progress =
-            (controller.currentIndex.value + 1) / controller.questions.length;
+        final progress = total == 0
+            ? 0.0
+            : (controller.currentIndex.value + 1) / total;
 
         return Container(
           decoration: BoxDecoration(
@@ -51,16 +56,21 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
               children: [
                 _PracticeHeader(
                   controller: controller,
+                  word: word,
                   level: level,
                   progress: progress,
+                  total: total,
                 ),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 250),
                     child: PracticeQuestionCard(
                       key: ValueKey(controller.currentIndex.value),
-                      question: question,
+                      exercise: exercise,
+                      word: word,
                       accentLevel: level,
+                      index: controller.currentIndex.value,
+                      total: total,
                     ),
                   ),
                 ),
@@ -76,20 +86,26 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
 class _PracticeHeader extends StatelessWidget {
   const _PracticeHeader({
     required this.controller,
+    required this.word,
     required this.level,
     required this.progress,
+    required this.total,
   });
 
   final PracticeSessionController controller;
+  final Word? word;
   final int level;
   final double progress;
+  final int total;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = HskPalette.accentForLevel(level, theme.colorScheme);
-    final question = controller.currentQuestion;
-    final stageLabel = _stageLabel(question?.stage);
+    final exercise = controller.currentExercise.value;
+    final stageLabel = _labelForType(exercise?.type);
+    final title = word?.word ?? 'Luyện gõ câu ví dụ';
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Column(
@@ -107,7 +123,7 @@ class _PracticeHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      question?.word.word ?? 'Luyện tập',
+                      title,
                       style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     Text(
@@ -117,12 +133,13 @@ class _PracticeHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              Chip(
-                label: Text('HSK $level'),
-                labelStyle: theme.textTheme.labelMedium?.copyWith(color: accent),
-                backgroundColor: accent.withOpacity(0.15),
-                shape: const StadiumBorder(),
-              ),
+              if (level > 0)
+                Chip(
+                  label: Text('HSK $level'),
+                  labelStyle: theme.textTheme.labelMedium?.copyWith(color: accent),
+                  backgroundColor: accent.withOpacity(0.15),
+                  shape: const StadiumBorder(),
+                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -135,7 +152,7 @@ class _PracticeHeader extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Câu ${controller.currentIndex.value + 1}/${controller.questions.length} • Điểm: ${controller.score.value}',
+            'Bài ${controller.currentIndex.value + 1}/$total • Đúng ${controller.score.value}',
             style: theme.textTheme.bodyMedium,
           ),
         ],
@@ -143,30 +160,20 @@ class _PracticeHeader extends StatelessWidget {
     );
   }
 
-  String _stageLabel(PracticeMode? mode) {
-    switch (mode) {
-      case PracticeMode.typingMeaning:
-        return 'Bước 1 • Gõ nghĩa';
-      case PracticeMode.typingPinyin:
-        return 'Bước 2 • Gõ Pinyin';
-      case PracticeMode.typingHanzi:
-        return 'Bước 3 • Gõ chữ Hán';
-      case PracticeMode.typingFillBlank:
-        return 'Bước 4 • Điền vào câu';
-      case PracticeMode.typingSentence:
-        return 'Bước 5 • Gõ lại câu ví dụ';
-      case PracticeMode.typingSentenceTransform:
-        return 'Bước 6 • Biến đổi câu';
-      case PracticeMode.typingSecondExample:
-        return 'Bước 7 • Ví dụ thứ hai';
-      case PracticeMode.typingAiExplanation:
-        return 'Bước 8 • Câu giải thích';
-      case PracticeMode.typingRecap:
-        return 'Bước 9 • Ôn tổng hợp';
-      case PracticeMode.typingConversation:
-        return 'Bước 10 • Hội thoại ngắn';
+  String _labelForType(ExerciseType? type) {
+    switch (type) {
+      case ExerciseType.typeFromVietnamese:
+        return 'Gõ câu từ nghĩa tiếng Việt';
+      case ExerciseType.typeFromPinyin:
+        return 'Gõ câu từ pinyin';
+      case ExerciseType.typeMissingWord:
+        return 'Điền từ bị ẩn trong câu';
+      case ExerciseType.typeFullSentenceCopy:
+        return 'Chép lại câu tiếng Trung';
+      case ExerciseType.typeTransformed:
+        return 'Viết câu biến đổi/AI';
       default:
-        return 'Hành trình 10 bước';
+        return 'Luyện gõ câu ví dụ';
     }
   }
 }
@@ -179,6 +186,7 @@ class _ResultView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final total = controller.totalExercises;
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -210,18 +218,18 @@ class _ResultView extends StatelessWidget {
                   const Icon(Icons.emoji_events, size: 72, color: Colors.amber),
                   const SizedBox(height: 16),
                   Text(
-                    'Hoàn thành 10 bước!',
+                    'Hoàn thành luyện gõ câu!',
                     style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Điểm số: ${controller.score.value}/${controller.questions.length}',
+                    'Điểm số: ${controller.score.value}/$total',
                     style: theme.textTheme.titleMedium,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Bạn đã đi hết hành trình 10 bước cho từ vựng này.',
+                    'Bạn đã hoàn tất toàn bộ chuỗi luyện gõ câu cho unit này.',
                     style: theme.textTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
@@ -229,7 +237,7 @@ class _ResultView extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: controller.restart,
                     icon: const Icon(Icons.replay),
-                    label: const Text('Luyện lại 10 bước'),
+                    label: const Text('Luyện lại từ đầu'),
                   ),
                   const SizedBox(height: 12),
                   TextButton.icon(
@@ -276,7 +284,7 @@ class _EmptyPracticeState extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Hãy chọn bài học và thêm từ vào hành trình trước khi luyện.',
+                  'Hãy chọn bài học và bổ sung câu ví dụ trước khi luyện.',
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),

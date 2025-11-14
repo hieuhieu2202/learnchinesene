@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../../../routes/app_routes.dart';
 import '../../domain/entities/word.dart';
-import '../controllers/practice_session_controller.dart';
 import '../controllers/word_detail_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/hsk_utils.dart';
@@ -51,7 +50,7 @@ class WordDetailPage extends GetView<WordDetailController> {
                       const SizedBox(height: 24),
                       _PrimaryActions(word: word, controller: controller, level: level),
                       const SizedBox(height: 24),
-                      _PracticeTimeline(word: word, level: level),
+                      _SentencePracticeFlow(word: word, level: level),
                       const SizedBox(height: 24),
                       _ExamplesSection(controller: controller, level: level),
                     ]),
@@ -242,12 +241,11 @@ class _PrimaryActions extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => navigateAfterFrame(() {
                     Get.toNamed(AppRoutes.practiceSession, arguments: {
-                      'mode': PracticeMode.journey,
                       'words': [word],
                     });
                   }),
                   icon: const Icon(Icons.route),
-                  label: const Text('Luyện hành trình 10 bước'),
+                  label: const Text('Luyện gõ câu ví dụ'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -270,8 +268,8 @@ class _PrimaryActions extends StatelessWidget {
   }
 }
 
-class _PracticeTimeline extends StatelessWidget {
-  const _PracticeTimeline({required this.word, required this.level});
+class _SentencePracticeFlow extends StatelessWidget {
+  const _SentencePracticeFlow({required this.word, required this.level});
 
   final Word word;
   final int level;
@@ -280,66 +278,31 @@ class _PracticeTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = HskPalette.accentForLevel(level, theme.colorScheme);
-    final options = <_PracticeItem>[
-      _PracticeItem(
-        title: 'Bước 1 · Gõ nghĩa',
-        description: 'Nhìn chữ Hán và gõ nghĩa tiếng Việt/Anh.',
+    final steps = <_SentenceFlowItem>[
+      const _SentenceFlowItem(
         icon: Icons.translate,
-        mode: PracticeMode.typingMeaning,
+        title: 'Bước 1 · Nghĩa → Câu',
+        description: 'Đọc nghĩa tiếng Việt của câu và gõ lại câu tiếng Trung đầy đủ.',
       ),
-      _PracticeItem(
-        title: 'Bước 2 · Gõ Pinyin',
-        description: 'Ghi nhớ cách đọc bằng cách gõ chuẩn pinyin.',
+      const _SentenceFlowItem(
         icon: Icons.record_voice_over_outlined,
-        mode: PracticeMode.typingPinyin,
+        title: 'Bước 2 · Pinyin → Câu',
+        description: 'Nhìn pinyin và tái hiện lại câu chữ Hán.',
       ),
-      _PracticeItem(
-        title: 'Bước 3 · Gõ chữ Hán',
-        description: 'Dùng bàn phím tiếng Trung để gõ lại chữ.',
-        icon: Icons.edit_square,
-        mode: PracticeMode.typingHanzi,
+      const _SentenceFlowItem(
+        icon: Icons.text_snippet_outlined,
+        title: 'Bước 3 · Điền từ bị ẩn',
+        description: 'Gõ đúng từ trọng tâm vào chỗ trống trong câu.',
       ),
-      _PracticeItem(
-        title: 'Bước 4 · Điền vào câu',
-        description: 'Bổ sung từ còn thiếu dựa trên câu ví dụ.',
-        icon: Icons.menu_book_outlined,
-        mode: PracticeMode.typingFillBlank,
-      ),
-      _PracticeItem(
-        title: 'Bước 5 · Gõ lại câu ví dụ',
-        description: 'Chép lại câu ví dụ hoàn chỉnh để ghi nhớ sâu.',
+      const _SentenceFlowItem(
         icon: Icons.edit_note,
-        mode: PracticeMode.typingSentence,
+        title: 'Bước 4 · Chép câu chuẩn',
+        description: 'Gõ lại toàn bộ câu để nhớ cấu trúc và trật tự từ.',
       ),
-      _PracticeItem(
-        title: 'Bước 6 · Biến đổi câu',
-        description: 'Viết lại câu mới dựa trên từ khoá đã học.',
-        icon: Icons.sync_alt_rounded,
-        mode: PracticeMode.typingSentenceTransform,
-      ),
-      _PracticeItem(
-        title: 'Bước 7 · Ví dụ thứ hai',
-        description: 'Ghi nhớ thêm ngữ cảnh khác của từ.',
-        icon: Icons.library_books_outlined,
-        mode: PracticeMode.typingSecondExample,
-      ),
-      _PracticeItem(
-        title: 'Bước 8 · Câu giải thích',
-        description: 'Tóm tắt lại ý nghĩa của từ bằng tiếng Trung.',
-        icon: Icons.lightbulb_outline,
-        mode: PracticeMode.typingAiExplanation,
-      ),
-      _PracticeItem(
-        title: 'Bước 9 · Ôn tổng hợp',
-        description: 'Nhập lại chữ Hán + pinyin + nghĩa để củng cố.',
-        icon: Icons.fact_check_outlined,
-        mode: PracticeMode.typingRecap,
-      ),
-      _PracticeItem(
-        title: 'Bước 10 · Hội thoại ngắn',
-        description: 'Gõ lại câu trả lời trong đoạn hội thoại.',
-        icon: Icons.chat_bubble_outline,
-        mode: PracticeMode.typingConversation,
+      const _SentenceFlowItem(
+        icon: Icons.auto_awesome,
+        title: 'Bước 5 · Câu biến đổi/AI',
+        description: 'Viết câu mở rộng từ AI để nạp thêm bối cảnh sử dụng.',
       ),
     ];
 
@@ -360,63 +323,82 @@ class _PracticeTimeline extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Lộ trình luyện gõ',
+            'Quy trình luyện gõ câu',
             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 12),
-          ...options.map((item) => _PracticeTile(word: word, item: item, accent: accent)),
+          Text(
+            'Từ "${word.word}" sẽ được luyện qua nhiều câu ví dụ và câu biến đổi để khắc sâu.',
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          ...steps.map(
+            (step) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: _SentenceFlowStep(item: step),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Chuỗi bước lặp lại với nhiều câu trong unit giúp bạn nhớ từ bằng cách gõ liên tục.',
+            style: theme.textTheme.bodySmall,
+          ),
         ],
       ),
     );
   }
 }
 
-class _PracticeItem {
-  const _PracticeItem({
+class _SentenceFlowItem {
+  const _SentenceFlowItem({
+    required this.icon,
     required this.title,
     required this.description,
-    required this.icon,
-    this.mode,
   });
 
+  final IconData icon;
   final String title;
   final String description;
-  final IconData icon;
-  final PracticeMode? mode;
 }
 
-class _PracticeTile extends StatelessWidget {
-  const _PracticeTile({required this.word, required this.item, required this.accent});
+class _SentenceFlowStep extends StatelessWidget {
+  const _SentenceFlowStep({required this.item});
 
-  final Word word;
-  final _PracticeItem item;
-  final Color accent;
+  final _SentenceFlowItem item;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final enabled = item.mode != null;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-      leading: CircleAvatar(
-        backgroundColor: accent.withOpacity(0.14),
-        child: Icon(item.icon, color: accent),
-      ),
-      title: Text(item.title),
-      subtitle: Text(item.description),
-      trailing: enabled ? const Icon(Icons.arrow_forward_ios, size: 16) : null,
-      enabled: enabled,
-      onTap: enabled
-          ? () => navigateAfterFrame(() {
-                Get.toNamed(AppRoutes.practiceSession, arguments: {
-                  'mode': item.mode,
-                  'words': [word],
-                });
-              })
-          : null,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 20,
+          backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+          child: Icon(item.icon, color: theme.colorScheme.primary, size: 22),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.title,
+                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                item.description,
+                style: theme.textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
+
 
 class _ExamplesSection extends StatelessWidget {
   const _ExamplesSection({required this.controller, required this.level});

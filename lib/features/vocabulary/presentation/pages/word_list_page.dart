@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../routes/app_routes.dart';
-import '../controllers/practice_session_controller.dart';
 import '../controllers/word_list_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/hsk_utils.dart';
@@ -56,7 +55,6 @@ class WordListPage extends GetView<WordListController> {
                                       AppRoutes.practiceSession,
                                       arguments: {
                                         'words': words.toList(),
-                                        'mode': PracticeMode.journey,
                                       },
                                     );
                                   }),

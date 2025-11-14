@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import '../../../../routes/app_routes.dart';
 import '../../domain/entities/word.dart';
 import '../controllers/home_controller.dart';
-import '../controllers/practice_session_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/navigation_utils.dart';
 
@@ -225,13 +224,12 @@ class _QuickLaunchRow extends StatelessWidget {
               width: itemWidth,
               child: _QuickActionCard(
                 icon: Icons.flash_on,
-                title: 'Luyện nhanh',
-                subtitle: 'Chạy đủ 5 mode cho các từ đã chọn.',
+                title: 'Luyện câu nhanh',
+                subtitle: 'Gõ lại câu ví dụ cho các từ đã học.',
                 onTap: () => navigateAfterFrame(() {
                   Get.toNamed(
                     AppRoutes.practiceSession,
                     arguments: {
-                      'mode': PracticeMode.journey,
                       'words': const <Word>[],
                     },
                   );
