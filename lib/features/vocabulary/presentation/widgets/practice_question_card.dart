@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../controllers/practice_session_controller.dart';
+import '../theme/hsk_palette.dart';
 
 class PracticeQuestionCard extends StatefulWidget {
   const PracticeQuestionCard({
     super.key,
     required this.question,
+    required this.accentLevel,
   });
 
   final PracticeQuestion question;
+  final int accentLevel;
 
   @override
   State<PracticeQuestionCard> createState() => _PracticeQuestionCardState();
@@ -46,10 +49,26 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = HskPalette.accentForLevel(widget.accentLevel, theme.colorScheme);
     return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Card(
-        elevation: 3,
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(32),
+          gradient: LinearGradient(
+            colors: [theme.colorScheme.surface, Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: accent.withOpacity(0.12),
+              blurRadius: 28,
+              offset: const Offset(0, 18),
+            ),
+          ],
+        ),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: _TypingContent(
@@ -60,6 +79,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
             onChecked: _handleCheck,
             onShowAnswer: _handleShowAnswer,
             onSkip: _handleSkip,
+            accent: accent,
           ),
         ),
       ),
@@ -105,6 +125,7 @@ class _TypingContent extends StatelessWidget {
     required this.onChecked,
     required this.onShowAnswer,
     required this.onSkip,
+    required this.accent,
   });
 
   final PracticeQuestion question;
@@ -114,6 +135,7 @@ class _TypingContent extends StatelessWidget {
   final Future<void> Function() onChecked;
   final VoidCallback onShowAnswer;
   final Future<void> Function() onSkip;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -123,14 +145,30 @@ class _TypingContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          question.title,
-          style: theme.textTheme.titleMedium,
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: accent.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                question.title,
+                style: theme.textTheme.labelLarge?.copyWith(color: accent, fontWeight: FontWeight.w700),
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'Mục tiêu Level ${question.targetLevel}',
+              style: theme.textTheme.labelMedium,
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         Text(
           question.prompt,
-          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
         if (question.hint != null) ...[
           const SizedBox(height: 12),
@@ -141,13 +179,14 @@ class _TypingContent extends StatelessWidget {
         ],
         if (question.extraHints.isNotEmpty) ...[
           const SizedBox(height: 12),
-          for (final extra in question.extraHints)
-            Padding(
+          ...question.extraHints.map(
+            (extra) => Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(extra, style: hintStyle),
             ),
+          ),
         ],
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         TextField(
           controller: textController,
           minLines: 2,
@@ -155,18 +194,19 @@ class _TypingContent extends StatelessWidget {
           autofocus: true,
           decoration: InputDecoration(
             labelText: question.inputLabel,
-            border: const OutlineInputBorder(),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
             errorText: errorMessage,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Row(
           children: [
             Expanded(
               child: FilledButton(
-                onPressed: () {
-                  onChecked();
-                },
+                onPressed: onChecked,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 child: const Text('Kiểm tra'),
               ),
             ),
@@ -174,6 +214,9 @@ class _TypingContent extends StatelessWidget {
             Expanded(
               child: OutlinedButton(
                 onPressed: onShowAnswer,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 child: const Text('Xem đáp án'),
               ),
             ),
@@ -183,17 +226,15 @@ class _TypingContent extends StatelessWidget {
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-            onPressed: () {
-              onSkip();
-            },
+            onPressed: onSkip,
             child: const Text('Bỏ qua'),
           ),
         ),
         if (showAnswer) ...[
-          const Divider(),
+          const Divider(height: 32),
           Text(
-            'Đáp án đúng:',
-            style: theme.textTheme.titleMedium,
+            'Đáp án đúng',
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           SelectableText(
