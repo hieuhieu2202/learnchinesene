@@ -190,104 +190,131 @@ class _TypingContent extends StatelessWidget {
     final inputLabel = _inputLabelForType(exercise.type);
     final extraHints = _buildExtraHints(exercise);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: accent.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                title,
-                style: theme.textTheme.labelLarge?.copyWith(color: accent, fontWeight: FontWeight.w700),
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxHeight.isFinite && constraints.maxHeight < 560;
+        final maxLines = isCompact ? 4 : 6;
+
+        Widget buildTextField() {
+          return TextField(
+            controller: textController,
+            minLines: exercise.type == ExerciseType.typeMissingWord ? 1 : 2,
+            maxLines: maxLines,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: inputLabel,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              errorText: errorMessage,
             ),
-            const Spacer(),
-            Text(
-              'Câu ${index + 1}/$total',
-              style: theme.textTheme.labelMedium,
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text(
-          prompt,
-          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        if (extraHints.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          ...extraHints.map(
-            (extra) => Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(extra, style: hintStyle),
-            ),
-          ),
-        ],
-        const SizedBox(height: 20),
-        TextField(
-          controller: textController,
-          minLines: exercise.type == ExerciseType.typeMissingWord ? 1 : 2,
-          maxLines: 5,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: inputLabel,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-            errorText: errorMessage,
-          ),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(
-              child: FilledButton(
-                onPressed: onChecked,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+          );
+        }
+
+        final children = <Widget>[
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Text('Kiểm tra'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton(
-                onPressed: onShowAnswer,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Text(
+                  title,
+                  style: theme.textTheme.labelLarge?.copyWith(color: accent, fontWeight: FontWeight.w700),
                 ),
-                child: const Text('Xem đáp án'),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: onSkip,
-            child: const Text('Bỏ qua'),
+              const Spacer(),
+              Text(
+                'Câu ${index + 1}/$total',
+                style: theme.textTheme.labelMedium,
+              ),
+            ],
           ),
-        ),
-        if (showAnswer) ...[
-          const Divider(height: 32),
+          const SizedBox(height: 16),
           Text(
-            'Đáp án đúng',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            prompt,
+            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 8),
-          SelectableText(
-            _answerText(exercise),
-            style: theme.textTheme.titleLarge,
+          if (extraHints.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ...extraHints.map(
+              (extra) => Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(extra, style: hintStyle),
+              ),
+            ),
+          ],
+          const SizedBox(height: 20),
+          if (isCompact)
+            buildTextField()
+          else
+            Flexible(child: buildTextField()),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton(
+                  onPressed: onChecked,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('Kiểm tra'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onShowAnswer,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('Xem đáp án'),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text('Pinyin: ${exercise.sentence.pinyin}', style: hintStyle),
-          const SizedBox(height: 4),
-          Text('Nghĩa: ${exercise.sentence.vietnamese}', style: hintStyle),
-        ],
-      ],
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: onSkip,
+              child: const Text('Bỏ qua'),
+            ),
+          ),
+          if (showAnswer) ...[
+            const Divider(height: 32),
+            Text(
+              'Đáp án đúng',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            SelectableText(
+              _answerText(exercise),
+              style: theme.textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text('Pinyin: ${exercise.sentence.pinyin}', style: hintStyle),
+            const SizedBox(height: 4),
+            Text('Nghĩa: ${exercise.sentence.vietnamese}', style: hintStyle),
+          ],
+        ];
+
+        final content = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
+        );
+
+        if (!isCompact) {
+          return content;
+        }
+
+        return SingleChildScrollView(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: content,
+          ),
+        );
+      },
     );
   }
 
@@ -337,14 +364,9 @@ class _TypingContent extends StatelessWidget {
 
   List<String> _buildExtraHints(SentenceExercise exercise) {
     final hints = <String>[];
-    if (exercise.type != ExerciseType.typeFromPinyin) {
-      hints.add('Pinyin: ${exercise.sentence.pinyin}');
-    }
-    if (exercise.type != ExerciseType.typeFromVietnamese) {
-      hints.add('Nghĩa: ${exercise.sentence.vietnamese}');
-    }
-    if (exercise.type == ExerciseType.typeMissingWord && exercise.hintPinyin != null) {
-      hints.add('Gợi ý pinyin từ: ${exercise.hintPinyin}');
+    final vietnameseHint = exercise.hintVietnamese ?? exercise.sentence.vietnamese;
+    if (exercise.type != ExerciseType.typeFromVietnamese && vietnameseHint.isNotEmpty) {
+      hints.add('Nghĩa: $vietnameseHint');
     }
     return hints;
   }
