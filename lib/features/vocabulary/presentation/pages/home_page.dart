@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../routes/app_routes.dart';
-import '../../domain/entities/word.dart';
 import '../controllers/home_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/navigation_utils.dart';
@@ -66,31 +65,6 @@ class _DashboardTab extends StatelessWidget {
       final totalWords = overview.fold<int>(0, (sum, item) => sum + item.totalWords);
       final masteredWords = overview.fold<int>(0, (sum, item) => sum + item.masteredWords);
 
-      final actions = <_SimpleAction>[
-        _SimpleAction(
-          icon: Icons.bolt_rounded,
-          label: 'Luyện 10 bước',
-          onTap: () => navigateAfterFrame(() {
-            Get.toNamed(
-              AppRoutes.practiceSession,
-              arguments: {
-                'words': const <Word>[],
-              },
-            );
-          }),
-        ),
-        _SimpleAction(
-          icon: Icons.check_circle_outline,
-          label: reviewCount > 0 ? 'Ôn $reviewCount từ' : 'Ôn tập',
-          onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
-        ),
-        _SimpleAction(
-          icon: Icons.smart_toy_outlined,
-          label: 'Trợ giảng AI',
-          onTap: () => controller.changeTab(1),
-        ),
-      ];
-
       return _GradientBackground(
         child: SafeArea(
           bottom: false,
@@ -118,10 +92,6 @@ class _DashboardTab extends StatelessWidget {
                   masteredWords: masteredWords,
                   reviewCount: reviewCount,
                 ),
-                const SizedBox(height: 24),
-                _SectionTitle(text: 'Tác vụ nhanh'),
-                const SizedBox(height: 12),
-                _SimpleActionWrap(actions: actions),
                 const SizedBox(height: 32),
                 Row(
                   children: [
@@ -643,100 +613,6 @@ class _SectionTitle extends StatelessWidget {
       style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w700,
           ),
-    );
-  }
-}
-
-class _SimpleAction {
-  const _SimpleAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-}
-
-class _SimpleActionWrap extends StatelessWidget {
-  const _SimpleActionWrap({required this.actions});
-
-  final List<_SimpleAction> actions;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final columns = width >= 720 ? 2 : 1;
-        const spacing = 12.0;
-        final tileWidth = columns == 1
-            ? width
-            : (width - spacing * (columns - 1)) / columns;
-
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
-          children: [
-            for (final action in actions)
-              SizedBox(
-                width: tileWidth,
-                child: _SimpleActionButton(action: action),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _SimpleActionButton extends StatelessWidget {
-  const _SimpleActionButton({required this.action});
-
-  final _SimpleAction action;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: action.onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            color: scheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: scheme.primary.withOpacity(0.12)),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-          child: Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: scheme.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(10),
-                child: Icon(action.icon, color: scheme.primary, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  action.label,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const Icon(Icons.chevron_right, size: 20),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
