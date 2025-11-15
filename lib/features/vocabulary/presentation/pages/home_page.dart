@@ -65,19 +65,18 @@ class _DashboardTab extends StatelessWidget {
 
       final totalWords = overview.fold<int>(0, (sum, item) => sum + item.totalWords);
       final masteredWords = overview.fold<int>(0, (sum, item) => sum + item.masteredWords);
-      final quickActions = [
-        _HomeQuickAction(
-          icon: Icons.dashboard_customize_outlined,
-          title: 'Lộ trình HSK',
-          subtitle: 'Chọn cấp độ và unit theo giáo trình chính thức.',
+
+      final actions = <_SimpleAction>[
+        _SimpleAction(
+          icon: Icons.menu_book_rounded,
+          label: 'Chọn cấp độ',
           onTap: () => navigateAfterFrame(
             () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
           ),
         ),
-        _HomeQuickAction(
-          icon: Icons.flash_on,
-          title: 'Luyện 10 bước',
-          subtitle: 'Bắt đầu chuỗi câu gõ để khắc sâu từng từ.',
+        _SimpleAction(
+          icon: Icons.bolt_rounded,
+          label: 'Luyện 10 bước',
           onTap: () => navigateAfterFrame(() {
             Get.toNamed(
               AppRoutes.practiceSession,
@@ -87,96 +86,68 @@ class _DashboardTab extends StatelessWidget {
             );
           }),
         ),
-        _HomeQuickAction(
-          icon: Icons.smart_toy_outlined,
-          title: 'Hỏi trợ giảng AI',
-          subtitle: 'Xin ví dụ, giải thích và câu luyện tập mới.',
-          onTap: () => controller.changeTab(1),
-        ),
-        _HomeQuickAction(
+        _SimpleAction(
           icon: Icons.check_circle_outline,
-          title: 'Ôn tập hôm nay',
-          subtitle: reviewCount > 0
-              ? 'Còn $reviewCount từ cần củng cố.'
-              : 'Không có bài ôn đang chờ.',
+          label: reviewCount > 0 ? 'Ôn $reviewCount từ' : 'Ôn tập',
           onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
+        ),
+        _SimpleAction(
+          icon: Icons.smart_toy_outlined,
+          label: 'Trợ giảng AI',
+          onTap: () => controller.changeTab(1),
         ),
       ];
 
       return _GradientBackground(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            final horizontalPadding = width >= 1080
-                ? 96.0
-                : width >= 880
-                    ? 64.0
-                    : width >= 640
-                        ? 40.0
-                        : 24.0;
-
-            return CustomScrollView(
-              key: const PageStorageKey('home-dashboard'),
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: _HomeHeroCard(
-                      reviewCount: reviewCount,
-                      totalWords: totalWords,
-                      masteredWords: masteredWords,
-                      onPracticeTap: () => navigateAfterFrame(() {
-                        Get.toNamed(
-                          AppRoutes.practiceSession,
-                          arguments: {
-                            'words': const <Word>[],
-                          },
-                        );
-                      }),
-                      onReviewTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
-                      onBrowseTap: () => navigateAfterFrame(
-                        () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
+        child: SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
+            key: const PageStorageKey('home-dashboard'),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Học HSK thật nhẹ nhàng',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
                       ),
-                    ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Tập trung vào câu ví dụ và hoàn thành từng bước luyện gõ.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 24),
+                _HomeSummaryCard(
+                  totalWords: totalWords,
+                  masteredWords: masteredWords,
+                  reviewCount: reviewCount,
+                  onPracticeTap: () => navigateAfterFrame(() {
+                    Get.toNamed(
+                      AppRoutes.practiceSession,
+                      arguments: {
+                        'words': const <Word>[],
+                      },
+                    );
+                  }),
+                  onReviewTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
+                  onBrowseTap: () => navigateAfterFrame(
+                    () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
                   ),
                 ),
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(horizontalPadding, 32, horizontalPadding, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: _HomeSectionHeader(
-                      title: 'Bắt đầu nhanh',
-                      subtitle: 'Chọn hoạt động phù hợp cho phiên luyện gõ hôm nay.',
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(horizontalPadding, 20, horizontalPadding, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: _QuickActionGrid(actions: quickActions),
-                  ),
-                ),
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(horizontalPadding, 40, horizontalPadding, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: _HomeSectionHeader(
-                      title: 'Cấp độ HSK',
-                      subtitle: 'Theo dõi tiến trình từng cấp độ và tiếp tục unit đang học.',
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(horizontalPadding, 20, horizontalPadding, 80),
-                  sliver: SliverToBoxAdapter(
-                    child: _LevelGrid(
-                      isLoading: isLoading,
-                      overview: overview,
-                    ),
-                  ),
-                ),
+                const SizedBox(height: 28),
+                _SectionTitle(text: 'Tác vụ nhanh'),
+                const SizedBox(height: 12),
+                _SimpleActionWrap(actions: actions),
+                const SizedBox(height: 32),
+                _SectionTitle(text: 'Cấp độ HSK'),
+                const SizedBox(height: 12),
+                _SimpleLevelList(isLoading: isLoading, overview: overview),
               ],
-            );
-          },
+            ),
+          ),
         ),
       );
     });
@@ -564,19 +535,19 @@ class _GradientBackground extends StatelessWidget {
   }
 }
 
-class _HomeHeroCard extends StatelessWidget {
-  const _HomeHeroCard({
-    required this.reviewCount,
+class _HomeSummaryCard extends StatelessWidget {
+  const _HomeSummaryCard({
     required this.totalWords,
     required this.masteredWords,
+    required this.reviewCount,
     required this.onPracticeTap,
     required this.onReviewTap,
     required this.onBrowseTap,
   });
 
-  final int reviewCount;
   final int totalWords;
   final int masteredWords;
+  final int reviewCount;
   final VoidCallback onPracticeTap;
   final VoidCallback onReviewTap;
   final VoidCallback onBrowseTap;
@@ -585,123 +556,100 @@ class _HomeHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final progress = totalWords == 0
+        ? 0.0
+        : (masteredWords / totalWords).clamp(0, 1).toDouble();
     final hasReview = reviewCount > 0;
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            scheme.primary.withOpacity(0.14),
-            scheme.surface,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(36),
-        border: Border.all(color: scheme.primary.withOpacity(0.15)),
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: scheme.primary.withOpacity(0.12)),
         boxShadow: [
           BoxShadow(
             color: scheme.primary.withOpacity(0.08),
-            blurRadius: 28,
-            offset: const Offset(0, 20),
+            blurRadius: 24,
+            offset: const Offset(0, 16),
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(28, 28, 28, 32),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hành trình gõ chữ Hán',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Từng bước luyện gõ câu ví dụ để ghi nhớ sâu từ vựng HSK.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: scheme.primary.withOpacity(0.12),
-                child: Icon(
-                  Icons.edit_note,
-                  color: scheme.primary,
-                  size: 32,
-                ),
-              ),
-            ],
+          Text(
+            'Tổng quan hôm nay',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 8),
+          Text(
+            totalWords == 0
+                ? 'Bắt đầu từ cấp độ đầu tiên để xây nền tảng từ vựng.'
+                : 'Bạn đã thuộc $masteredWords/$totalWords từ.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 16),
+          LinearProgressIndicator(
+            value: progress,
+            minHeight: 6,
+            backgroundColor: scheme.primary.withOpacity(0.16),
+            valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
+          ),
+          const SizedBox(height: 16),
           Wrap(
-            spacing: 14,
-            runSpacing: 14,
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              _HeroStatChip(
+              _SummaryChip(
                 icon: Icons.menu_book_outlined,
                 label: 'Tổng từ',
                 value: totalWords == 0 ? '—' : '$totalWords',
               ),
-              _HeroStatChip(
-                icon: Icons.verified_rounded,
+              _SummaryChip(
+                icon: Icons.verified_outlined,
                 label: 'Đã thuộc',
                 value: masteredWords == 0 ? '0' : '$masteredWords',
               ),
-              _HeroStatChip(
-                icon: Icons.refresh_rounded,
-                label: 'Đang chờ ôn',
+              _SummaryChip(
+                icon: Icons.refresh_outlined,
+                label: 'Chờ ôn',
                 value: reviewCount == 0 ? '0' : '$reviewCount',
                 highlight: hasReview,
               ),
             ],
           ),
-          const SizedBox(height: 30),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
+          const SizedBox(height: 20),
+          Row(
             children: [
-              FilledButton.icon(
-                onPressed: onPracticeTap,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  textStyle: theme.textTheme.titleMedium,
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: onPracticeTap,
+                  icon: const Icon(Icons.bolt_rounded),
+                  label: const Text('Luyện 10 bước'),
                 ),
-                icon: const Icon(Icons.bolt_rounded),
-                label: const Text('Bắt đầu luyện gõ'),
               ),
-              if (hasReview)
-                OutlinedButton.icon(
-                  onPressed: onReviewTap,
-                  icon: const Icon(Icons.checklist_rounded),
-                  label: Text('Ôn $reviewCount từ'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  ),
-                )
-              else
-                OutlinedButton.icon(
-                  onPressed: onBrowseTap,
-                  icon: const Icon(Icons.menu_book_rounded),
-                  label: const Text('Khám phá HSK'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: hasReview ? onReviewTap : onBrowseTap,
+                  icon: Icon(hasReview ? Icons.checklist_rounded : Icons.menu_book_rounded),
+                  label: Text(hasReview ? 'Ôn $reviewCount từ' : 'Chọn cấp độ'),
                 ),
+              ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: onBrowseTap,
+              child: const Text('Khám phá lộ trình HSK'),
+            ),
           ),
         ],
       ),
@@ -709,8 +657,8 @@ class _HomeHeroCard extends StatelessWidget {
   }
 }
 
-class _HeroStatChip extends StatelessWidget {
-  const _HeroStatChip({
+class _SummaryChip extends StatelessWidget {
+  const _SummaryChip({
     required this.icon,
     required this.label,
     required this.value,
@@ -728,34 +676,34 @@ class _HeroStatChip extends StatelessWidget {
     final scheme = theme.colorScheme;
     final background = highlight
         ? scheme.primary.withOpacity(0.16)
-        : scheme.surface.withOpacity(0.85);
+        : scheme.surface.withOpacity(0.2);
+    final color = highlight ? scheme.primary : scheme.onSurfaceVariant;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: scheme.primary.withOpacity(highlight ? 0.4 : 0.12)),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color.withOpacity(0.24)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 20, color: scheme.primary),
-          const SizedBox(width: 10),
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 label,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+                style: theme.textTheme.labelSmall?.copyWith(color: color),
               ),
               Text(
                 value,
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
+                  color: color,
                 ),
               ),
             ],
@@ -766,64 +714,46 @@ class _HeroStatChip extends StatelessWidget {
   }
 }
 
-class _HomeSectionHeader extends StatelessWidget {
-  const _HomeSectionHeader({required this.title, required this.subtitle});
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.text});
 
-  final String title;
-  final String subtitle;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          subtitle,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+    return Text(
+      text,
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
           ),
-        ),
-      ],
     );
   }
 }
 
-class _HomeQuickAction {
-  const _HomeQuickAction({
+class _SimpleAction {
+  const _SimpleAction({
     required this.icon,
-    required this.title,
-    required this.subtitle,
+    required this.label,
     required this.onTap,
   });
 
   final IconData icon;
-  final String title;
-  final String subtitle;
+  final String label;
   final VoidCallback onTap;
 }
 
-class _QuickActionGrid extends StatelessWidget {
-  const _QuickActionGrid({required this.actions});
+class _SimpleActionWrap extends StatelessWidget {
+  const _SimpleActionWrap({required this.actions});
 
-  final List<_HomeQuickAction> actions;
+  final List<_SimpleAction> actions;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        const spacing = 16.0;
-        final columns = width >= 1040
-            ? 3
-            : width >= 720
-                ? 2
-                : 1;
+        final columns = width >= 720 ? 2 : 1;
+        const spacing = 12.0;
         final tileWidth = columns == 1
             ? width
             : (width - spacing * (columns - 1)) / columns;
@@ -835,7 +765,7 @@ class _QuickActionGrid extends StatelessWidget {
             for (final action in actions)
               SizedBox(
                 width: tileWidth,
-                child: _QuickActionCard(action: action),
+                child: _SimpleActionButton(action: action),
               ),
           ],
         );
@@ -844,10 +774,10 @@ class _QuickActionGrid extends StatelessWidget {
   }
 }
 
-class _QuickActionCard extends StatelessWidget {
-  const _QuickActionCard({required this.action});
+class _SimpleActionButton extends StatelessWidget {
+  const _SimpleActionButton({required this.action});
 
-  final _HomeQuickAction action;
+  final _SimpleAction action;
 
   @override
   Widget build(BuildContext context) {
@@ -857,47 +787,35 @@ class _QuickActionCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        borderRadius: BorderRadius.circular(20),
         onTap: action.onTap,
-        borderRadius: BorderRadius.circular(28),
         child: Ink(
           decoration: BoxDecoration(
             color: scheme.surface,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(color: scheme.primary.withOpacity(0.12)),
-            boxShadow: [
-              BoxShadow(
-                color: scheme.primary.withOpacity(0.06),
-                blurRadius: 20,
-                offset: const Offset(0, 14),
-              ),
-            ],
           ),
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          child: Row(
             children: [
               Container(
                 decoration: BoxDecoration(
                   color: scheme.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.all(12),
-                child: Icon(action.icon, color: scheme.primary, size: 28),
+                padding: const EdgeInsets.all(10),
+                child: Icon(action.icon, color: scheme.primary, size: 22),
               ),
-              const SizedBox(height: 18),
-              Text(
-                action.title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                action.subtitle,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  action.label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
+              const Icon(Icons.chevron_right, size: 20),
             ],
           ),
         ),
@@ -905,6 +823,146 @@ class _QuickActionCard extends StatelessWidget {
     );
   }
 }
+
+class _SimpleLevelList extends StatelessWidget {
+  const _SimpleLevelList({required this.isLoading, required this.overview});
+
+  final bool isLoading;
+  final List<HskLevelOverview> overview;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading && overview.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final items = overview.isEmpty
+        ? List.generate(
+            4,
+            (index) => HskLevelOverview(
+                  level: index + 1,
+                  sectionCount: 0,
+                  totalWords: 0,
+                  masteredWords: 0,
+                ),
+          )
+        : overview;
+
+    return Column(
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          _SimpleLevelCard(
+            item: items[i],
+            disabled: overview.isEmpty && isLoading,
+          ),
+          if (i != items.length - 1) const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _SimpleLevelCard extends StatelessWidget {
+  const _SimpleLevelCard({required this.item, this.disabled = false});
+
+  final HskLevelOverview item;
+  final bool disabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final badge = HskPalette.badgeColor(item.level, scheme);
+    final accent = HskPalette.accentForLevel(item.level, scheme);
+    final progress = item.progress.clamp(0, 1).toDouble();
+    final progressLabel = item.totalWords == 0
+        ? 'Chưa có dữ liệu'
+        : '${item.masteredWords}/${item.totalWords} từ đã thuộc';
+
+    return Opacity(
+      opacity: disabled ? 0.6 : 1,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: disabled
+              ? null
+              : () => navigateAfterFrame(() {
+                    Get.toNamed(
+                      AppRoutes.sections,
+                      arguments: {'level': item.level},
+                    );
+                  }),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: badge.withOpacity(0.18)),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: badge.withOpacity(0.16),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'HSK\n${item.level}',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: badge,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${item.sectionCount} bài học',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 6,
+                        backgroundColor: accent.withOpacity(0.2),
+                        valueColor: AlwaysStoppedAnimation<Color>(accent),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        progressLabel,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 18,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 class _NavigationCard extends StatelessWidget {
   const _NavigationCard({
@@ -1059,154 +1117,3 @@ class _NavigationItem {
   final Color? accent;
 }
 
-class _LevelGrid extends StatelessWidget {
-  const _LevelGrid({required this.isLoading, required this.overview});
-
-  final bool isLoading;
-  final List<HskLevelOverview> overview;
-
-  @override
-  Widget build(BuildContext context) {
-    if (isLoading && overview.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    final items = overview.isEmpty
-        ? List.generate(
-            4,
-            (index) => HskLevelOverview(
-                  level: index + 1,
-                  sectionCount: 0,
-                  totalWords: 0,
-                  masteredWords: 0,
-                ),
-          )
-        : overview;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final crossAxisCount = width >= 1080
-            ? 4
-            : width >= 840
-                ? 3
-                : 2;
-        const spacing = 16.0;
-        final cardWidth = (width - spacing * (crossAxisCount - 1)) / crossAxisCount;
-        final cardHeight =
-            (cardWidth * 0.72).clamp(220.0, 280.0).toDouble();
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
-          children: [
-            for (final item in items)
-              SizedBox(
-                width: cardWidth,
-                height: cardHeight,
-                child: _LevelCard(
-                  item: item,
-                  disabled: overview.isEmpty && isLoading,
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _LevelCard extends StatelessWidget {
-  const _LevelCard({required this.item, this.disabled = false});
-
-  final HskLevelOverview item;
-  final bool disabled;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final gradient = HskPalette.gradientForLevel(item.level);
-    final accent = HskPalette.accentForLevel(item.level, theme.colorScheme);
-    final badge = HskPalette.badgeColor(item.level, theme.colorScheme);
-    final progress = item.progress.clamp(0, 1).toDouble();
-
-    return Opacity(
-      opacity: disabled ? 0.6 : 1,
-      child: Material(
-        color: Colors.transparent,
-        child: SizedBox.expand(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(28),
-            onTap: disabled
-                ? null
-                : () => navigateAfterFrame(() {
-                      Get.toNamed(
-                        AppRoutes.sections,
-                        arguments: {'level': item.level},
-                      );
-                    }),
-            child: Ink(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: gradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: badge.withOpacity(0.2)),
-              ),
-              padding: const EdgeInsets.all(24),
-              child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: badge.withOpacity(0.16),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        'HSK ${item.level}',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: badge,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Icon(Icons.arrow_forward_rounded, color: accent),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  '${item.sectionCount} bài học',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${item.masteredWords}/${item.totalWords == 0 ? 0 : item.totalWords} từ đã thuộc',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const Spacer(),
-                LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 8,
-                  backgroundColor: accent.withOpacity(0.15),
-                  color: accent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
