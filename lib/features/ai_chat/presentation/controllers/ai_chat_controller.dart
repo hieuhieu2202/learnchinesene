@@ -49,21 +49,24 @@ class AiChatController extends GetxController {
 
   Future<void> _triggerBootPromptIfNeeded() async {
     if (_bootPromptSent) return;
+
+    final rawPrompt = bootPrompt?.trim();
+    if (rawPrompt == null || rawPrompt.isEmpty) {
+      _bootPromptSent = true;
+      return;
+    }
+    final prompt = rawPrompt;
+
     if (messages.any((message) => message.isUser)) {
       _bootPromptSent = true;
       return;
     }
     _bootPromptSent = true;
 
-    final prompt = (bootPrompt ??
-            'Gợi ý giúp mình nên luyện những gì trong tiếng Trung hôm nay với các ví dụ cụ thể nhé.')
-        .trim();
-    if (prompt.isEmpty) return;
-
     final display = (bootDisplayText ??
             (bootWordContext != null && bootWordContext!.trim().isNotEmpty
                 ? 'Giải thích giúp mình về ${bootWordContext!.trim()} nhé!'
-                : 'Gợi ý luyện tập tiếng Trung hôm nay nhé!'))
+                : prompt))
         .trim();
 
     await _ask(
