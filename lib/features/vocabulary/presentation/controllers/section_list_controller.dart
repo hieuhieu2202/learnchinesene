@@ -2,9 +2,11 @@ import 'package:get/get.dart';
 
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/entities/word.dart';
+import '../../domain/usecases/get_examples_by_word.dart';
 import '../../domain/usecases/get_sections.dart';
 import '../../domain/usecases/get_words_by_section.dart';
 import '../utils/hsk_utils.dart';
+import '../utils/word_filters.dart';
 
 class SectionProgress {
   SectionProgress({
@@ -36,6 +38,7 @@ class SectionListController extends GetxController {
   SectionListController({
     required this.getSections,
     required this.getWordsBySection,
+    required this.getExamplesByWord,
     required int initialLevel,
   }) {
     selectedLevel.value = initialLevel;
@@ -43,6 +46,7 @@ class SectionListController extends GetxController {
 
   final GetSections getSections;
   final GetWordsBySection getWordsBySection;
+  final GetExamplesByWord getExamplesByWord;
 
   final sections = <SectionProgress>[].obs;
   final _allSections = <SectionProgress>[];
@@ -66,7 +70,11 @@ class SectionListController extends GetxController {
       final items = <SectionProgress>[];
       for (final id in sectionIds) {
         final words = await getWordsBySection(id);
-        items.add(_buildProgress(id, words));
+        final filtered = await dedupeWordsByExample(
+          words: words,
+          loadExamples: getExamplesByWord,
+        );
+        items.add(_buildProgress(id, filtered));
       }
       _allSections
         ..clear()

@@ -60,49 +60,136 @@ class _DashboardTab extends StatelessWidget {
     return Obx(() {
       final isLoading = controller.isLoading.value;
       final overview = controller.hskOverview.toList();
+      final reviewCount = controller.reviewCount.value;
 
       return _GradientBackground(
         child: SafeArea(
           bottom: false,
-          child: SingleChildScrollView(
+          child: CustomScrollView(
             key: const PageStorageKey('home-dashboard'),
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Học HSK thật nhẹ nhàng',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                sliver: SliverToBoxAdapter(
+                  child: _HomeWelcomeCard(reviewCount: reviewCount),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 120),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const _SectionTitle(text: 'Chọn cấp độ HSK'),
+                          const Spacer(),
+                          TextButton(
+                            onPressed: () => navigateAfterFrame(
+                              () => Get.toNamed(
+                                AppRoutes.sections,
+                                arguments: {'level': 1},
+                              ),
+                            ),
+                            child: const Text('Xem tất cả'),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 12),
+                      _SimpleLevelList(isLoading: isLoading, overview: overview),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Tập trung vào câu ví dụ và hoàn thành từng bước luyện gõ.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 28),
-                Row(
-                  children: [
-                    const _SectionTitle(text: 'Cấp độ HSK'),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () => navigateAfterFrame(
-                        () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
-                      ),
-                      child: const Text('Xem tất cả'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _SimpleLevelList(isLoading: isLoading, overview: overview),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
     });
+  }
+}
+
+class _HomeWelcomeCard extends StatelessWidget {
+  const _HomeWelcomeCard({required this.reviewCount});
+
+  final int reviewCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final reviewLabel = reviewCount > 0
+        ? '$reviewCount từ cần ôn tập hôm nay'
+        : 'Không có từ cần ôn tập hôm nay';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Xin chào!',
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Lựa chọn cấp độ HSK và luyện 10 bước gõ với ví dụ chuẩn.',
+          style: theme.textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 20),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: LinearGradient(
+              colors: [
+                scheme.surface,
+                scheme.surfaceVariant.withOpacity(0.9),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.shadow.withOpacity(0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 16),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Ôn tập hôm nay',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                reviewLabel,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              if (reviewCount > 0) ...[
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () => navigateAfterFrame(() {
+                    Get.toNamed(AppRoutes.reviewToday);
+                  }),
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Bắt đầu ôn tập'),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -527,18 +614,43 @@ class _SimpleLevelList extends StatelessWidget {
           )
         : overview;
 
-    return Column(
-      children: [
-        for (var i = 0; i < items.length; i++) ...[
-          _SimpleLevelCard(
-            item: items[i],
-            disabled: overview.isEmpty && isLoading,
-          ),
-          if (i != items.length - 1) const SizedBox(height: 12),
-        ],
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.of(context).size.width - 48;
+        final columns = _preferredLevelColumns(maxWidth);
+        final spacing = 16.0;
+        final itemWidth =
+            (maxWidth - spacing * (columns - 1)) / columns;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final item in items)
+              SizedBox(
+                width: itemWidth,
+                child: _SimpleLevelCard(
+                  item: item,
+                  disabled: overview.isEmpty && isLoading,
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
+}
+
+int _preferredLevelColumns(double maxWidth) {
+  if (maxWidth < 420) {
+    return 1;
+  }
+  if (maxWidth < 720) {
+    return 2;
+  }
+  return 3;
 }
 
 class _SimpleLevelCard extends StatelessWidget {

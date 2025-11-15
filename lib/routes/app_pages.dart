@@ -131,6 +131,7 @@ class AppPages {
           getWordsToReviewToday: Get.find(),
           getSections: Get.find(),
           getWordsBySection: Get.find(),
+          getExamplesByWord: Get.find(),
         ));
       }),
     ),
@@ -143,6 +144,7 @@ class AppPages {
         Get.put(SectionListController(
           getSections: Get.find(),
           getWordsBySection: Get.find(),
+          getExamplesByWord: Get.find(),
           initialLevel: hskLevel,
         ));
       }),
@@ -158,6 +160,7 @@ class AppPages {
           sectionId: sectionId,
           sectionTitle: sectionTitle,
           getWordsBySection: Get.find(),
+          getExamplesByWord: Get.find(),
         ));
       }),
     ),
