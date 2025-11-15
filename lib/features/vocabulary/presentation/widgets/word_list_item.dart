@@ -12,6 +12,7 @@ class WordListItem extends StatelessWidget {
     this.progress,
     this.maxWidth,
     this.showTransliteration = true,
+    this.showTranslation = true,
   });
 
   final Word word;
@@ -20,6 +21,7 @@ class WordListItem extends StatelessWidget {
   final double? progress;
   final double? maxWidth;
   final bool showTransliteration;
+  final bool showTranslation;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +66,7 @@ class WordListItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Text(
@@ -72,9 +74,9 @@ class WordListItem extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleLarge?.copyWith(
-                        fontSize: 20,
+                        fontSize: showTranslation || showTransliteration ? 20 : 18,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 0.2,
+                        letterSpacing: 0.15,
                         color: theme.colorScheme.onSurface,
                       ),
                     ),
@@ -89,17 +91,19 @@ class WordListItem extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                word.translation,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: translationColor,
+              if (showTranslation && word.translation.trim().isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  word.translation,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: translationColor,
+                  ),
                 ),
-              ),
-              if (showTransliteration) ...[
+              ],
+              if (showTransliteration && word.transliteration.trim().isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(
                   word.transliteration,
@@ -111,7 +115,10 @@ class WordListItem extends StatelessWidget {
                   ),
                 ),
               ],
-              const SizedBox(height: 12),
+              SizedBox(height: (showTranslation && word.translation.trim().isNotEmpty) ||
+                      (showTransliteration && word.transliteration.trim().isNotEmpty)
+                  ? 12
+                  : 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(999),
                 child: SizedBox(

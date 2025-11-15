@@ -288,6 +288,7 @@ class _WordCluster extends StatelessWidget {
                       onTap: () => onTap(word),
                       maxWidth: tileWidth,
                       showTransliteration: false,
+                      showTranslation: false,
                       progress: word.mastered ? 1.0 : 0.0,
                     ),
                   )
