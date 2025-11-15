@@ -184,6 +184,7 @@ class _ChatInputBar extends StatelessWidget {
             controller: controller,
             minLines: 1,
             maxLines: 4,
+            autofocus: true,
             textInputAction: TextInputAction.newline,
             decoration: InputDecoration(
               hintText: 'Nhập câu hỏi về tiếng Trung...',

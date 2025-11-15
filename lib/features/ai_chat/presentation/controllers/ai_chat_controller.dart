@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 
 import '../../domain/entities/ai_message.dart';
@@ -14,6 +16,7 @@ class AiChatController extends GetxController {
 
   final messages = <AiMessage>[].obs;
   final isLoading = false.obs;
+  bool _bootPromptSent = false;
 
   @override
   void onInit() {
@@ -33,6 +36,7 @@ class AiChatController extends GetxController {
         isUser: false,
       ));
     }
+    Future.microtask(_triggerBootPromptIfNeeded);
   }
 
   Future<void> sendMessage(String text) async {
@@ -55,5 +59,17 @@ class AiChatController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _triggerBootPromptIfNeeded() {
+    if (_bootPromptSent) return;
+    if (messages.any((message) => message.isUser)) return;
+
+    final prompt = initialContext != null && initialContext!.isNotEmpty
+        ? 'Mình muốn hiểu rõ hơn về "$initialContext". Hãy giải thích nghĩa, ngữ cảnh và đưa thêm ví dụ tiếng Trung nhé.'
+        : 'Gợi ý giúp mình nên luyện những gì trong tiếng Trung hôm nay với các ví dụ cụ thể nhé.';
+
+    _bootPromptSent = true;
+    unawaited(sendMessage(prompt));
   }
 }
