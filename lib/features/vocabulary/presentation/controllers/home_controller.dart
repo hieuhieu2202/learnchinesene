@@ -2,12 +2,10 @@ import 'package:get/get.dart';
 
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/entities/word.dart';
-import '../../domain/usecases/get_examples_by_word.dart';
 import '../../domain/usecases/get_sections.dart';
 import '../../domain/usecases/get_words_by_section.dart';
 import '../../domain/usecases/get_words_to_review_today.dart';
 import '../utils/hsk_utils.dart';
-import '../utils/word_filters.dart';
 
 class HskLevelOverview {
   HskLevelOverview({
@@ -30,13 +28,11 @@ class HomeController extends GetxController {
     required this.getWordsToReviewToday,
     required this.getSections,
     required this.getWordsBySection,
-    required this.getExamplesByWord,
   });
 
   final GetWordsToReviewToday getWordsToReviewToday;
   final GetSections getSections;
   final GetWordsBySection getWordsBySection;
-  final GetExamplesByWord getExamplesByWord;
 
   final reviewCount = 0.obs;
   final currentSectionId = 1.obs;
@@ -72,24 +68,20 @@ class HomeController extends GetxController {
 
     for (final sectionId in sectionIds) {
       final words = await getWordsBySection(sectionId);
-      final filtered = await dedupeWordsByExample(
-        words: words,
-        loadExamples: getExamplesByWord,
-      );
       final referenceTitle =
-          filtered.isNotEmpty ? filtered.first.sectionTitle : 'Section $sectionId';
+          words.isNotEmpty ? words.first.sectionTitle : 'Section $sectionId';
       final level = parseHskLevel(
         sectionId: sectionId,
         sectionTitle: referenceTitle,
       );
       final aggregate = aggregates.putIfAbsent(level, _LevelAggregate.new);
 
-      if (filtered.isEmpty) {
+      if (words.isEmpty) {
         aggregate.registerEmpty(sectionId);
         continue;
       }
 
-      aggregate.registerSection(sectionId, filtered);
+      aggregate.registerSection(sectionId, words);
     }
 
     final overviewItems = <HskLevelOverview>[];
