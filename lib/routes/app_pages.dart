@@ -131,6 +131,7 @@ class AppPages {
           getWordsToReviewToday: Get.find(),
           getSections: Get.find(),
           getWordsBySection: Get.find(),
+          getExamplesByWord: Get.find(),
         ));
       }),
     ),
