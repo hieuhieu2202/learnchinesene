@@ -68,13 +68,6 @@ class _DashboardTab extends StatelessWidget {
 
       final actions = <_SimpleAction>[
         _SimpleAction(
-          icon: Icons.menu_book_rounded,
-          label: 'Chọn cấp độ',
-          onTap: () => navigateAfterFrame(
-            () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
-          ),
-        ),
-        _SimpleAction(
           icon: Icons.bolt_rounded,
           label: 'Luyện 10 bước',
           onTap: () => navigateAfterFrame(() {
@@ -120,29 +113,28 @@ class _DashboardTab extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 24),
-                _HomeSummaryCard(
+                _HomeStatsRow(
                   totalWords: totalWords,
                   masteredWords: masteredWords,
                   reviewCount: reviewCount,
-                  onPracticeTap: () => navigateAfterFrame(() {
-                    Get.toNamed(
-                      AppRoutes.practiceSession,
-                      arguments: {
-                        'words': const <Word>[],
-                      },
-                    );
-                  }),
-                  onReviewTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
-                  onBrowseTap: () => navigateAfterFrame(
-                    () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
-                  ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
                 _SectionTitle(text: 'Tác vụ nhanh'),
                 const SizedBox(height: 12),
                 _SimpleActionWrap(actions: actions),
                 const SizedBox(height: 32),
-                _SectionTitle(text: 'Cấp độ HSK'),
+                Row(
+                  children: [
+                    const _SectionTitle(text: 'Cấp độ HSK'),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => navigateAfterFrame(
+                        () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
+                      ),
+                      child: const Text('Xem tất cả'),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 _SimpleLevelList(isLoading: isLoading, overview: overview),
               ],
@@ -535,137 +527,62 @@ class _GradientBackground extends StatelessWidget {
   }
 }
 
-class _HomeSummaryCard extends StatelessWidget {
-  const _HomeSummaryCard({
+class _HomeStatsRow extends StatelessWidget {
+  const _HomeStatsRow({
     required this.totalWords,
     required this.masteredWords,
     required this.reviewCount,
-    required this.onPracticeTap,
-    required this.onReviewTap,
-    required this.onBrowseTap,
   });
 
   final int totalWords;
   final int masteredWords;
   final int reviewCount;
-  final VoidCallback onPracticeTap;
-  final VoidCallback onReviewTap;
-  final VoidCallback onBrowseTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final progress = totalWords == 0
-        ? 0.0
-        : (masteredWords / totalWords).clamp(0, 1).toDouble();
-    final hasReview = reviewCount > 0;
+    final scheme = Theme.of(context).colorScheme;
+    final items = [
+      _StatItem(
+        label: 'Tổng từ',
+        value: totalWords == 0 ? '—' : '$totalWords',
+      ),
+      _StatItem(
+        label: 'Đã thuộc',
+        value: masteredWords == 0 ? '0' : '$masteredWords',
+      ),
+      _StatItem(
+        label: 'Chờ ôn',
+        value: reviewCount == 0 ? '0' : '$reviewCount',
+        highlight: reviewCount > 0,
+      ),
+    ];
 
     return Container(
       decoration: BoxDecoration(
         color: scheme.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: scheme.primary.withOpacity(0.12)),
-        boxShadow: [
-          BoxShadow(
-            color: scheme.primary.withOpacity(0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 16),
-          ),
-        ],
       ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      child: Row(
         children: [
-          Text(
-            'Tổng quan hôm nay',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            totalWords == 0
-                ? 'Bắt đầu từ cấp độ đầu tiên để xây nền tảng từ vựng.'
-                : 'Bạn đã thuộc $masteredWords/$totalWords từ.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 16),
-          LinearProgressIndicator(
-            value: progress,
-            minHeight: 6,
-            backgroundColor: scheme.primary.withOpacity(0.16),
-            valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _SummaryChip(
-                icon: Icons.menu_book_outlined,
-                label: 'Tổng từ',
-                value: totalWords == 0 ? '—' : '$totalWords',
-              ),
-              _SummaryChip(
-                icon: Icons.verified_outlined,
-                label: 'Đã thuộc',
-                value: masteredWords == 0 ? '0' : '$masteredWords',
-              ),
-              _SummaryChip(
-                icon: Icons.refresh_outlined,
-                label: 'Chờ ôn',
-                value: reviewCount == 0 ? '0' : '$reviewCount',
-                highlight: hasReview,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: onPracticeTap,
-                  icon: const Icon(Icons.bolt_rounded),
-                  label: const Text('Luyện 10 bước'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: hasReview ? onReviewTap : onBrowseTap,
-                  icon: Icon(hasReview ? Icons.checklist_rounded : Icons.menu_book_rounded),
-                  label: Text(hasReview ? 'Ôn $reviewCount từ' : 'Chọn cấp độ'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton(
-              onPressed: onBrowseTap,
-              child: const Text('Khám phá lộ trình HSK'),
-            ),
-          ),
+          for (var i = 0; i < items.length; i++) ...[
+            Expanded(child: items[i]),
+            if (i != items.length - 1) const _StatDivider(),
+          ],
         ],
       ),
     );
   }
 }
 
-class _SummaryChip extends StatelessWidget {
-  const _SummaryChip({
-    required this.icon,
+class _StatItem extends StatelessWidget {
+  const _StatItem({
     required this.label,
     required this.value,
     this.highlight = false,
   });
 
-  final IconData icon;
   final String label;
   final String value;
   final bool highlight;
@@ -673,43 +590,43 @@ class _SummaryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final background = highlight
-        ? scheme.primary.withOpacity(0.16)
-        : scheme.surface.withOpacity(0.2);
-    final color = highlight ? scheme.primary : scheme.onSurfaceVariant;
+    final color = highlight ? theme.colorScheme.primary : theme.colorScheme.onSurface;
+    final labelColor = highlight
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurfaceVariant;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withOpacity(0.24)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: theme.textTheme.labelSmall?.copyWith(color: color),
-              ),
-              Text(
-                value,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-              ),
-            ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.textTheme.labelMedium?.copyWith(color: labelColor),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: color,
           ),
-        ],
-      ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatDivider extends StatelessWidget {
+  const _StatDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 1,
+      height: 36,
+      margin: const EdgeInsets.symmetric(horizontal: 18),
+      color: scheme.outlineVariant,
     );
   }
 }
