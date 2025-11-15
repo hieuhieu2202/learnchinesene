@@ -16,7 +16,7 @@ class HomePage extends GetView<HomeController> {
       final index = controller.selectedTab.value;
       final pages = <Widget>[
         _DashboardTab(controller: controller),
-        _AiHubTab(controller: controller),
+        const _AiHubTab(),
         _SystemHubTab(controller: controller),
       ];
 
@@ -150,9 +150,7 @@ class _DashboardTab extends StatelessWidget {
 }
 
 class _AiHubTab extends StatelessWidget {
-  const _AiHubTab({required this.controller});
-
-  final HomeController controller;
+  const _AiHubTab();
 
   @override
   Widget build(BuildContext context) {
@@ -189,14 +187,12 @@ class _AiHubTab extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 28),
-          Obx(() {
-            final samples = controller.aiSentenceSamples;
-            final loading = controller.isLoading.value && samples.isEmpty;
-            return _AiGrammarSection(
-              samples: samples.toList(),
-              isLoading: loading,
-            );
-          }),
+          _AiInfoCard(
+            icon: Icons.menu_book_outlined,
+            title: 'Giải thích ví dụ trong HSK',
+            message:
+                'Vào trang chi tiết từ và chạm vào nút AI trong từng câu ví dụ để nhận giải thích ngữ pháp.',
+          ),
           const SizedBox(height: 28),
           _AiSection(
             title: 'Gợi ý luyện câu',
@@ -268,242 +264,70 @@ class _AiSection extends StatelessWidget {
   }
 }
 
-class _AiGrammarSection extends StatelessWidget {
-  const _AiGrammarSection({
-    required this.samples,
-    required this.isLoading,
+class _AiInfoCard extends StatelessWidget {
+  const _AiInfoCard({
+    required this.icon,
+    required this.title,
+    required this.message,
   });
 
-  final List<AiSentenceSample> samples;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Giải thích ngữ pháp',
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Chọn một câu ví dụ trong giáo trình HSK để AI phân tích cấu trúc và cách dùng.',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 18),
-        if (isLoading)
-          Container(
-            height: 120,
-            alignment: Alignment.center,
-            child: CircularProgressIndicator(
-              color: theme.colorScheme.primary,
-            ),
-          )
-        else if (samples.isEmpty)
-          _AiActionCard(
-            item: _AiSectionItem(
-              icon: Icons.question_answer_outlined,
-              title: 'Nhập câu bạn đang học',
-              subtitle:
-                  'Dán câu tiếng Trung để AI giải thích từng thành phần rõ ràng.',
-              onTap: () => navigateAfterFrame(
-                () => Get.toNamed(
-                  AppRoutes.aiChat,
-                  arguments: {
-                    'context':
-                        'Giải thích chi tiết ngữ pháp và cấu trúc của câu tiếng Trung tôi gửi.',
-                  },
-                ),
-              ),
-            ),
-          )
-        else
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final maxWidth = constraints.maxWidth;
-              final columns = maxWidth >= 720 ? 3 : maxWidth >= 520 ? 2 : 1;
-              final spacing = 16.0;
-              final effectiveWidth = columns == 1
-                  ? maxWidth
-                  : (maxWidth - spacing * (columns - 1)) / columns;
-
-              final cards = <Widget>[
-                for (final sample in samples)
-                  SizedBox(
-                    width: effectiveWidth,
-                    child: _AiGrammarExampleCard(sample: sample),
-                  ),
-                SizedBox(
-                  width: effectiveWidth,
-                  child: const _AiGrammarManualCard(),
-                ),
-              ];
-
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: cards,
-              );
-            },
-          ),
-      ],
-    );
-  }
-}
-
-class _AiGrammarExampleCard extends StatelessWidget {
-  const _AiGrammarExampleCard({required this.sample});
-
-  final AiSentenceSample sample;
+  final IconData icon;
+  final String title;
+  final String message;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = theme.colorScheme.primary;
-    final sentence = sample.example.sentenceCn;
-    final translation = sample.example.sentenceVi;
 
-    final prompt =
-        'Giải thích chi tiết cấu trúc ngữ pháp của câu "$sentence" (nghĩa: $translation). '
-        'Phân tích từng thành phần bằng tiếng Việt và nhấn mạnh cách sử dụng từ "${sample.word}".';
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => navigateAfterFrame(
-          () => Get.toNamed(
-            AppRoutes.aiChat,
-            arguments: {'context': prompt},
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: accent.withOpacity(0.12), width: 1.1),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withOpacity(0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 10),
           ),
-        ),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: accent.withOpacity(0.15), width: 1.1),
-            boxShadow: [
-              BoxShadow(
-                color: accent.withOpacity(0.06),
-                blurRadius: 16,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                sample.contextLabel,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: accent,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                sentence,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                translation,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.auto_fix_high, size: 18, color: accent),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Giải thích câu này',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: accent,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(Icons.chevron_right, color: accent),
-                ],
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
-    );
-  }
-}
-
-class _AiGrammarManualCard extends StatelessWidget {
-  const _AiGrammarManualCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accent = theme.colorScheme.tertiary;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => navigateAfterFrame(
-          () => Get.toNamed(
-            AppRoutes.aiChat,
-            arguments: {
-              'context':
-                  'Tôi muốn phân tích ngữ pháp cho câu tiếng Trung tôi gửi. Hãy hỏi tôi nhập câu nếu chưa có.',
-            },
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: accent),
           ),
-        ),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: accent.withOpacity(0.18), width: 1.1),
-            boxShadow: [
-              BoxShadow(
-                color: accent.withOpacity(0.06),
-                blurRadius: 14,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.add_comment_outlined, color: accent),
-              const SizedBox(height: 12),
-              Text(
-                'Nhập câu khác',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Dán câu khó hiểu để AI bóc tách cấu trúc, giải thích từng bước.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

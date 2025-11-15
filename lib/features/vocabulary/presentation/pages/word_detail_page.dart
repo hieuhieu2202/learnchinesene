@@ -420,6 +420,7 @@ class _ExamplesSection extends StatelessWidget {
     final accent = HskPalette.accentForLevel(level, theme.colorScheme);
     return Obx(() {
       final examples = controller.examples;
+      final focusWord = controller.word.value;
       if (examples.isEmpty) {
         return Container(
           padding: const EdgeInsets.all(24),
@@ -481,6 +482,29 @@ class _ExamplesSection extends StatelessWidget {
                         example.sentenceVi,
                         style: theme.textTheme.bodySmall,
                       ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          style: TextButton.styleFrom(
+                            foregroundColor: accent,
+                          ),
+                          onPressed: () => navigateAfterFrame(
+                            () => Get.toNamed(
+                              AppRoutes.aiChat,
+                              arguments: {
+                                'context': _buildGrammarPrompt(
+                                  focusWord?.word ?? '',
+                                  example.sentenceCn,
+                                  example.sentenceVi,
+                                ),
+                              },
+                            ),
+                          ),
+                          icon: const Icon(Icons.auto_fix_high_outlined),
+                          label: const Text('Giải thích ngữ pháp với AI'),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -490,5 +514,18 @@ class _ExamplesSection extends StatelessWidget {
         ),
       );
     });
+  }
+
+  String _buildGrammarPrompt(String word, String sentenceCn, String translation) {
+    final buffer = StringBuffer(
+        'Giải thích chi tiết cấu trúc ngữ pháp của câu "$sentenceCn" (nghĩa: $translation). ')
+      ..write('Trình bày bằng tiếng Việt, phân tích từng thành phần trong câu');
+    if (word.trim().isNotEmpty) {
+      buffer.write(' và nhấn mạnh cách sử dụng của từ "$word".');
+    } else {
+      buffer.write('.');
+    }
+    buffer.write(' Đề xuất thêm một câu ví dụ tương tự để luyện gõ.');
+    return buffer.toString();
   }
 }
