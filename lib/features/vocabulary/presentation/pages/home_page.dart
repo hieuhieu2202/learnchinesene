@@ -60,10 +60,6 @@ class _DashboardTab extends StatelessWidget {
     return Obx(() {
       final isLoading = controller.isLoading.value;
       final overview = controller.hskOverview.toList();
-      final reviewCount = controller.reviewCount.value;
-
-      final totalWords = overview.fold<int>(0, (sum, item) => sum + item.totalWords);
-      final masteredWords = overview.fold<int>(0, (sum, item) => sum + item.masteredWords);
 
       return _GradientBackground(
         child: SafeArea(
@@ -86,13 +82,7 @@ class _DashboardTab extends StatelessWidget {
                   'Tập trung vào câu ví dụ và hoàn thành từng bước luyện gõ.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 24),
-                _HomeStatsRow(
-                  totalWords: totalWords,
-                  masteredWords: masteredWords,
-                  reviewCount: reviewCount,
-                ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 28),
                 Row(
                   children: [
                     const _SectionTitle(text: 'Cấp độ HSK'),
@@ -493,110 +483,6 @@ class _GradientBackground extends StatelessWidget {
         bottom: false,
         child: child,
       ),
-    );
-  }
-}
-
-class _HomeStatsRow extends StatelessWidget {
-  const _HomeStatsRow({
-    required this.totalWords,
-    required this.masteredWords,
-    required this.reviewCount,
-  });
-
-  final int totalWords;
-  final int masteredWords;
-  final int reviewCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final items = [
-      _StatItem(
-        label: 'Tổng từ',
-        value: totalWords == 0 ? '—' : '$totalWords',
-      ),
-      _StatItem(
-        label: 'Đã thuộc',
-        value: masteredWords == 0 ? '0' : '$masteredWords',
-      ),
-      _StatItem(
-        label: 'Chờ ôn',
-        value: reviewCount == 0 ? '0' : '$reviewCount',
-        highlight: reviewCount > 0,
-      ),
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: scheme.primary.withOpacity(0.12)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      child: Row(
-        children: [
-          for (var i = 0; i < items.length; i++) ...[
-            Expanded(child: items[i]),
-            if (i != items.length - 1) const _StatDivider(),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.label,
-    required this.value,
-    this.highlight = false,
-  });
-
-  final String label;
-  final String value;
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = highlight ? theme.colorScheme.primary : theme.colorScheme.onSurface;
-    final labelColor = highlight
-        ? theme.colorScheme.primary
-        : theme.colorScheme.onSurfaceVariant;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.labelMedium?.copyWith(color: labelColor),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatDivider extends StatelessWidget {
-  const _StatDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: 1,
-      height: 36,
-      margin: const EdgeInsets.symmetric(horizontal: 18),
-      color: scheme.outlineVariant,
     );
   }
 }
