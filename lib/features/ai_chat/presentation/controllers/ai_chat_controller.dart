@@ -18,6 +18,14 @@ class AiChatController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    messages.add(
+      const AiMessage(
+        id: 'intro',
+        text:
+            'Xin chào! Mình là Hán Ngữ Bot – trợ lý dành cho các câu hỏi về tiếng Trung. Hãy hỏi mình về từ vựng, ngữ pháp hoặc cách luyện tập nhé.',
+        isUser: false,
+      ),
+    );
     if (initialContext != null && initialContext!.isNotEmpty) {
       messages.add(AiMessage(
         id: 'context',
@@ -28,10 +36,11 @@ class AiChatController extends GetxController {
   }
 
   Future<void> sendMessage(String text) async {
-    if (text.trim().isEmpty) return;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
     final userMessage = AiMessage(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      text: text,
+      text: trimmed,
       isUser: true,
     );
     messages.add(userMessage);
@@ -39,7 +48,7 @@ class AiChatController extends GetxController {
     isLoading.value = true;
     try {
       final response = await askAI(AskAiParams(
-        prompt: text,
+        prompt: trimmed,
         wordContext: initialContext,
       ));
       messages.add(response);
