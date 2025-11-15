@@ -254,17 +254,20 @@ class _WordCluster extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    const spacing = 12.0;
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth;
-        double tileWidth;
-        if (maxWidth >= 680) {
-          tileWidth = 220;
-        } else if (maxWidth >= 520) {
-          tileWidth = 188;
-        } else {
-          tileWidth = 156;
-        }
+        final rawWidth = constraints.maxWidth;
+        final availableWidth = rawWidth.isFinite
+            ? rawWidth
+            : (MediaQuery.of(context).size.width - 48)
+                .clamp(120.0, double.infinity)
+                .toDouble();
+        final columns = _preferredColumnCount(availableWidth, spacing);
+        final tileWidth = columns <= 1
+            ? availableWidth
+            : (availableWidth - spacing * (columns - 1)) / columns;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,8 +281,8 @@ class _WordCluster extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              spacing: spacing,
+              runSpacing: spacing,
               children: words
                   .map(
                     (word) => WordListItem(
@@ -299,6 +302,19 @@ class _WordCluster extends StatelessWidget {
       },
     );
   }
+}
+
+int _preferredColumnCount(double maxWidth, double spacing) {
+  if (maxWidth.isInfinite || maxWidth.isNaN) {
+    return 4;
+  }
+  const minTileWidth = 144.0;
+  final available = maxWidth + spacing; // include spacing to avoid division by zero issues
+  final computed = (available / (minTileWidth + spacing)).floor();
+  if (computed <= 1) {
+    return available >= 2 * (minTileWidth + spacing) ? 2 : 1;
+  }
+  return computed.clamp(1, 4).toInt();
 }
 
 class _EmptyWordState extends StatelessWidget {
