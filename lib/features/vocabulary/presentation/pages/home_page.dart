@@ -134,7 +134,7 @@ class _HomeWelcomeCard extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'Lựa chọn cấp độ HSK và luyện 10 bước gõ với ví dụ chuẩn.',
+          'Lựa chọn cấp độ HSK và luyện câu ví dụ chuẩn.',
           style: theme.textTheme.bodyMedium,
         ),
         const SizedBox(height: 20),
@@ -240,7 +240,7 @@ class _AiHubTab extends StatelessWidget {
           const SizedBox(height: 28),
           _AiSection(
             title: 'Gợi ý luyện câu',
-            subtitle: 'Tạo thêm câu ví dụ để luyện 10 bước gõ cho từng từ.',
+            subtitle: 'Tạo thêm câu ví dụ để thực hành gõ câu linh hoạt.',
             items: [
               _AiSectionItem(
                 icon: Icons.auto_awesome_outlined,
@@ -251,7 +251,7 @@ class _AiHubTab extends StatelessWidget {
                     AppRoutes.aiChat,
                     arguments: {
                       'prompt':
-                          'Hãy tạo các câu ví dụ mới dễ gõ có chứa từ vựng tôi đang học. Ưu tiên câu ngắn gọn để luyện gõ nhanh.',
+                        'Hãy tạo các câu ví dụ mới dễ gõ có chứa từ vựng tôi đang học. Ưu tiên câu ngắn gọn để luyện gõ nhanh.',
                       'displayText':
                           'Gợi ý giúp mình thêm câu luyện tập nhé!',
                     },
@@ -506,8 +506,8 @@ class _SystemHubTab extends StatelessWidget {
     final supportItems = [
       _NavigationItem(
         icon: Icons.info_outline,
-        title: 'Giới thiệu lộ trình',
-        subtitle: 'Xem tổng quan 10 bước gõ cho mỗi từ vựng.',
+        title: 'Giới thiệu luyện câu',
+        subtitle: 'Xem hướng dẫn luyện câu qua các ví dụ.',
         onTap: () => controller.changeTab(0),
       ),
     ];
@@ -538,7 +538,7 @@ class _SystemHubTab extends StatelessWidget {
           const SizedBox(height: 32),
           _NavigationGroup(
             title: 'Hỗ trợ nhanh',
-            subtitle: 'Quay lại trang tổng quan để tiếp tục hành trình gõ.',
+            subtitle: 'Quay lại trang tổng quan để tiếp tục luyện câu.',
             items: supportItems,
           ),
         ],

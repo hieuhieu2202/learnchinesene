@@ -167,8 +167,8 @@ class _ReviewSummary extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             total == 0
-                ? 'Hãy quay lại các bài học để tiếp tục hành trình.'
-                : 'Hoàn thành đủ 10 bước gõ để giữ vững phong độ.',
+                ? 'Hãy quay lại các bài học để tiếp tục luyện tập.'
+                : 'Hoàn thành các bài luyện gõ để giữ vững phong độ.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),

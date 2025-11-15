@@ -194,7 +194,7 @@ class _UnitSummary extends StatelessWidget {
                   : FilledButton.icon(
                       onPressed: onPractice,
                       icon: const Icon(Icons.play_circle),
-                      label: const Text('Luyện hành trình 10 bước'),
+                      label: const Text('Bắt đầu luyện câu'),
                     );
 
               if (isCompact) {
