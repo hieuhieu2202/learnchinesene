@@ -8,11 +8,15 @@ import '../../domain/usecases/ask_ai.dart';
 class AiChatController extends GetxController {
   AiChatController({
     required this.askAI,
-    this.initialContext,
+    this.bootPrompt,
+    this.bootDisplayText,
+    this.bootWordContext,
   });
 
   final AskAI askAI;
-  final String? initialContext;
+  final String? bootPrompt;
+  final String? bootDisplayText;
+  final String? bootWordContext;
 
   final messages = <AiMessage>[].obs;
   final isLoading = false.obs;
@@ -29,47 +33,73 @@ class AiChatController extends GetxController {
         isUser: false,
       ),
     );
-    if (initialContext != null && initialContext!.isNotEmpty) {
-      messages.add(AiMessage(
-        id: 'context',
-        text: 'Bạn đang hỏi về: $initialContext',
-        isUser: false,
-      ));
-    }
     Future.microtask(_triggerBootPromptIfNeeded);
   }
 
-  Future<void> sendMessage(String text) async {
+  Future<void> sendMessage(String text) {
     final trimmed = text.trim();
-    if (trimmed.isEmpty) return;
-    final userMessage = AiMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      text: trimmed,
-      isUser: true,
+    if (trimmed.isEmpty) {
+      return Future.value();
+    }
+    return _ask(
+      userText: trimmed,
+      promptOverride: trimmed,
     );
-    messages.add(userMessage);
+  }
+
+  Future<void> _triggerBootPromptIfNeeded() async {
+    if (_bootPromptSent) return;
+    if (messages.any((message) => message.isUser)) {
+      _bootPromptSent = true;
+      return;
+    }
+    _bootPromptSent = true;
+
+    final prompt = (bootPrompt ??
+            'Gợi ý giúp mình nên luyện những gì trong tiếng Trung hôm nay với các ví dụ cụ thể nhé.')
+        .trim();
+    if (prompt.isEmpty) return;
+
+    final display = (bootDisplayText ??
+            (bootWordContext != null && bootWordContext!.trim().isNotEmpty
+                ? 'Giải thích giúp mình về ${bootWordContext!.trim()} nhé!'
+                : 'Gợi ý luyện tập tiếng Trung hôm nay nhé!'))
+        .trim();
+
+    await _ask(
+      userText: display,
+      promptOverride: prompt,
+    );
+  }
+
+  Future<void> _ask({
+    required String userText,
+    required String promptOverride,
+  }) async {
+    final prompt = promptOverride.trim();
+    if (prompt.isEmpty) return;
+
+    if (userText.isNotEmpty) {
+      messages.add(
+        AiMessage(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          text: userText,
+          isUser: true,
+        ),
+      );
+    }
 
     isLoading.value = true;
     try {
-      final response = await askAI(AskAiParams(
-        prompt: trimmed,
-        wordContext: initialContext,
-      ));
+      final response = await askAI(
+        AskAiParams(
+          prompt: prompt,
+          wordContext: bootWordContext,
+        ),
+      );
       messages.add(response);
     } finally {
       isLoading.value = false;
     }
-  }
-
-  void _triggerBootPromptIfNeeded() {
-    if (_bootPromptSent) return;
-    if (messages.any((message) => message.isUser)) return;
-
-    final prompt = initialContext != null && initialContext!.isNotEmpty
-        ? 'Mình muốn hiểu rõ hơn về "$initialContext". Hãy giải thích nghĩa, ngữ cảnh và đưa thêm ví dụ tiếng Trung nhé.'
-        : 'Gợi ý giúp mình nên luyện những gì trong tiếng Trung hôm nay với các ví dụ cụ thể nhé.';
-
-    _bootPromptSent = true;
-    unawaited(sendMessage(prompt));
   }
 }

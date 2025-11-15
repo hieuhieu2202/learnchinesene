@@ -221,7 +221,8 @@ class _PrimaryActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = HskPalette.accentForLevel(level, theme.colorScheme);
-    final contextText = '${word.word} (${word.transliteration}) - ${word.translation}';
+    final basePrompt =
+        'Tôi đang học từ "${word.word}" (${word.transliteration}) nghĩa là "${word.translation}". Hãy giải thích thêm cách sử dụng, đưa ví dụ tiếng Trung kèm pinyin và gợi ý luyện tập phù hợp.';
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -261,7 +262,9 @@ class _PrimaryActions extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => navigateAfterFrame(() {
                     Get.toNamed(AppRoutes.aiChat, arguments: {
-                      'context': contextText,
+                      'prompt': basePrompt,
+                      'displayText': 'Cho mình thêm gợi ý về từ ${word.word} nhé!',
+                      'wordContext': word.word,
                     });
                   }),
                   icon: const Icon(Icons.smart_toy_outlined),
@@ -493,11 +496,14 @@ class _ExamplesSection extends StatelessWidget {
                             () => Get.toNamed(
                               AppRoutes.aiChat,
                               arguments: {
-                                'context': _buildGrammarPrompt(
+                                'prompt': _buildGrammarPrompt(
                                   focusWord?.word ?? '',
                                   example.sentenceCn,
                                   example.sentenceVi,
                                 ),
+                                'displayText':
+                                    'Giải thích ngữ pháp câu "${example.sentenceCn}" giúp mình nhé!',
+                                'wordContext': focusWord?.word ?? '',
                               },
                             ),
                           ),

@@ -206,8 +206,10 @@ class _AiHubTab extends StatelessWidget {
                   () => Get.toNamed(
                     AppRoutes.aiChat,
                     arguments: {
-                      'context':
-                          'Hãy tạo các câu ví dụ mới dễ gõ có chứa từ vựng tôi đang học.',
+                      'prompt':
+                          'Hãy tạo các câu ví dụ mới dễ gõ có chứa từ vựng tôi đang học. Ưu tiên câu ngắn gọn để luyện gõ nhanh.',
+                      'displayText':
+                          'Gợi ý giúp mình thêm câu luyện tập nhé!',
                     },
                   ),
                 ),
