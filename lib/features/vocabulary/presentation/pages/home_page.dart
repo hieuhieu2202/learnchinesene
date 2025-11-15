@@ -154,45 +154,6 @@ class _AiHubTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final aiAssistItems = [
-      _NavigationItem(
-        icon: Icons.smart_toy_outlined,
-        title: 'AI trợ giảng',
-        subtitle: 'Đặt câu hỏi và xin thêm ví dụ về từ đang học.',
-        onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.aiChat)),
-      ),
-      _NavigationItem(
-        icon: Icons.question_answer_outlined,
-        title: 'Giải thích ngữ pháp',
-        subtitle: 'Nhờ AI phân tích cấu trúc câu khó hiểu.',
-        onTap: () => navigateAfterFrame(
-          () => Get.toNamed(
-            AppRoutes.aiChat,
-            arguments: {
-              'context': 'Giải thích chi tiết ngữ pháp và cấu trúc của câu sau.',
-            },
-          ),
-        ),
-      ),
-    ];
-
-    final aiPracticeItems = [
-      _NavigationItem(
-        icon: Icons.auto_awesome_outlined,
-        title: 'AI gợi ý câu luyện tập',
-        subtitle: 'Nhận các biến thể câu để luyện gõ sâu hơn.',
-        onTap: () => navigateAfterFrame(
-          () => Get.toNamed(
-            AppRoutes.aiChat,
-            arguments: {
-              'context':
-                  'Hãy tạo các câu ví dụ mới dễ gõ có chứa từ vựng tôi đang học.',
-            },
-          ),
-        ),
-      ),
-    ];
-
     return _GradientBackground(
       child: ListView(
         key: const PageStorageKey('ai-hub'),
@@ -210,19 +171,204 @@ class _AiHubTab extends StatelessWidget {
             'Sử dụng AI để mở rộng ngữ cảnh, giải thích chi tiết và tạo bài luyện gõ cá nhân hóa.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 28),
-          _NavigationGroup(
-            title: 'Hỏi đáp tức thì',
-            subtitle: 'Trò chuyện với trợ giảng AI để hiểu sâu từng cấu trúc.',
-            items: aiAssistItems,
-          ),
           const SizedBox(height: 32),
-          _NavigationGroup(
-            title: 'Sinh bài luyện từ AI',
-            subtitle: 'Nhận thêm câu ví dụ để luyện gõ liên tục.',
-            items: aiPracticeItems,
+          _AiSection(
+            title: 'Hỏi đáp tức thì',
+            subtitle: 'Trò chuyện với trợ giảng AI về mọi câu hỏi tiếng Trung.',
+            items: [
+              _AiSectionItem(
+                icon: Icons.smart_toy_outlined,
+                title: 'AI trợ giảng',
+                subtitle: 'Đặt câu hỏi, xin ví dụ và nhận phản hồi ngay lập tức.',
+                onTap: () => navigateAfterFrame(
+                  () => Get.toNamed(AppRoutes.aiChat),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          _AiSection(
+            title: 'Giải thích ngữ pháp',
+            subtitle: 'Nhờ AI phân tích cấu trúc câu khó hiểu hoặc phần bạn đang học.',
+            items: [
+              _AiSectionItem(
+                icon: Icons.question_answer_outlined,
+                title: 'Giải thích chi tiết',
+                subtitle: 'Gửi câu tiếng Trung và nhận hướng dẫn từng bước.',
+                onTap: () => navigateAfterFrame(
+                  () => Get.toNamed(
+                    AppRoutes.aiChat,
+                    arguments: {
+                      'context':
+                          'Giải thích chi tiết ngữ pháp và cấu trúc của câu sau.',
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          _AiSection(
+            title: 'Gợi ý luyện câu',
+            subtitle: 'Tạo thêm câu ví dụ để luyện 10 bước gõ cho từng từ.',
+            items: [
+              _AiSectionItem(
+                icon: Icons.auto_awesome_outlined,
+                title: 'AI gợi ý câu luyện tập',
+                subtitle: 'Sinh câu mới có chứa từ bạn cần củng cố.',
+                onTap: () => navigateAfterFrame(
+                  () => Get.toNamed(
+                    AppRoutes.aiChat,
+                    arguments: {
+                      'context':
+                          'Hãy tạo các câu ví dụ mới dễ gõ có chứa từ vựng tôi đang học.',
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AiSection extends StatelessWidget {
+  const _AiSection({
+    required this.title,
+    required this.subtitle,
+    required this.items,
+  });
+
+  final String title;
+  final String subtitle;
+  final List<_AiSectionItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          subtitle,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 18),
+        Column(
+          children: [
+            for (var i = 0; i < items.length; i++) ...[
+              _AiActionCard(item: items[i]),
+              if (i != items.length - 1) const SizedBox(height: 14),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _AiSectionItem {
+  const _AiSectionItem({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.accent,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final Color? accent;
+}
+
+class _AiActionCard extends StatelessWidget {
+  const _AiActionCard({required this.item});
+
+  final _AiSectionItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = item.accent ?? theme.colorScheme.primary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: item.onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: accent.withOpacity(0.14),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withOpacity(0.06),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Icon(
+                  item.icon,
+                  color: accent,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      item.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      item.subtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
