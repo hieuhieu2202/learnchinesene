@@ -63,19 +63,21 @@ class _DashboardTab extends StatelessWidget {
       final overview = controller.hskOverview.toList();
       final reviewCount = controller.reviewCount.value;
 
-      final quickItems = [
-        _NavigationItem(
+      final totalWords = overview.fold<int>(0, (sum, item) => sum + item.totalWords);
+      final masteredWords = overview.fold<int>(0, (sum, item) => sum + item.masteredWords);
+      final quickActions = [
+        _HomeQuickAction(
           icon: Icons.dashboard_customize_outlined,
           title: 'Lộ trình HSK',
-          subtitle: 'Khám phá cấp độ và unit theo giáo trình.',
+          subtitle: 'Chọn cấp độ và unit theo giáo trình chính thức.',
           onTap: () => navigateAfterFrame(
             () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
           ),
         ),
-        _NavigationItem(
+        _HomeQuickAction(
           icon: Icons.flash_on,
-          title: 'Luyện câu nhanh',
-          subtitle: 'Bắt đầu 10 vòng gõ với các câu tiêu biểu.',
+          title: 'Luyện 10 bước',
+          subtitle: 'Bắt đầu chuỗi câu gõ để khắc sâu từng từ.',
           onTap: () => navigateAfterFrame(() {
             Get.toNamed(
               AppRoutes.practiceSession,
@@ -85,64 +87,96 @@ class _DashboardTab extends StatelessWidget {
             );
           }),
         ),
-        _NavigationItem(
+        _HomeQuickAction(
+          icon: Icons.smart_toy_outlined,
+          title: 'Hỏi trợ giảng AI',
+          subtitle: 'Xin ví dụ, giải thích và câu luyện tập mới.',
+          onTap: () => controller.changeTab(1),
+        ),
+        _HomeQuickAction(
           icon: Icons.check_circle_outline,
           title: 'Ôn tập hôm nay',
           subtitle: reviewCount > 0
-              ? 'Có $reviewCount từ đang chờ bạn củng cố.'
-              : 'Giữ nhịp học đều đặn mỗi ngày.',
+              ? 'Còn $reviewCount từ cần củng cố.'
+              : 'Không có bài ôn đang chờ.',
           onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
         ),
       ];
 
       return _GradientBackground(
-        child: CustomScrollView(
-          key: const PageStorageKey('home-dashboard'),
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-              sliver: SliverToBoxAdapter(
-                child: _HomeIntro(reviewCount: reviewCount),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverToBoxAdapter(
-                child: _NavigationGroup(
-                  title: 'Điều hướng nhanh',
-                  subtitle:
-                      'Chọn điểm bắt đầu cho phiên học gõ tiếng Trung hôm nay.',
-                  items: quickItems,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final horizontalPadding = width >= 1080
+                ? 96.0
+                : width >= 880
+                    ? 64.0
+                    : width >= 640
+                        ? 40.0
+                        : 24.0;
+
+            return CustomScrollView(
+              key: const PageStorageKey('home-dashboard'),
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: _HomeHeroCard(
+                      reviewCount: reviewCount,
+                      totalWords: totalWords,
+                      masteredWords: masteredWords,
+                      onPracticeTap: () => navigateAfterFrame(() {
+                        Get.toNamed(
+                          AppRoutes.practiceSession,
+                          arguments: {
+                            'words': const <Word>[],
+                          },
+                        );
+                      }),
+                      onReviewTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
+                      onBrowseTap: () => navigateAfterFrame(
+                        () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverToBoxAdapter(
-                child: Text(
-                  'Chọn cấp độ HSK',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(horizontalPadding, 32, horizontalPadding, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: _HomeSectionHeader(
+                      title: 'Bắt đầu nhanh',
+                      subtitle: 'Chọn hoạt động phù hợp cho phiên luyện gõ hôm nay.',
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverToBoxAdapter(
-                child: _LevelGrid(
-                  isLoading: isLoading,
-                  overview: overview,
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(horizontalPadding, 20, horizontalPadding, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: _QuickActionGrid(actions: quickActions),
+                  ),
                 ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 80)),
-          ],
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(horizontalPadding, 40, horizontalPadding, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: _HomeSectionHeader(
+                      title: 'Cấp độ HSK',
+                      subtitle: 'Theo dõi tiến trình từng cấp độ và tiếp tục unit đang học.',
+                    ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(horizontalPadding, 20, horizontalPadding, 80),
+                  sliver: SliverToBoxAdapter(
+                    child: _LevelGrid(
+                      isLoading: isLoading,
+                      overview: overview,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       );
     });
@@ -530,10 +564,213 @@ class _GradientBackground extends StatelessWidget {
   }
 }
 
-class _HomeIntro extends StatelessWidget {
-  const _HomeIntro({required this.reviewCount});
+class _HomeHeroCard extends StatelessWidget {
+  const _HomeHeroCard({
+    required this.reviewCount,
+    required this.totalWords,
+    required this.masteredWords,
+    required this.onPracticeTap,
+    required this.onReviewTap,
+    required this.onBrowseTap,
+  });
 
   final int reviewCount;
+  final int totalWords;
+  final int masteredWords;
+  final VoidCallback onPracticeTap;
+  final VoidCallback onReviewTap;
+  final VoidCallback onBrowseTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final hasReview = reviewCount > 0;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            scheme.primary.withOpacity(0.14),
+            scheme.surface,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(36),
+        border: Border.all(color: scheme.primary.withOpacity(0.15)),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.primary.withOpacity(0.08),
+            blurRadius: 28,
+            offset: const Offset(0, 20),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(28, 28, 28, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hành trình gõ chữ Hán',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Từng bước luyện gõ câu ví dụ để ghi nhớ sâu từ vựng HSK.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: scheme.primary.withOpacity(0.12),
+                child: Icon(
+                  Icons.edit_note,
+                  color: scheme.primary,
+                  size: 32,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          Wrap(
+            spacing: 14,
+            runSpacing: 14,
+            children: [
+              _HeroStatChip(
+                icon: Icons.menu_book_outlined,
+                label: 'Tổng từ',
+                value: totalWords == 0 ? '—' : '$totalWords',
+              ),
+              _HeroStatChip(
+                icon: Icons.verified_rounded,
+                label: 'Đã thuộc',
+                value: masteredWords == 0 ? '0' : '$masteredWords',
+              ),
+              _HeroStatChip(
+                icon: Icons.refresh_rounded,
+                label: 'Đang chờ ôn',
+                value: reviewCount == 0 ? '0' : '$reviewCount',
+                highlight: hasReview,
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              FilledButton.icon(
+                onPressed: onPracticeTap,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  textStyle: theme.textTheme.titleMedium,
+                ),
+                icon: const Icon(Icons.bolt_rounded),
+                label: const Text('Bắt đầu luyện gõ'),
+              ),
+              if (hasReview)
+                OutlinedButton.icon(
+                  onPressed: onReviewTap,
+                  icon: const Icon(Icons.checklist_rounded),
+                  label: Text('Ôn $reviewCount từ'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  ),
+                )
+              else
+                OutlinedButton.icon(
+                  onPressed: onBrowseTap,
+                  icon: const Icon(Icons.menu_book_rounded),
+                  label: const Text('Khám phá HSK'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroStatChip extends StatelessWidget {
+  const _HeroStatChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.highlight = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final background = highlight
+        ? scheme.primary.withOpacity(0.16)
+        : scheme.surface.withOpacity(0.85);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: scheme.primary.withOpacity(highlight ? 0.4 : 0.12)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20, color: scheme.primary),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+              Text(
+                value,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeSectionHeader extends StatelessWidget {
+  const _HomeSectionHeader({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -542,100 +779,128 @@ class _HomeIntro extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Hành trình luyện gõ tiếng Trung',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w800,
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          subtitle,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Hoàn thành 10 bước gõ để thuộc lòng từng từ vựng trong giáo trình HSK.',
-          style: theme.textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 24),
-        _ReviewCard(reviewCount: reviewCount),
       ],
     );
   }
 }
 
-class _ReviewCard extends StatelessWidget {
-  const _ReviewCard({required this.reviewCount});
+class _HomeQuickAction {
+  const _HomeQuickAction({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
-  final int reviewCount;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+}
+
+class _QuickActionGrid extends StatelessWidget {
+  const _QuickActionGrid({required this.actions});
+
+  final List<_HomeQuickAction> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        const spacing = 16.0;
+        final columns = width >= 1040
+            ? 3
+            : width >= 720
+                ? 2
+                : 1;
+        final tileWidth = columns == 1
+            ? width
+            : (width - spacing * (columns - 1)) / columns;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final action in actions)
+              SizedBox(
+                width: tileWidth,
+                child: _QuickActionCard(action: action),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _QuickActionCard extends StatelessWidget {
+  const _QuickActionCard({required this.action});
+
+  final _HomeQuickAction action;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasReview = reviewCount > 0;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+    final scheme = theme.colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: action.onTap,
         borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.surface,
-            theme.colorScheme.surfaceVariant,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: scheme.surface,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: scheme.primary.withOpacity(0.12)),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.primary.withOpacity(0.06),
+                blurRadius: 20,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: scheme.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Icon(action.icon, color: scheme.primary, size: 28),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                action.title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                action.subtitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(
-              hasReview ? Icons.checklist : Icons.auto_awesome,
-              color: theme.colorScheme.primary,
-              size: 32,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hasReview ? 'Sẵn sàng ôn tập' : 'Không có bài ôn',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  hasReview
-                      ? 'Có $reviewCount từ đang chờ bạn củng cố hôm nay.'
-                      : 'Bạn có thể tiếp tục hành trình ở các bài học mới.',
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          FilledButton(
-            onPressed: hasReview
-                ? () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday))
-                : () => navigateAfterFrame(
-                      () => Get.toNamed(AppRoutes.sections, arguments: {'level': 1}),
-                    ),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-            child: Text(hasReview ? 'Ôn ngay' : 'Học bài'),
-          ),
-        ],
       ),
     );
   }
