@@ -191,20 +191,6 @@ class _AiHubTab extends StatelessWidget {
           ),
         ),
       ),
-      _NavigationItem(
-        icon: Icons.hearing_outlined,
-        title: 'Luyện nghe cùng AI',
-        subtitle: 'Xin audio và câu hỏi kiểm tra nghe - gõ.',
-        onTap: () => navigateAfterFrame(
-          () => Get.toNamed(
-            AppRoutes.aiChat,
-            arguments: {
-              'context':
-                  'Hãy đóng vai giáo viên và cho tôi nghe - gõ với từ vựng này.',
-            },
-          ),
-        ),
-      ),
     ];
 
     return _GradientBackground(
@@ -233,7 +219,7 @@ class _AiHubTab extends StatelessWidget {
           const SizedBox(height: 32),
           _NavigationGroup(
             title: 'Sinh bài luyện từ AI',
-            subtitle: 'Nhận thêm câu ví dụ và bài nghe để luyện gõ liên tục.',
+            subtitle: 'Nhận thêm câu ví dụ để luyện gõ liên tục.',
             items: aiPracticeItems,
           ),
         ],

@@ -44,109 +44,98 @@ class _AiChatPageState extends State<AiChatPage> {
         title: const Text('Hán Ngữ Bot'),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: theme.colorScheme.outlineVariant,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colorScheme.shadow.withOpacity(0.04),
-                        blurRadius: 32,
-                        offset: const Offset(0, 12),
+        child: Column(
+          children: [
+            Expanded(
+              child: Obx(() {
+                final messages = controller.messages;
+                final isLoading = controller.isLoading.value;
+                return ListView.separated(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: messages.length + (isLoading ? 1 : 0),
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final isLoadingIndicator = isLoading && index == messages.length;
+                    if (isLoadingIndicator) {
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceVariant,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2.5),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final message = messages[index];
+                    final isUser = message.isUser;
+                    final alignment =
+                        isUser ? Alignment.centerRight : Alignment.centerLeft;
+                    final background = isUser
+                        ? theme.colorScheme.primaryContainer
+                        : theme.colorScheme.surfaceContainerHighest;
+                    final textStyle = theme.textTheme.bodyMedium?.copyWith(
+                          color: isUser
+                              ? theme.colorScheme.onPrimaryContainer
+                              : theme.colorScheme.onSurface,
+                        ) ??
+                        TextStyle(
+                          color: isUser
+                              ? theme.colorScheme.onPrimaryContainer
+                              : theme.colorScheme.onSurface,
+                        );
+
+                    return Align(
+                      alignment: alignment,
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: background,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          message.text,
+                          style: textStyle,
+                        ),
                       ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Obx(() {
-                          final messages = controller.messages;
-                          return ListView.separated(
-                            controller: _scrollController,
-                            padding: EdgeInsets.zero,
-                            itemCount: messages.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final message = messages[index];
-                              final isUser = message.isUser;
-                              final alignment =
-                                  isUser ? Alignment.centerRight : Alignment.centerLeft;
-                              final background = isUser
-                                  ? theme.colorScheme.primaryContainer
-                                  : theme.colorScheme.surfaceContainerHighest;
-                              final textStyle = theme.textTheme.bodyMedium?.copyWith(
-                                    color: isUser
-                                        ? theme.colorScheme.onPrimaryContainer
-                                        : theme.colorScheme.onSurface,
-                                  ) ??
-                                  TextStyle(
-                                    color: isUser
-                                        ? theme.colorScheme.onPrimaryContainer
-                                        : theme.colorScheme.onSurface,
-                                  );
-                              return Align(
-                                alignment: alignment,
-                                child: Container(
-                                  constraints: const BoxConstraints(maxWidth: 420),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: background,
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-                                  child: Text(
-                                    message.text,
-                                    style: textStyle,
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 12),
-                      Obx(
-                        () => controller.isLoading.value
-                            ? const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4),
-                                child: SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2.5),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                      const SizedBox(height: 12),
-                      _ChatInputBar(
-                        controller: _inputController,
-                        onSubmit: _handleSubmit,
-                        chatController: controller,
-                      ),
-                    ],
-                  ),
-                ),
+                    );
+                  },
+                );
+              }),
+            ),
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+              child: _ChatInputBar(
+                controller: _inputController,
+                onSubmit: _handleSubmit,
+                chatController: controller,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   void _handleSubmit(String value) {
+    if (controller.isLoading.value) return;
     controller.sendMessage(value);
     _inputController.clear();
   }
