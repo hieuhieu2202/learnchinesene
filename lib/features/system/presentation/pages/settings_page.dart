@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+import 'privacy_policy_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
-
-  static const _privacyPolicyUrl = 'https://example.com/privacy-policy';
 
   @override
   Widget build(BuildContext context) {
@@ -68,9 +67,13 @@ class SettingsPage extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.privacy_tip_outlined),
                   title: const Text('Chính sách & quyền riêng tư'),
-                  subtitle: Text('Xem chi tiết tại $_privacyPolicyUrl'),
-                  trailing: const Icon(Icons.open_in_new),
-                  onTap: () => _openUrl(_privacyPolicyUrl),
+                  subtitle: const Text('Đọc thông tin chi tiết trong ứng dụng.'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const PrivacyPolicyPage(),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -78,12 +81,5 @@ class SettingsPage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _openUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      debugPrint('Could not open $url');
-    }
   }
 }
