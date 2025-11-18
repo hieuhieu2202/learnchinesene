@@ -485,12 +485,14 @@ class _SystemHubTab extends StatelessWidget {
         icon: Icons.settings_suggest_outlined,
         title: 'Cài đặt hệ thống',
         subtitle: 'Điều chỉnh TTS, giao diện và nhắc ôn tập.',
+        comingSoon: true,
         onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.settings)),
       ),
       _NavigationItem(
         icon: Icons.insights_outlined,
         title: 'Hồ sơ & thành tích',
         subtitle: 'Theo dõi số từ đã thuần thục và chuỗi ngày học.',
+        comingSoon: true,
         onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.profile)),
       ),
     ];
@@ -739,6 +741,7 @@ class _NavigationCard extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     required this.background,
+    this.comingSoon = false,
     this.accent,
   });
 
@@ -747,6 +750,7 @@ class _NavigationCard extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
   final Color background;
+  final bool comingSoon;
   final Color? accent;
 
   @override
@@ -771,26 +775,60 @@ class _NavigationCard extends StatelessWidget {
             ],
           ),
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+          child: Stack(
             children: [
-              CircleAvatar(
-                radius: 26,
-                backgroundColor: accentColor.withOpacity(0.12),
-                child: Icon(icon, color: accentColor, size: 26),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                subtitle,
-                style: theme.textTheme.bodyMedium,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: accentColor.withOpacity(0.12),
+                    child: Icon(icon, color: accentColor, size: 26),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              subtitle,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (comingSoon)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: accentColor.withOpacity(0.14),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          child: Text(
+                            'Sắp ra mắt',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: accentColor,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -855,6 +893,7 @@ class _NavigationGroup extends StatelessWidget {
                       subtitle: item.subtitle,
                       onTap: item.onTap,
                       background: item.background ?? theme.colorScheme.surface,
+                      comingSoon: item.comingSoon,
                       accent: item.accent,
                     ),
                   ),
@@ -875,6 +914,7 @@ class _NavigationItem {
     required this.onTap,
     this.background,
     this.accent,
+    this.comingSoon = false,
   });
 
   final IconData icon;
@@ -883,5 +923,6 @@ class _NavigationItem {
   final VoidCallback onTap;
   final Color? background;
   final Color? accent;
+  final bool comingSoon;
 }
 

@@ -21,6 +21,16 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+            child: ListTile(
+              leading: Icon(Icons.pending_actions_outlined, color: theme.colorScheme.primary),
+              title: const Text('Một số thiết lập đang hoàn thiện'),
+              subtitle: const Text('Các tuỳ chọn mới sẽ được cập nhật sớm, một số nút hiện ở trạng thái "Sắp ra mắt".'),
+            ),
+          ),
+          const SizedBox(height: 16),
           Text(
             'Giao diện',
             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -31,8 +41,16 @@ class SettingsPage extends StatelessWidget {
             child: SwitchListTile.adaptive(
               value: false,
               title: const Text('Chế độ tối'),
-              subtitle: const Text('Giảm chói và giữ tập trung vào buổi tối.'),
-              onChanged: (_) {},
+              subtitle: const Text('Sắp ra mắt: Bật tắt giao diện tối và ghi nhớ trên thiết bị.'),
+              onChanged: null,
+              secondary: Chip(
+                label: const Text('Sắp ra mắt'),
+                backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
+                labelStyle: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 20),

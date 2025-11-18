@@ -39,6 +39,23 @@ class ProfilePage extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          Card(
+            color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: ListTile(
+              leading: Chip(
+                label: const Text('Sắp ra mắt'),
+                backgroundColor: theme.colorScheme.primary.withOpacity(0.14),
+                labelStyle: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              title: const Text('Trang thống kê đang được hoàn thiện'),
+              subtitle: const Text('Số liệu sẽ đồng bộ tự động khi tính năng chính thức ra mắt.'),
+            ),
+          ),
           const SizedBox(height: 32),
           _StatTile(
             icon: Icons.auto_awesome,
