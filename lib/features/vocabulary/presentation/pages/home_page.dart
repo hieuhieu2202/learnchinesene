@@ -480,7 +480,9 @@ class _SystemHubTab extends StatelessWidget {
   const _SystemHubTab();
 
   Future<void> _openPolicy() async {
-    final uri = Uri.parse('https://10.220.130.117/newweb/nvidia/rack/f16/3f/all/ft');
+    final uri = Uri.parse(
+      'https://sites.google.com/view/privacypolicyherochinesetyping/trang-ch%E1%BB%A7',
+    );
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
