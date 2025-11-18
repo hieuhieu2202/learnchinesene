@@ -21,6 +21,7 @@ class ChineseLearningApp extends StatelessWidget {
       initialRoute: AppRoutes.home,
       initialBinding: AppBindings(),
       getPages: AppPages.pages,
+
     );
   }
 }
