@@ -21,6 +21,7 @@ class HeroChineseTypingApp extends StatelessWidget {
       initialRoute: AppRoutes.splash,
       initialBinding: AppBindings(),
       getPages: AppPages.pages,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
