@@ -25,17 +25,36 @@ class AiRemoteDataSource implements AiRepository {
         isUser: false,
       );
     }
+    final instruction = '''
+Bạn là "Hán Ngữ Bot", một trợ lý học tiếng Trung thân thiện.
+Nhiệm vụ của bạn:
+- Chỉ trả lời các câu hỏi liên quan tới tiếng Trung, từ vựng, ngữ pháp, văn hoá hoặc học tiếng Trung.
+- Nếu câu hỏi nằm ngoài phạm vi đó, hãy từ chối nhẹ nhàng bằng tiếng Việt và gợi ý người dùng hỏi về tiếng Trung.
+- Khi trả lời hãy ưu tiên giải thích bằng tiếng Việt, kèm chữ Hán và pinyin khi cần thiết.
+- Đưa ví dụ, mẹo luyện tập hoặc gợi ý câu mẫu bằng tiếng Trung khi phù hợp.
+''';
+
+    final userPrompt = <String>[
+      if (wordContext != null && wordContext.isNotEmpty)
+        'Từ trọng tâm: $wordContext',
+      prompt,
+    ].where((element) => element.isNotEmpty).join('\n\n');
+
     final requestBody = {
+      'systemInstruction': {
+        'role': 'system',
+        'parts': [
+          {
+            'text': instruction,
+          }
+        ],
+      },
       'contents': [
         {
           'role': 'user',
           'parts': [
             {
-              'text': [
-                if (wordContext != null && wordContext.isNotEmpty)
-                  'Context word: $wordContext',
-                prompt,
-              ].where((element) => element.isNotEmpty).join('\n\n'),
+              'text': userPrompt,
             },
           ],
         }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../routes/app_routes.dart';
-import '../controllers/practice_session_controller.dart';
+import '../../domain/entities/word.dart';
 import '../controllers/word_list_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/hsk_utils.dart';
@@ -26,11 +26,26 @@ class WordListPage extends GetView<WordListController> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final words = controller.words;
+        final words = controller.words.toList();
+        final introducedWords = words.where((word) => !word.mastered).toList();
+        final reusedWords = words.where((word) => word.mastered).toList();
+        final scheme = Theme.of(context).colorScheme;
+        void openWord(Word word) {
+          navigateAfterFrame(() {
+            Get.toNamed(
+              AppRoutes.wordDetail,
+              arguments: {'wordId': word.id},
+            );
+          });
+        }
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradient.first, gradient.last, Colors.white],
+              colors: [
+                gradient.first,
+                gradient.last,
+                scheme.surface,
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -56,7 +71,6 @@ class WordListPage extends GetView<WordListController> {
                                       AppRoutes.practiceSession,
                                       arguments: {
                                         'words': words.toList(),
-                                        'mode': PracticeMode.journey,
                                       },
                                     );
                                   }),
@@ -65,32 +79,22 @@ class WordListPage extends GetView<WordListController> {
                         if (words.isEmpty)
                           const _EmptyWordState()
                         else ...[
-                          Text(
-                            'Từ vựng trong unit',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: 16),
-                          ...List.generate(words.length, (index) {
-                            final word = words[index];
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                bottom: index == words.length - 1 ? 0 : 12,
-                              ),
-                              child: WordListItem(
-                                word: word,
-                                level: level,
-                                onTap: () => navigateAfterFrame(() {
-                                  Get.toNamed(
-                                    AppRoutes.wordDetail,
-                                    arguments: {'wordId': word.id},
-                                  );
-                                }),
-                              ),
-                            );
-                          }),
+                          if (introducedWords.isNotEmpty)
+                            _WordCluster(
+                              title: 'Introduced in this unit',
+                              words: introducedWords,
+                              level: level,
+                              onTap: openWord,
+                            ),
+                          if (introducedWords.isNotEmpty && reusedWords.isNotEmpty)
+                            const SizedBox(height: 24),
+                          if (reusedWords.isNotEmpty)
+                            _WordCluster(
+                              title: 'Used in new words',
+                              words: reusedWords,
+                              level: level,
+                              onTap: openWord,
+                            ),
                         ],
                       ],
                     ),
@@ -159,13 +163,16 @@ class _UnitSummary extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: LinearGradient(
-          colors: [accent.withOpacity(0.1), Colors.white],
+          colors: [
+            theme.colorScheme.surface,
+            theme.colorScheme.surfaceVariant,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.08),
+            color: accent.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 12),
           ),
@@ -175,20 +182,42 @@ class _UnitSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 380;
+              final title = Text(
                 'HSK $level • ${controller.sectionTitle}',
                 style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const Spacer(),
-              if (onPractice != null)
-                FilledButton.icon(
-                  onPressed: onPractice,
-                  icon: const Icon(Icons.play_circle),
-                  label: const Text('Luyện 5 cấp độ'),
-                ),
-            ],
+              );
+              final practiceButton = onPractice == null
+                  ? null
+                  : FilledButton.icon(
+                      onPressed: onPractice,
+                      icon: const Icon(Icons.play_circle),
+                      label: const Text('Bắt đầu luyện câu'),
+                    );
+
+              if (isCompact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    title,
+                    if (practiceButton != null) ...[
+                      const SizedBox(height: 12),
+                      practiceButton,
+                    ],
+                  ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: title),
+                  if (practiceButton != null) practiceButton,
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           LinearProgressIndicator(
@@ -207,6 +236,85 @@ class _UnitSummary extends StatelessWidget {
       ),
     );
   }
+}
+
+class _WordCluster extends StatelessWidget {
+  const _WordCluster({
+    required this.title,
+    required this.words,
+    required this.level,
+    required this.onTap,
+  });
+
+  final String title;
+  final List<Word> words;
+  final int level;
+  final ValueChanged<Word> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    const spacing = 12.0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final rawWidth = constraints.maxWidth;
+        final availableWidth = rawWidth.isFinite
+            ? rawWidth
+            : (MediaQuery.of(context).size.width - 48)
+                .clamp(120.0, double.infinity)
+                .toDouble();
+        final columns = _preferredColumnCount(availableWidth, spacing);
+        final tileWidth = columns <= 1
+            ? availableWidth
+            : (availableWidth - spacing * (columns - 1)) / columns;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: words
+                  .map(
+                    (word) => WordListItem(
+                      word: word,
+                      level: level,
+                      onTap: () => onTap(word),
+                      maxWidth: tileWidth,
+                      showTransliteration: false,
+                      showTranslation: false,
+                      progress: word.mastered ? 1.0 : 0.0,
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+int _preferredColumnCount(double maxWidth, double spacing) {
+  if (maxWidth.isInfinite || maxWidth.isNaN) {
+    return 4;
+  }
+  const minTileWidth = 144.0;
+  final available = maxWidth + spacing; // include spacing to avoid division by zero issues
+  final computed = (available / (minTileWidth + spacing)).floor();
+  if (computed <= 1) {
+    return available >= 2 * (minTileWidth + spacing) ? 2 : 1;
+  }
+  return computed.clamp(1, 4).toInt();
 }
 
 class _EmptyWordState extends StatelessWidget {
