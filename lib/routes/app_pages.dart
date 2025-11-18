@@ -7,6 +7,9 @@ import '../features/ai_chat/domain/repositories/ai_repository.dart';
 import '../features/ai_chat/domain/usecases/ask_ai.dart';
 import '../features/ai_chat/presentation/controllers/ai_chat_controller.dart';
 import '../features/ai_chat/presentation/pages/ai_chat_page.dart';
+import '../features/system/presentation/pages/profile_page.dart';
+import '../features/system/presentation/pages/settings_page.dart';
+import '../features/system/presentation/pages/splash_page.dart';
 import '../features/vocabulary/domain/entities/word.dart';
 import '../features/vocabulary/data/datasources/example_local_data_source.dart';
 import '../features/vocabulary/data/datasources/progress_local_data_source.dart';
@@ -122,6 +125,10 @@ class AppBindings extends Bindings {
 class AppPages {
   static final pages = <GetPage<dynamic>>[
     GetPage(
+      name: AppRoutes.splash,
+      page: () => const SplashPage(),
+    ),
+    GetPage(
       name: AppRoutes.home,
       page: () => const HomePage(),
       binding: BindingsBuilder(() {
@@ -188,10 +195,8 @@ class AppPages {
       binding: BindingsBuilder(() {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
         final words = (args['words'] as List<dynamic>? ?? []).cast<Word>();
-        final mode = args['mode'] as PracticeMode? ?? PracticeMode.journey;
         Get.put(PracticeSessionController(
           words: words,
-          mode: mode,
           getExamplesByWord: Get.find(),
           getProgressForWord: Get.find(),
           updateProgressAfterQuiz: Get.find(),
@@ -205,9 +210,20 @@ class AppPages {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
         Get.put(AiChatController(
           askAI: Get.find(),
-          initialContext: args['context'] as String?,
+          bootPrompt:
+              (args['prompt'] as String?) ?? (args['context'] as String?),
+          bootDisplayText: args['displayText'] as String?,
+          bootWordContext: args['wordContext'] as String?,
         ));
       }),
+    ),
+    GetPage(
+      name: AppRoutes.settings,
+      page: () => const SettingsPage(),
+    ),
+    GetPage(
+      name: AppRoutes.profile,
+      page: () => const ProfilePage(),
     ),
   ];
 }
