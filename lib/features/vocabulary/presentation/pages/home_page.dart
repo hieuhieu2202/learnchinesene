@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../routes/app_routes.dart';
 import '../controllers/home_controller.dart';
@@ -478,6 +479,11 @@ class _AiActionCard extends StatelessWidget {
 class _SystemHubTab extends StatelessWidget {
   const _SystemHubTab();
 
+  Future<void> _openPolicy() async {
+    final uri = Uri.parse('https://10.220.130.117/newweb/nvidia/rack/f16/3f/all/ft');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   @override
   Widget build(BuildContext context) {
     final systemItems = [
@@ -494,6 +500,12 @@ class _SystemHubTab extends StatelessWidget {
         subtitle: 'Theo dõi số từ đã thuần thục và chuỗi ngày học.',
         comingSoon: true,
         onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.profile)),
+      ),
+      _NavigationItem(
+        icon: Icons.privacy_tip_outlined,
+        title: 'Chính sách & quyền riêng tư',
+        subtitle: 'Mở tài liệu chính thức bên ngoài ứng dụng.',
+        onTap: _openPolicy,
       ),
     ];
 
