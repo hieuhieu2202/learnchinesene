@@ -6,4 +6,6 @@ class AppRoutes {
   static const reviewToday = '/review-today';
   static const practiceSession = '/practice-session';
   static const aiChat = '/ai-chat';
+  static const settings = '/settings';
+  static const profile = '/profile';
 }

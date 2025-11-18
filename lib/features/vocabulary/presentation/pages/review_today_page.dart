@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../routes/app_routes.dart';
-import '../controllers/practice_session_controller.dart';
 import '../controllers/review_today_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/hsk_utils.dart';
@@ -21,8 +20,13 @@ class ReviewTodayPage extends GetView<ReviewTodayController> {
         }
 
         final words = controller.words;
-        final gradient = const LinearGradient(
-          colors: [Color(0xFFFFF5EC), Color(0xFFEFF9FF), Colors.white],
+        final scheme = Theme.of(context).colorScheme;
+        final gradient = LinearGradient(
+          colors: [
+            scheme.background,
+            Color.lerp(scheme.surface, scheme.background, 0.5)!,
+            scheme.surface,
+          ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         );
@@ -49,7 +53,6 @@ class ReviewTodayPage extends GetView<ReviewTodayController> {
                                       AppRoutes.practiceSession,
                                       arguments: {
                                         'words': words.toList(),
-                                        'mode': PracticeMode.journey,
                                       },
                                     );
                                   }),
@@ -136,13 +139,16 @@ class _ReviewSummary extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: LinearGradient(
-          colors: [accent.withOpacity(0.1), Colors.white],
+          colors: [
+            theme.colorScheme.surface,
+            theme.colorScheme.surfaceVariant,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.08),
+            color: accent.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 12),
           ),
@@ -161,8 +167,8 @@ class _ReviewSummary extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             total == 0
-                ? 'Hãy quay lại các bài học để tiếp tục hành trình.'
-                : 'Hoàn thành đủ 5 cấp độ gõ để giữ vững phong độ.',
+                ? 'Hãy quay lại các bài học để tiếp tục luyện tập.'
+                : 'Hoàn thành các bài luyện gõ để giữ vững phong độ.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
