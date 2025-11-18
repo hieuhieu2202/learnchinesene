@@ -49,39 +49,31 @@ class SectionListPage extends GetView<SectionListController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             IconButton(
                               icon: const Icon(Icons.arrow_back_ios_new_rounded),
                               onPressed: () => Navigator.of(context).maybePop(),
                             ),
                             const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'HSK $selectedLevel',
-                                    style: theme.textTheme.headlineSmall?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'HSK $selectedLevel',
+                                  style: theme.textTheme.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.w800,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Chọn một unit để bắt đầu luyện tập',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Danh sách unit trong cấp độ này',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 24),
-                        _LevelSwitcher(
-                          controller: controller,
-                          selectedLevel: selectedLevel,
                         ),
                         const SizedBox(height: 20),
                         _LevelSummaryCard(
@@ -96,6 +88,24 @@ class SectionListPage extends GetView<SectionListController> {
                     ),
                   ),
                 ),
+                if (!isLoading && sections.isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                      child: Row(
+                        children: [
+                          Icon(Icons.menu_book_rounded, color: colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Chọn unit để học',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 if (isLoading)
                   const SliverFillRemaining(
                     hasScrollBody: false,
@@ -129,39 +139,6 @@ class SectionListPage extends GetView<SectionListController> {
               ],
             ),
           ),
-        );
-      }),
-    );
-  }
-}
-
-class _LevelSwitcher extends StatelessWidget {
-  const _LevelSwitcher({required this.controller, required this.selectedLevel});
-
-  final SectionListController controller;
-  final int selectedLevel;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: List.generate(4, (index) {
-        final level = index + 1;
-        final isSelected = selectedLevel == level;
-        final badgeColor = HskPalette.badgeColor(level, theme.colorScheme);
-        return ChoiceChip(
-          label: Text('HSK $level'),
-          selected: isSelected,
-          onSelected: (_) => controller.changeLevel(level),
-          labelStyle: theme.textTheme.bodyMedium?.copyWith(
-            color: isSelected ? theme.colorScheme.onPrimary : null,
-            fontWeight: FontWeight.w600,
-          ),
-          selectedColor: badgeColor,
-          backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.35),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         );
       }),
     );

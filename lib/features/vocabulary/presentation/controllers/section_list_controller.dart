@@ -77,14 +77,6 @@ class SectionListController extends GetxController {
     }
   }
 
-  void changeLevel(int level) {
-    if (selectedLevel.value == level) {
-      return;
-    }
-    selectedLevel.value = level;
-    _applyFilter();
-  }
-
   void _applyFilter() {
     final filtered = _allSections
         .where((item) => item.hskLevel == selectedLevel.value)
