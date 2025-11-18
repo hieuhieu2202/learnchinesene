@@ -7,16 +7,16 @@ import 'theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ChineseLearningApp());
+  runApp(const HeroChineseTypingApp());
 }
 
-class ChineseLearningApp extends StatelessWidget {
-  const ChineseLearningApp({super.key});
+class HeroChineseTypingApp extends StatelessWidget {
+  const HeroChineseTypingApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Chinese Learning',
+      title: 'Hero Chinese Typing',
       theme: AppTheme.light(),
       initialRoute: AppRoutes.splash,
       initialBinding: AppBindings(),

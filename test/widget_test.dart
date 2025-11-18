@@ -14,7 +14,7 @@ import 'package:learnchinese/main.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const ChineseLearningApp());
+    await tester.pumpWidget(const HeroChineseTypingApp());
 
     expect(find.byType(MaterialApp), findsNothing);
     expect(find.byType(GetMaterialApp), findsOneWidget);

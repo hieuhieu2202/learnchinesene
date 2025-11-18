@@ -1,4 +1,4 @@
-# learnchinese
+# Hero Chinese Typing
 
 A new Flutter project.
 

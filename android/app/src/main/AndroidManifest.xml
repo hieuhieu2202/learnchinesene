@@ -1,6 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.hero.chinesetyping">
     <application
-        android:label="learnchinese"
+        android:label="Hero Chinese Typing"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,4 +1,4 @@
-package com.example.learnchinese;
+package com.hero.chinesetyping;
 
 import io.flutter.embedding.android.FlutterActivity;
 
