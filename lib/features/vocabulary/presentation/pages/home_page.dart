@@ -16,7 +16,7 @@ class HomePage extends GetView<HomeController> {
       final pages = <Widget>[
         _DashboardTab(controller: controller),
         const _AiHubTab(),
-        _SystemHubTab(controller: controller),
+        const _SystemHubTab(),
       ];
 
       return Scaffold(
@@ -476,9 +476,7 @@ class _AiActionCard extends StatelessWidget {
 }
 
 class _SystemHubTab extends StatelessWidget {
-  const _SystemHubTab({required this.controller});
-
-  final HomeController controller;
+  const _SystemHubTab();
 
   @override
   Widget build(BuildContext context) {
@@ -494,21 +492,6 @@ class _SystemHubTab extends StatelessWidget {
         title: 'Hồ sơ & thành tích',
         subtitle: 'Theo dõi số từ đã thuần thục và chuỗi ngày học.',
         onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.profile)),
-      ),
-      _NavigationItem(
-        icon: Icons.check_circle_outline,
-        title: 'Ôn tập hôm nay',
-        subtitle: 'Vào lại danh sách từ cần củng cố trong ngày.',
-        onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.reviewToday)),
-      ),
-    ];
-
-    final supportItems = [
-      _NavigationItem(
-        icon: Icons.info_outline,
-        title: 'Giới thiệu luyện câu',
-        subtitle: 'Xem hướng dẫn luyện câu qua các ví dụ.',
-        onTap: () => controller.changeTab(0),
       ),
     ];
 
@@ -534,12 +517,6 @@ class _SystemHubTab extends StatelessWidget {
             title: 'Quản lý ứng dụng',
             subtitle: 'Tùy chỉnh trải nghiệm học và xem tiến trình chi tiết.',
             items: systemItems,
-          ),
-          const SizedBox(height: 32),
-          _NavigationGroup(
-            title: 'Hỗ trợ nhanh',
-            subtitle: 'Quay lại trang tổng quan để tiếp tục luyện câu.',
-            items: supportItems,
           ),
         ],
       ),
