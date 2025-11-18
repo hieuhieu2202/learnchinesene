@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../../../routes/app_routes.dart';
 import '../../domain/entities/word.dart';
-import '../controllers/practice_session_controller.dart';
 import '../controllers/word_detail_controller.dart';
 import '../theme/hsk_palette.dart';
 import '../utils/hsk_utils.dart';
@@ -29,11 +28,16 @@ class WordDetailPage extends GetView<WordDetailController> {
           sectionTitle: word.sectionTitle,
         );
         final gradient = HskPalette.gradientForLevel(level);
+        final scheme = Theme.of(context).colorScheme;
 
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradient.first, gradient.last, Colors.white],
+              colors: [
+                gradient.first,
+                gradient.last,
+                scheme.surface,
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -50,8 +54,6 @@ class WordDetailPage extends GetView<WordDetailController> {
                       _WordHero(word: word, level: level, controller: controller),
                       const SizedBox(height: 24),
                       _PrimaryActions(word: word, controller: controller, level: level),
-                      const SizedBox(height: 24),
-                      _PracticeTimeline(word: word, level: level),
                       const SizedBox(height: 24),
                       _ExamplesSection(controller: controller, level: level),
                     ]),
@@ -112,13 +114,16 @@ class _WordHero extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
         gradient: LinearGradient(
-          colors: [accent.withOpacity(0.12), Colors.white],
+          colors: [
+            theme.colorScheme.surface,
+            theme.colorScheme.surfaceVariant,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.08),
+            color: accent.withOpacity(0.12),
             blurRadius: 24,
             offset: const Offset(0, 16),
           ),
@@ -132,7 +137,7 @@ class _WordHero extends StatelessWidget {
             height: 120,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: accent.withOpacity(0.18),
+              color: theme.colorScheme.background.withOpacity(0.8),
               borderRadius: BorderRadius.circular(32),
             ),
             child: Text(
@@ -214,7 +219,8 @@ class _PrimaryActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = HskPalette.accentForLevel(level, theme.colorScheme);
-    final contextText = '${word.word} (${word.transliteration}) - ${word.translation}';
+    final basePrompt =
+        'Tôi đang học từ "${word.word}" (${word.transliteration}) nghĩa là "${word.translation}". Hãy giải thích thêm cách sử dụng, đưa ví dụ tiếng Trung kèm pinyin và gợi ý luyện tập phù hợp.';
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -242,12 +248,11 @@ class _PrimaryActions extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => navigateAfterFrame(() {
                     Get.toNamed(AppRoutes.practiceSession, arguments: {
-                      'mode': PracticeMode.journey,
                       'words': [word],
                     });
                   }),
                   icon: const Icon(Icons.route),
-                  label: const Text('Luyện hành trình 5 cấp'),
+                  label: const Text('Luyện gõ câu ví dụ'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -255,7 +260,9 @@ class _PrimaryActions extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => navigateAfterFrame(() {
                     Get.toNamed(AppRoutes.aiChat, arguments: {
-                      'context': contextText,
+                      'prompt': basePrompt,
+                      'displayText': 'Cho mình thêm gợi ý về từ ${word.word} nhé!',
+                      'wordContext': word.word,
                     });
                   }),
                   icon: const Icon(Icons.smart_toy_outlined),
@@ -266,139 +273,6 @@ class _PrimaryActions extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _PracticeTimeline extends StatelessWidget {
-  const _PracticeTimeline({required this.word, required this.level});
-
-  final Word word;
-  final int level;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accent = HskPalette.accentForLevel(level, theme.colorScheme);
-    final options = <_PracticeItem>[
-      _PracticeItem(
-        title: 'Level 1 · Gõ nghĩa',
-        description: 'Nhìn chữ Hán và gõ nghĩa tiếng Việt/Anh.',
-        icon: Icons.translate,
-        mode: PracticeMode.typingMeaning,
-      ),
-      _PracticeItem(
-        title: 'Level 2 · Gõ Pinyin',
-        description: 'Ghi nhớ cách đọc bằng cách gõ chuẩn pinyin.',
-        icon: Icons.keyboard_alt_outlined,
-        mode: PracticeMode.typingPinyin,
-      ),
-      _PracticeItem(
-        title: 'Level 3 · Gõ chữ Hán',
-        description: 'Dùng bàn phím tiếng Trung để gõ lại chữ.',
-        icon: Icons.edit_square,
-        mode: PracticeMode.typingHanzi,
-      ),
-      _PracticeItem(
-        title: 'Level 4 · Điền vào câu',
-        description: 'Bổ sung từ còn thiếu dựa trên câu ví dụ.',
-        icon: Icons.menu_book_outlined,
-        mode: PracticeMode.typingFillBlank,
-      ),
-      _PracticeItem(
-        title: 'Level 5 · Gõ cả câu',
-        description: 'Chép lại câu ví dụ hoàn chỉnh để ghi nhớ sâu.',
-        icon: Icons.edit_note,
-        mode: PracticeMode.typingSentence,
-      ),
-      const _PracticeItem(
-        title: 'Nghe & gõ lại (Soon)',
-        description: 'Nghe audio rồi nhập lại câu hoàn chỉnh.',
-        icon: Icons.hearing,
-      ),
-      const _PracticeItem(
-        title: 'Đọc mở rộng (Soon)',
-        description: 'Đọc thêm ví dụ mở rộng cho từ này.',
-        icon: Icons.chrome_reader_mode,
-      ),
-      const _PracticeItem(
-        title: 'Luyện nét chữ (Soon)',
-        description: 'Theo dõi thứ tự nét và tập viết lại.',
-        icon: Icons.gesture,
-      ),
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withOpacity(0.06),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Lộ trình luyện gõ',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 12),
-          ...options.map((item) => _PracticeTile(word: word, item: item, accent: accent)),
-        ],
-      ),
-    );
-  }
-}
-
-class _PracticeItem {
-  const _PracticeItem({
-    required this.title,
-    required this.description,
-    required this.icon,
-    this.mode,
-  });
-
-  final String title;
-  final String description;
-  final IconData icon;
-  final PracticeMode? mode;
-}
-
-class _PracticeTile extends StatelessWidget {
-  const _PracticeTile({required this.word, required this.item, required this.accent});
-
-  final Word word;
-  final _PracticeItem item;
-  final Color accent;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final enabled = item.mode != null;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-      leading: CircleAvatar(
-        backgroundColor: accent.withOpacity(0.14),
-        child: Icon(item.icon, color: accent),
-      ),
-      title: Text(item.title),
-      subtitle: Text(item.description),
-      trailing: enabled ? const Icon(Icons.arrow_forward_ios, size: 16) : null,
-      enabled: enabled,
-      onTap: enabled
-          ? () => navigateAfterFrame(() {
-                Get.toNamed(AppRoutes.practiceSession, arguments: {
-                  'mode': item.mode,
-                  'words': [word],
-                });
-              })
-          : null,
     );
   }
 }
@@ -415,6 +289,7 @@ class _ExamplesSection extends StatelessWidget {
     final accent = HskPalette.accentForLevel(level, theme.colorScheme);
     return Obx(() {
       final examples = controller.examples;
+      final focusWord = controller.word.value;
       if (examples.isEmpty) {
         return Container(
           padding: const EdgeInsets.all(24),
@@ -476,6 +351,32 @@ class _ExamplesSection extends StatelessWidget {
                         example.sentenceVi,
                         style: theme.textTheme.bodySmall,
                       ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          style: TextButton.styleFrom(
+                            foregroundColor: accent,
+                          ),
+                          onPressed: () => navigateAfterFrame(
+                            () => Get.toNamed(
+                              AppRoutes.aiChat,
+                              arguments: {
+                                'prompt': _buildGrammarPrompt(
+                                  focusWord?.word ?? '',
+                                  example.sentenceCn,
+                                  example.sentenceVi,
+                                ),
+                                'displayText':
+                                    'Giải thích ngữ pháp câu "${example.sentenceCn}" giúp mình nhé!',
+                                'wordContext': focusWord?.word ?? '',
+                              },
+                            ),
+                          ),
+                          icon: const Icon(Icons.auto_fix_high_outlined),
+                          label: const Text('Giải thích ngữ pháp với AI'),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -485,5 +386,18 @@ class _ExamplesSection extends StatelessWidget {
         ),
       );
     });
+  }
+
+  String _buildGrammarPrompt(String word, String sentenceCn, String translation) {
+    final buffer = StringBuffer(
+        'Giải thích chi tiết cấu trúc ngữ pháp của câu "$sentenceCn" (nghĩa: $translation). ')
+      ..write('Trình bày bằng tiếng Việt, phân tích từng thành phần trong câu');
+    if (word.trim().isNotEmpty) {
+      buffer.write(' và nhấn mạnh cách sử dụng của từ "$word".');
+    } else {
+      buffer.write('.');
+    }
+    buffer.write(' Đề xuất thêm một câu ví dụ tương tự để luyện gõ.');
+    return buffer.toString();
   }
 }

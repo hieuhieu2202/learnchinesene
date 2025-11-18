@@ -39,6 +39,7 @@ class HomeController extends GetxController {
   final sections = <int>[].obs;
   final isLoading = false.obs;
   final hskOverview = <HskLevelOverview>[].obs;
+  final selectedTab = 0.obs;
 
   @override
   void onInit() {
@@ -113,6 +114,10 @@ class HomeController extends GetxController {
     }
 
     hskOverview.assignAll(overviewItems);
+  }
+
+  void changeTab(int index) {
+    selectedTab.value = index;
   }
 }
 
