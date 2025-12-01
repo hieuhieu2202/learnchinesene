@@ -140,9 +140,15 @@ class _WordHero extends StatelessWidget {
               color: theme.colorScheme.background.withOpacity(0.8),
               borderRadius: BorderRadius.circular(32),
             ),
-            child: Text(
-              word.word,
-              style: const TextStyle(fontSize: 56, fontWeight: FontWeight.w800),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                word.word,
+                maxLines: 1,
+                softWrap: false,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 56, fontWeight: FontWeight.w800),
+              ),
             ),
           ),
           const SizedBox(width: 24),
