@@ -131,10 +131,12 @@ class _WordHero extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(24),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 120,
-            height: 120,
+            width: 112,
+            height: 112,
+            padding: const EdgeInsets.all(10),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: theme.colorScheme.background.withOpacity(0.8),
@@ -142,38 +144,27 @@ class _WordHero extends StatelessWidget {
             ),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final length = word.word.length;
-                final fontSize = length <= 2
-                    ? 56.0
-                    : length == 3
-                        ? 48.0
-                        : length == 4
-                            ? 42.0
-                            : 36.0;
+                final maxSide = constraints.biggest.shortestSide;
+                final targetSize = (maxSide * 0.72).clamp(42.0, 72.0);
 
                 return FittedBox(
                   fit: BoxFit.scaleDown,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: constraints.maxWidth,
-                    ),
-                    child: Text(
-                      word.word,
-                      maxLines: 1,
-                      softWrap: false,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w800,
-                        height: 1.05,
-                      ),
+                  child: Text(
+                    word.word,
+                    maxLines: 1,
+                    softWrap: false,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: targetSize,
+                      fontWeight: FontWeight.w800,
+                      height: 1.05,
                     ),
                   ),
                 );
               },
             ),
           ),
-          const SizedBox(width: 24),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,6 +177,8 @@ class _WordHero extends StatelessWidget {
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Obx(
