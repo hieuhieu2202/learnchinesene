@@ -62,9 +62,10 @@ Nhiệm vụ của bạn:
     };
 
     final response = await client.post(
-      Uri.parse('${AppConfig.geminiEndpoint}?key=$apiKey'),
+      Uri.parse(AppConfig.geminiEndpoint),
       headers: {
         'Content-Type': 'application/json',
+        'X-goog-api-key': apiKey,
       },
       body: jsonEncode(requestBody),
     );
