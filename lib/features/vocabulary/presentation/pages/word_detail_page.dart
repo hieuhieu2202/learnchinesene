@@ -131,21 +131,40 @@ class _WordHero extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(24),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 120,
-            height: 120,
+            width: 112,
+            height: 112,
+            padding: const EdgeInsets.all(10),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: theme.colorScheme.background.withOpacity(0.8),
               borderRadius: BorderRadius.circular(32),
             ),
-            child: Text(
-              word.word,
-              style: const TextStyle(fontSize: 56, fontWeight: FontWeight.w800),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final maxSide = constraints.biggest.shortestSide;
+                final targetSize = (maxSide * 0.72).clamp(42.0, 72.0);
+
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    word.word,
+                    maxLines: 1,
+                    softWrap: false,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: targetSize,
+                      fontWeight: FontWeight.w800,
+                      height: 1.05,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-          const SizedBox(width: 24),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,10 +177,12 @@ class _WordHero extends StatelessWidget {
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Obx(
-                      () => IconButton(
+                          () => IconButton(
                         icon: Icon(
                           controller.isPlayingAudio.value
                               ? Icons.volume_up_rounded
@@ -326,7 +347,7 @@ class _ExamplesSection extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             ...examples.map(
-              (example) => Padding(
+                  (example) => Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Container(
                   decoration: BoxDecoration(
@@ -359,7 +380,7 @@ class _ExamplesSection extends StatelessWidget {
                             foregroundColor: accent,
                           ),
                           onPressed: () => navigateAfterFrame(
-                            () => Get.toNamed(
+                                () => Get.toNamed(
                               AppRoutes.aiChat,
                               arguments: {
                                 'prompt': _buildGrammarPrompt(
@@ -368,7 +389,7 @@ class _ExamplesSection extends StatelessWidget {
                                   example.sentenceVi,
                                 ),
                                 'displayText':
-                                    'Giải thích ngữ pháp câu "${example.sentenceCn}" giúp mình nhé!',
+                                'Giải thích ngữ pháp câu "${example.sentenceCn}" giúp mình nhé!',
                                 'wordContext': focusWord?.word ?? '',
                               },
                             ),
