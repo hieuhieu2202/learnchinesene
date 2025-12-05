@@ -17,7 +17,7 @@ class AiRemoteDataSource implements AiRepository {
 
   @override
   Future<AiMessage> askAI({required String prompt, String? wordContext}) async {
-    if (apiKey.isEmpty) {
+    if (_isMissingApiKey) {
       return AiMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         text:
@@ -96,6 +96,9 @@ Nhiệm vụ của bạn:
     final error = _readError(response.body);
     throw Exception('Failed to contact AI: ${response.statusCode} $error');
   }
+
+  bool get _isMissingApiKey =>
+      apiKey.isEmpty || apiKey == AppConfig.placeholderGeminiApiKey;
 
   String _readError(String body) {
     try {
