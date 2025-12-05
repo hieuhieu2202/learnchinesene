@@ -5,7 +5,7 @@ class AppConfig {
   static const geminiEndpoint =
       'https://generativelanguage.googleapis.com/v1beta/models/$geminiModel:generateContent';
   static const _fallbackGeminiApiKey =
-      'AIzaSyAroBdEnrvFQlLHF3aPe41EihU7R813o-4';
+      'xxxxxxxxxxxxxx';
   static const geminiApiKey = String.fromEnvironment(
     'GEMINI_API_KEY',
     defaultValue: _fallbackGeminiApiKey,
