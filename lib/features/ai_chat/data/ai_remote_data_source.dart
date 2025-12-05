@@ -97,8 +97,7 @@ Nhiệm vụ của bạn:
     throw Exception('Failed to contact AI: ${response.statusCode} $error');
   }
 
-  bool get _isMissingApiKey =>
-      apiKey.isEmpty || apiKey == AppConfig.placeholderGeminiApiKey;
+  bool get _isMissingApiKey => AppConfig.isGeminiKeyMissing(apiKey);
 
   String _readError(String body) {
     try {
