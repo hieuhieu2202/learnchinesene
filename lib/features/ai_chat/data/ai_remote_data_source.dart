@@ -17,7 +17,7 @@ class AiRemoteDataSource implements AiRepository {
 
   @override
   Future<AiMessage> askAI({required String prompt, String? wordContext}) async {
-    if (apiKey.isEmpty) {
+    if (_isMissingApiKey) {
       return AiMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         text:
@@ -62,9 +62,10 @@ Nhiệm vụ của bạn:
     };
 
     final response = await client.post(
-      Uri.parse('${AppConfig.geminiEndpoint}?key=$apiKey'),
+      Uri.parse(AppConfig.geminiEndpoint),
       headers: {
         'Content-Type': 'application/json',
+        'X-goog-api-key': apiKey,
       },
       body: jsonEncode(requestBody),
     );
@@ -96,6 +97,8 @@ Nhiệm vụ của bạn:
     final error = _readError(response.body);
     throw Exception('Failed to contact AI: ${response.statusCode} $error');
   }
+
+  bool get _isMissingApiKey => AppConfig.isGeminiKeyMissing(apiKey);
 
   String _readError(String body) {
     try {

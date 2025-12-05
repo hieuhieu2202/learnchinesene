@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color creamBackground = Color(0xFFF7E9D7);
-  static const Color creamSurface = Color(0xFFF0DDC2);
-  static const Color creamSurfaceHigh = Color(0xFFE6D0B2);
-  static const Color accentGreen = Color(0xFF6DA77B);
-  static const Color accentGreenDark = Color(0xFF4F8C69);
-  static const Color accentBrown = Color(0xFFC48F64);
-  static const Color accentDark = Color(0xFF4E3B31);
-  static const Color outline = Color(0xFFBDA687);
+  static const Color snowBackground = Color(0xFFFFF7EF);
+  static const Color snowSurface = Color(0xFFF9F0E3);
+  static const Color snowSurfaceHigh = Color(0xFFECDCC5);
+  static const Color hollyRed = Color(0xFFC81D25);
+  static const Color hollyRedDark = Color(0xFF8F0E1A);
+  static const Color pineGreen = Color(0xFF1E6F43);
+  static const Color pineGreenDark = Color(0xFF0F4B2D);
+  static const Color warmGold = Color(0xFFE0C06B);
+  static const Color outline = Color(0xFFD6C6B1);
 }
 
 class AppTheme {
@@ -17,36 +18,36 @@ class AppTheme {
   static ThemeData light() {
     const scheme = ColorScheme(
       brightness: Brightness.light,
-      primary: AppColors.accentGreen,
+      primary: AppColors.hollyRed,
       onPrimary: Colors.white,
-      primaryContainer: Color(0xFF9EC9A5),
-      onPrimaryContainer: AppColors.accentDark,
-      secondary: AppColors.accentBrown,
-      onSecondary: AppColors.accentDark,
-      secondaryContainer: Color(0xFFDDC2A1),
-      onSecondaryContainer: AppColors.accentDark,
-      tertiary: Color(0xFFB07850),
+      primaryContainer: Color(0xFFF4C7CF),
+      onPrimaryContainer: AppColors.hollyRedDark,
+      secondary: AppColors.pineGreen,
+      onSecondary: Colors.white,
+      secondaryContainer: Color(0xFFD2E8DA),
+      onSecondaryContainer: AppColors.pineGreenDark,
+      tertiary: AppColors.warmGold,
       onTertiary: Colors.white,
-      tertiaryContainer: Color(0xFFE4B89A),
-      onTertiaryContainer: AppColors.accentDark,
+      tertiaryContainer: Color(0xFFF1DFB0),
+      onTertiaryContainer: Color(0xFF4A3C12),
       error: Color(0xFFBA1A1A),
       onError: Colors.white,
       errorContainer: Color(0xFFFFDAD6),
       onErrorContainer: Color(0xFF410002),
-      background: AppColors.creamBackground,
-      onBackground: AppColors.accentDark,
-      surface: AppColors.creamSurface,
-      onSurface: AppColors.accentDark,
-      surfaceTint: AppColors.accentGreen,
-      surfaceVariant: AppColors.creamSurfaceHigh,
-      onSurfaceVariant: AppColors.accentDark,
+      background: AppColors.snowBackground,
+      onBackground: AppColors.pineGreenDark,
+      surface: AppColors.snowSurface,
+      onSurface: AppColors.pineGreenDark,
+      surfaceTint: AppColors.hollyRed,
+      surfaceVariant: AppColors.snowSurfaceHigh,
+      onSurfaceVariant: AppColors.pineGreenDark,
       outline: AppColors.outline,
       outlineVariant: Color(0xFFDCC6A9),
       shadow: Colors.black12,
       scrim: Colors.black54,
-      inverseSurface: Color(0xFF3D2F24),
-      onInverseSurface: AppColors.creamBackground,
-      inversePrimary: AppColors.accentGreenDark,
+      inverseSurface: Color(0xFF243224),
+      onInverseSurface: AppColors.snowBackground,
+      inversePrimary: AppColors.hollyRedDark,
     );
 
     final textTheme = Typography.englishLike2021.apply(

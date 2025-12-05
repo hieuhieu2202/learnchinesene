@@ -101,8 +101,24 @@ class AiChatController extends GetxController {
         ),
       );
       messages.add(response);
+    } catch (error) {
+      messages.add(
+        AiMessage(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          text: _friendlyErrorText(error),
+          isUser: false,
+        ),
+      );
     } finally {
       isLoading.value = false;
     }
+  }
+
+  String _friendlyErrorText(Object error) {
+    final message = error.toString();
+    if (message.contains('429')) {
+      return 'Hán Ngữ Bot đang tạm quá tải (429). Vui lòng thử lại sau hoặc cấu hình GEMINI_API_KEY của riêng bạn để tránh giới hạn.';
+    }
+    return 'Xin lỗi, Hán Ngữ Bot đang gặp sự cố: $message';
   }
 }

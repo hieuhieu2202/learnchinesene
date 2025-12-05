@@ -42,9 +42,9 @@ class _SplashPageState extends State<SplashPage> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.creamBackground,
-              AppColors.creamSurface,
-              AppColors.creamSurfaceHigh,
+              AppColors.snowBackground,
+              AppColors.snowSurface,
+              AppColors.snowSurfaceHigh,
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
