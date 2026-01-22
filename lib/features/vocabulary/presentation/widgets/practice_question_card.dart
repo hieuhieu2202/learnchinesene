@@ -16,7 +16,7 @@ class PracticeQuestionCard extends StatefulWidget {
     required this.total,
   });
 
-  final SentenceExercise exercise;
+  final Exercise exercise;
   final Word? word;
   final int accentLevel;
   final int index;
@@ -32,12 +32,17 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
   String? _errorMessage;
   bool _showAnswer = false;
   int _attempts = 0;
+  List<String> _selectedSegments = [];
+  List<String> _availableSegments = [];
+  late final Color accent;
 
   @override
   void initState() {
     super.initState();
     _controller = Get.find<PracticeSessionController>();
     _textController = TextEditingController();
+    accent = HskPalette.accentForLevel(widget.accentLevel, Theme.of(context).colorScheme);
+    _resetArrangeBuffers(widget.exercise);
   }
 
   @override
@@ -48,6 +53,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
       _errorMessage = null;
       _showAnswer = false;
       _attempts = 0;
+      _resetArrangeBuffers(widget.exercise);
     }
   }
 
@@ -57,10 +63,130 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
     super.dispose();
   }
 
+  void _resetArrangeBuffers(Exercise exercise) {
+    if (exercise.type != ExerciseType.typeArrangeSentence) {
+      _selectedSegments = [];
+      _availableSegments = [];
+      return;
+    }
+    if (exercise is SentenceExercise) {
+      final segments = exercise.arrangeSegments ?? [];
+      final options = exercise.arrangeOptions ?? segments;
+      _selectedSegments = [];
+      _availableSegments = List<String>.from(options);
+    } else {
+      _selectedSegments = [];
+      _availableSegments = [];
+    }
+  }
+
+  Future<void> _handleCheck() async {
+    final exercise = widget.exercise;
+    if (exercise.type == ExerciseType.typeArrangeSentence) {
+      if (_selectedSegments.isEmpty) {
+        setState(() {
+          _errorMessage = 'Vui lòng chọn các từ để tạo thành câu!';
+        });
+        return;
+      }
+      final success = await _controller.submitArrangeAnswer(_selectedSegments);
+      if (!mounted) return;
+      if (success) {
+        setState(() {
+          _errorMessage = null;
+          _showAnswer = false;
+          _attempts = 0;
+        });
+        return;
+      }
+      setState(() {
+        _errorMessage = 'Chưa đúng, thử lại nhé!';
+        _attempts += 1;
+      });
+      if (_attempts >= 3) {
+        await _controller.markWrong(advance: true);
+        if (!mounted) return;
+        setState(() {
+          _errorMessage = null;
+          _showAnswer = false;
+          _attempts = 0;
+        });
+        Get.snackbar(
+          'Chuyển bài',
+          'Sai 3 lần rồi, chuyển sang câu tiếp theo nhé!',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
+        );
+      }
+      return;
+    }
+    // Handle typing exercises
+    final success = await _controller.submitTypedAnswer(_textController.text);
+    if (!mounted) return;
+    if (success) {
+      setState(() {
+        _errorMessage = null;
+        _showAnswer = false;
+      });
+    } else {
+      setState(() {
+        _errorMessage = 'Chưa đúng, thử lại nhé!';
+        _attempts += 1;
+      });
+      if (_attempts >= 3) {
+        await _controller.markWrong(advance: true);
+        if (!mounted) return;
+        setState(() {
+          _errorMessage = null;
+          _showAnswer = false;
+          _attempts = 0;
+        });
+        Get.snackbar(
+          'Chuyển bài',
+          'Sai 3 lần rồi, chuyển sang câu tiếp theo nhé!',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
+        );
+      }
+    }
+  }
+
+  void _handleShowAnswer() {
+    setState(() {
+      _showAnswer = true;
+    });
+  }
+
+  Future<void> _handleSkip() async {
+    await _controller.markWrong(advance: true);
+    if (!mounted) return;
+    setState(() {
+      _errorMessage = null;
+      _showAnswer = false;
+      _attempts = 0;
+    });
+  }
+
+  void _handleSegmentSelected(String segment) {
+    setState(() {
+      if (_selectedSegments.contains(segment)) {
+        _selectedSegments.remove(segment);
+        _availableSegments.add(segment);
+      } else if (_availableSegments.contains(segment)) {
+        _availableSegments.remove(segment);
+        _selectedSegments.add(segment);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = HskPalette.accentForLevel(widget.accentLevel, theme.colorScheme);
+    final exercise = widget.exercise;
+    final isArrange = exercise.type == ExerciseType.typeArrangeSentence;
+    if (isArrange) {
+      _availableSegments.shuffle();
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
       child: Container(
@@ -76,7 +202,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
           ),
           boxShadow: [
             BoxShadow(
-              color: accent.withOpacity(0.08),
+              color: accent.withAlpha(20),
               blurRadius: 24,
               offset: const Offset(0, 16),
             ),
@@ -85,7 +211,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: _TypingContent(
-            exercise: widget.exercise,
+            exercise: exercise is SentenceExercise ? exercise : (exercise is MissingWordExercise ? SentenceExercise(type: exercise.type, sentence: exercise.sentence, correctAnswer: exercise.correctAnswer) : SentenceExercise(type: exercise.type, sentence: PracticeSentence(id: '', baseExampleId: null, mainWordId: 0, chinese: '', pinyin: '', vietnamese: '', isFromAI: false), correctAnswer: '')),
             word: widget.word,
             index: widget.index,
             total: widget.total,
@@ -96,64 +222,13 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
             onShowAnswer: _handleShowAnswer,
             onSkip: _handleSkip,
             accent: accent,
+            selectedSegments: _selectedSegments,
+            availableSegments: _availableSegments,
+            onSegmentSelected: _handleSegmentSelected,
           ),
         ),
       ),
     );
-  }
-
-  Future<void> _handleCheck() async {
-    final success = await _controller.submitTypedAnswer(_textController.text);
-    if (!mounted) return;
-    if (success) {
-      setState(() {
-        _errorMessage = null;
-        _showAnswer = false;
-        _attempts = 0;
-        _textController.clear();
-      });
-      return;
-    }
-
-    setState(() {
-      _errorMessage = 'Chưa đúng, thử lại nhé!';
-      _attempts += 1;
-    });
-
-    if (_attempts >= 3) {
-      await _controller.markWrong(advance: true);
-      if (!mounted) return;
-      setState(() {
-        _textController.clear();
-        _errorMessage = null;
-        _showAnswer = false;
-        _attempts = 0;
-      });
-      Get.snackbar(
-        'Chuyển bài',
-        'Sai 3 lần rồi, chuyển sang câu tiếp theo nhé!',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
-    }
-  }
-
-  void _handleShowAnswer() {
-    setState(() {
-      _showAnswer = true;
-      _errorMessage = null;
-    });
-  }
-
-  Future<void> _handleSkip() async {
-    await _controller.skipCurrent();
-    if (!mounted) return;
-    setState(() {
-      _textController.clear();
-      _errorMessage = null;
-      _showAnswer = false;
-      _attempts = 0;
-    });
   }
 }
 
@@ -170,6 +245,9 @@ class _TypingContent extends StatelessWidget {
     required this.onShowAnswer,
     required this.onSkip,
     required this.accent,
+    required this.selectedSegments,
+    required this.availableSegments,
+    required this.onSegmentSelected,
   });
 
   final SentenceExercise exercise;
@@ -183,6 +261,9 @@ class _TypingContent extends StatelessWidget {
   final VoidCallback onShowAnswer;
   final Future<void> Function() onSkip;
   final Color accent;
+  final List<String> selectedSegments;
+  final List<String> availableSegments;
+  final ValueChanged<String> onSegmentSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -192,33 +273,18 @@ class _TypingContent extends StatelessWidget {
     final prompt = _promptForType(exercise);
     final inputLabel = _inputLabelForType(exercise.type);
     final extraHints = _buildExtraHints(exercise);
+    final isArrange = exercise.type == ExerciseType.typeArrangeSentence;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isCompact = constraints.maxHeight.isFinite && constraints.maxHeight < 560;
-        final maxLines = isCompact ? 4 : 6;
-
-        Widget buildTextField() {
-          return TextField(
-            controller: textController,
-            minLines: exercise.type == ExerciseType.typeMissingWord ? 1 : 2,
-            maxLines: maxLines,
-            autofocus: true,
-            decoration: InputDecoration(
-              labelText: inputLabel,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-              errorText: errorMessage,
-            ),
-          );
-        }
-
-        final children = <Widget>[
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(0.15),
+                  color: accent.withAlpha(38),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
@@ -226,7 +292,7 @@ class _TypingContent extends StatelessWidget {
                   style: theme.textTheme.labelLarge?.copyWith(color: accent, fontWeight: FontWeight.w700),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 12),
               Text(
                 'Câu ${index + 1}/$total',
                 style: theme.textTheme.labelMedium,
@@ -248,10 +314,31 @@ class _TypingContent extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
-          if (isCompact)
-            buildTextField()
-          else
-            Flexible(child: buildTextField()),
+          if (isArrange) ...[
+            _SelectedSegmentsArea(
+              selectedSegments: selectedSegments,
+              accent: accent,
+              onSegmentSelected: onSegmentSelected,
+            ),
+            const SizedBox(height: 16),
+            _ArrangeSentenceWidget(
+              segments: availableSegments,
+              selectedSegments: selectedSegments,
+              onSegmentSelected: onSegmentSelected,
+              accent: accent,
+            ),
+          ] else ...[
+            TextField(
+              controller: textController,
+              maxLines: 2,
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: inputLabel,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                errorText: errorMessage,
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           Row(
             children: [
@@ -274,50 +361,20 @@ class _TypingContent extends StatelessWidget {
                   child: const Text('Xem đáp án'),
                 ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onSkip,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('Bỏ qua'),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: onSkip,
-              child: const Text('Bỏ qua'),
-            ),
-          ),
-          if (showAnswer) ...[
-            const Divider(height: 32),
-            Text(
-              'Đáp án đúng',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            SelectableText(
-              _answerText(exercise),
-              style: theme.textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text('Pinyin: ${exercise.sentence.pinyin}', style: hintStyle),
-            const SizedBox(height: 4),
-            Text('Nghĩa: ${exercise.sentence.vietnamese}', style: hintStyle),
-          ],
-        ];
-
-        final content = Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: children,
-        );
-
-        if (!isCompact) {
-          return content;
-        }
-
-        return SingleChildScrollView(
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: content,
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -332,6 +389,8 @@ class _TypingContent extends StatelessWidget {
         return 'Điền từ "$wordLabel"';
       case ExerciseType.typeFullSentenceCopy:
         return 'Chép lại câu tiếng Trung';
+      case ExerciseType.typeArrangeSentence:
+        return 'Sắp xếp thành câu';
       case ExerciseType.typeTransformed:
         return 'Câu biến đổi/AI';
     }
@@ -346,13 +405,15 @@ class _TypingContent extends StatelessWidget {
         return sentence.pinyin;
       case ExerciseType.typeMissingWord:
         return sentence.chinese.replaceFirst(
-          exercise.hiddenWord ?? '',
+          exercise.correctAnswer,
           '___',
         );
       case ExerciseType.typeFullSentenceCopy:
-        return sentence.vietnamese;
-      case ExerciseType.typeTransformed:
         return '${sentence.vietnamese}\n\n(Hãy gõ lại câu tiếng Trung)';
+      case ExerciseType.typeArrangeSentence:
+        return 'Sắp xếp các từ thành câu đúng';
+      case ExerciseType.typeTransformed:
+        return sentence.chinese;
     }
   }
 
@@ -360,6 +421,8 @@ class _TypingContent extends StatelessWidget {
     switch (type) {
       case ExerciseType.typeMissingWord:
         return 'Nhập từ còn thiếu';
+      case ExerciseType.typeArrangeSentence:
+        return 'Chọn các từ để tạo thành câu';
       default:
         return 'Gõ câu tiếng Trung tại đây';
     }
@@ -367,17 +430,122 @@ class _TypingContent extends StatelessWidget {
 
   List<String> _buildExtraHints(SentenceExercise exercise) {
     final hints = <String>[];
-    final vietnameseHint = exercise.hintVietnamese ?? exercise.sentence.vietnamese;
+    final vietnameseHint = exercise.sentence.vietnamese;
     if (exercise.type != ExerciseType.typeFromVietnamese && vietnameseHint.isNotEmpty) {
       hints.add('Nghĩa: $vietnameseHint');
     }
     return hints;
   }
+}
 
-  String _answerText(SentenceExercise exercise) {
-    if (exercise.type == ExerciseType.typeMissingWord) {
-      return exercise.correctAnswer;
-    }
-    return exercise.sentence.chinese;
+class _SelectedSegmentsArea extends StatelessWidget {
+  const _SelectedSegmentsArea({
+    required this.selectedSegments,
+    required this.accent,
+    required this.onSegmentSelected,
+  });
+
+  final List<String> selectedSegments;
+  final Color accent;
+  final ValueChanged<String> onSegmentSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      height: 100,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: accent.withAlpha(77), width: 2),
+        borderRadius: BorderRadius.circular(16),
+        color: theme.colorScheme.surfaceContainerHighest.withAlpha(77),
+      ),
+      child: selectedSegments.isEmpty
+          ? Center(
+              child: Text(
+                'Chọn các từ bên dưới',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant.withAlpha(153),
+                ),
+              ),
+            )
+          : SingleChildScrollView(
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: selectedSegments
+                    .map(
+                      (segment) => GestureDetector(
+                        onTap: () => onSegmentSelected(segment),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: accent.withAlpha(51),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: accent, width: 2),
+                          ),
+                          child: Text(
+                            segment,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: accent,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+    );
+  }
+}
+
+class _ArrangeSentenceWidget extends StatelessWidget {
+  const _ArrangeSentenceWidget({
+    required this.segments,
+    required this.selectedSegments,
+    required this.onSegmentSelected,
+    required this.accent,
+  });
+
+  final List<String> segments;
+  final List<String> selectedSegments;
+  final ValueChanged<String> onSegmentSelected;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: segments
+          .map(
+            (segment) => GestureDetector(
+              onTap: () => onSegmentSelected(segment),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: accent.withAlpha(38),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: selectedSegments.contains(segment) ? accent : theme.colorScheme.onSurfaceVariant,
+                    width: 2,
+                  ),
+                ),
+                child: Text(
+                  segment,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: selectedSegments.contains(segment) ? accent : theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
   }
 }

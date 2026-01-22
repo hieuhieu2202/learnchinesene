@@ -147,14 +147,14 @@ class _HomeWelcomeCard extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 scheme.surface,
-                scheme.surfaceVariant.withOpacity(0.9),
+                scheme.surfaceVariant.withAlpha(230),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: scheme.shadow.withOpacity(0.08),
+                color: scheme.shadow.withAlpha(20),
                 blurRadius: 24,
                 offset: const Offset(0, 16),
               ),
@@ -331,10 +331,10 @@ class _AiInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: accent.withOpacity(0.12), width: 1.1),
+        border: Border.all(color: accent.withAlpha(31), width: 1.1),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.05),
+            color: accent.withAlpha(13),
             blurRadius: 14,
             offset: const Offset(0, 10),
           ),
@@ -348,7 +348,7 @@ class _AiInfoCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: accent.withOpacity(0.1),
+              color: accent.withAlpha(26),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: accent),
@@ -416,12 +416,12 @@ class _AiActionCard extends StatelessWidget {
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: accent.withOpacity(0.14),
+              color: accent.withAlpha(36),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: accent.withOpacity(0.06),
+                color: accent.withAlpha(15),
                 blurRadius: 18,
                 offset: const Offset(0, 10),
               ),
@@ -432,7 +432,7 @@ class _AiActionCard extends StatelessWidget {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(0.12),
+                  color: accent.withAlpha(31),
                   borderRadius: BorderRadius.circular(18),
                 ),
                 padding: const EdgeInsets.all(12),
@@ -552,7 +552,7 @@ class _GradientBackground extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            scheme.background,
+            scheme.surfaceContainer,
             scheme.surface,
           ],
           begin: Alignment.topCenter,
@@ -681,7 +681,7 @@ class _SimpleLevelCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: scheme.surface,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: badge.withOpacity(0.18)),
+              border: Border.all(color: badge.withAlpha(46)),
             ),
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -691,7 +691,7 @@ class _SimpleLevelCard extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: badge.withOpacity(0.16),
+                    color: badge.withAlpha(41),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   alignment: Alignment.center,
@@ -719,7 +719,7 @@ class _SimpleLevelCard extends StatelessWidget {
                       LinearProgressIndicator(
                         value: progress,
                         minHeight: 6,
-                        backgroundColor: accent.withOpacity(0.2),
+                        backgroundColor: accent.withAlpha(51),
                         valueColor: AlwaysStoppedAnimation<Color>(accent),
                       ),
                       const SizedBox(height: 6),
@@ -782,7 +782,7 @@ class _NavigationCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: accentColor.withOpacity(0.12),
+                color: accentColor.withAlpha(31),
                 blurRadius: 18,
                 offset: const Offset(0, 12),
               ),
@@ -797,7 +797,7 @@ class _NavigationCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 26,
-                    backgroundColor: accentColor.withOpacity(0.12),
+                    backgroundColor: accentColor.withAlpha(31),
                     child: Icon(icon, color: accentColor, size: 26),
                   ),
                   const SizedBox(height: 16),
@@ -825,7 +825,7 @@ class _NavigationCard extends StatelessWidget {
                       if (comingSoon)
                         Container(
                           decoration: BoxDecoration(
-                            color: accentColor.withOpacity(0.14),
+                            color: accentColor.withAlpha(36),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           padding: const EdgeInsets.symmetric(
@@ -939,4 +939,3 @@ class _NavigationItem {
   final Color? accent;
   final bool comingSoon;
 }
-

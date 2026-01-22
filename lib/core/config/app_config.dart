@@ -1,13 +1,12 @@
+import 'api_keys.dart';
+
 class AppConfig {
   AppConfig._();
 
-  static const geminiModel = 'gemini-2.0-flash';
+  static const geminiModel = 'gemini-2.5-flash-lite';
   static const geminiEndpoint =
       'https://generativelanguage.googleapis.com/v1beta/models/$geminiModel:generateContent';
-  static const _fallbackGeminiApiKey =
-      'xxxxxxxxxxxxxx';
-  static const geminiApiKey = String.fromEnvironment(
-    'GEMINI_API_KEY',
-    defaultValue: _fallbackGeminiApiKey,
-  );
+
+  // ⭐ Lấy API key từ file api_keys.dart (không commit lên git)
+  static const geminiApiKey = ApiKeys.geminiApiKey;
 }

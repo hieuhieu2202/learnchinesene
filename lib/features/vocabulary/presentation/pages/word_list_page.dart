@@ -64,7 +64,7 @@ class WordListPage extends GetView<WordListController> {
                         _UnitSummary(
                           controller: controller,
                           level: level,
-                          onPractice: words.isEmpty
+                          onPractice: (words.isEmpty || !controller.isUnlocked)
                               ? null
                               : () => navigateAfterFrame(() {
                                     Get.toNamed(
@@ -85,6 +85,7 @@ class WordListPage extends GetView<WordListController> {
                               words: introducedWords,
                               level: level,
                               onTap: openWord,
+                              controller: controller,
                             ),
                           if (introducedWords.isNotEmpty && reusedWords.isNotEmpty)
                             const SizedBox(height: 24),
@@ -94,6 +95,7 @@ class WordListPage extends GetView<WordListController> {
                               words: reusedWords,
                               level: level,
                               onTap: openWord,
+                              controller: controller,
                             ),
                         ],
                       ],
@@ -158,6 +160,7 @@ class _UnitSummary extends StatelessWidget {
     final totalWords = controller.totalWords;
     final mastered = controller.masteredCount;
     final progress = totalWords == 0 ? 0.0 : mastered / totalWords;
+    final isLocked = !controller.isUnlocked;
 
     return Container(
       decoration: BoxDecoration(
@@ -172,7 +175,7 @@ class _UnitSummary extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.1),
+            color: accent.withAlpha(26),
             blurRadius: 20,
             offset: const Offset(0, 12),
           ),
@@ -182,6 +185,32 @@ class _UnitSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (isLocked)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.error.withAlpha(26),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: theme.colorScheme.error.withAlpha(153)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.lock_rounded, color: theme.colorScheme.error, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Hoàn thành unit trước để mở khóa luyện tập.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.error,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           LayoutBuilder(
             builder: (context, constraints) {
               final isCompact = constraints.maxWidth < 380;
@@ -220,11 +249,11 @@ class _UnitSummary extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
-          LinearProgressIndicator(
+          _AnimatedLinearProgress(
             value: progress,
-            minHeight: 8,
-            backgroundColor: accent.withOpacity(0.15),
+            height: 8,
             color: accent,
+            backgroundColor: accent.withAlpha(38),
             borderRadius: BorderRadius.circular(8),
           ),
           const SizedBox(height: 12),
@@ -244,12 +273,14 @@ class _WordCluster extends StatelessWidget {
     required this.words,
     required this.level,
     required this.onTap,
+    required this.controller,
   });
 
   final String title;
   final List<Word> words;
   final int level;
   final ValueChanged<Word> onTap;
+  final WordListController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -285,15 +316,20 @@ class _WordCluster extends StatelessWidget {
               runSpacing: spacing,
               children: words
                   .map(
-                    (word) => WordListItem(
-                      word: word,
-                      level: level,
-                      onTap: () => onTap(word),
-                      maxWidth: tileWidth,
-                      showTransliteration: false,
-                      showTranslation: false,
-                      progress: word.mastered ? 1.0 : 0.0,
-                    ),
+                    (word) {
+                      // ⭐ Lấy progress từ Progress entity qua controller
+                      final progress = controller.getWordProgress(word.id);
+
+                      return WordListItem(
+                        word: word,
+                        level: level,
+                        onTap: () => onTap(word),
+                        maxWidth: tileWidth,
+                        showTransliteration: false,
+                        showTranslation: false,
+                        progress: progress,
+                      );
+                    },
                   )
                   .toList(),
             ),
@@ -343,6 +379,51 @@ class _EmptyWordState extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AnimatedLinearProgress extends StatelessWidget {
+  const _AnimatedLinearProgress({
+    super.key,
+    required this.value,
+    required this.height,
+    required this.color,
+    required this.backgroundColor,
+    required this.borderRadius,
+  });
+
+  final double value;
+  final double height;
+  final Color color;
+  final Color backgroundColor;
+  final BorderRadius borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOut,
+      builder: (context, animatedValue, child) {
+        return ClipRRect(
+          borderRadius: borderRadius,
+          child: SizedBox(
+            height: height,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Container(color: backgroundColor),
+                FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: animatedValue,
+                  child: Container(color: color),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

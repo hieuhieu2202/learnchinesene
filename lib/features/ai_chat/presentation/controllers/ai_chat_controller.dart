@@ -98,7 +98,7 @@ class AiChatController extends GetxController {
         AskAiParams(
           prompt: prompt,
           wordContext: bootWordContext,
-        ),
+        )
       );
       messages.add(response);
     } finally {

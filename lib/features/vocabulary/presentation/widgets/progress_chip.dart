@@ -18,7 +18,7 @@ class ProgressChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withAlpha(31),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
@@ -31,7 +31,7 @@ class ProgressChip extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: clampedProgress,
-                backgroundColor: color.withOpacity(0.2),
+                backgroundColor: color.withAlpha(51),
                 color: color,
               ),
             ),

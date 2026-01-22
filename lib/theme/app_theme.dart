@@ -72,32 +72,32 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: scheme.surface,
-        indicatorColor: scheme.primary.withOpacity(0.18),
+        indicatorColor: scheme.primary.withAlpha(46),
         height: 72,
         labelTextStyle: MaterialStateProperty.resolveWith(
           (states) => textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w600,
             color: states.contains(MaterialState.selected)
                 ? scheme.primary
-                : scheme.onSurface.withOpacity(0.7),
+                : scheme.onSurface.withAlpha(179),
           ),
         ),
         iconTheme: MaterialStateProperty.resolveWith(
           (states) => IconThemeData(
             color: states.contains(MaterialState.selected)
                 ? scheme.primary
-                : scheme.onSurface.withOpacity(0.6),
+                : scheme.onSurface.withAlpha(153),
           ),
         ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: scheme.surface,
-        selectedColor: scheme.primary.withOpacity(0.15),
+        selectedColor: scheme.primary.withAlpha(38),
         labelStyle: textTheme.bodyMedium,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: scheme.outline.withOpacity(0.3)),
+          side: BorderSide(color: scheme.outline.withAlpha(77)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -106,15 +106,15 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: scheme.outline.withOpacity(0.3)),
+          borderSide: BorderSide(color: scheme.outline.withAlpha(77)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: scheme.outline.withOpacity(0.25)),
+          borderSide: BorderSide(color: scheme.outline.withAlpha(64)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: scheme.primary.withOpacity(0.6)),
+          borderSide: BorderSide(color: scheme.primary.withAlpha(153)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

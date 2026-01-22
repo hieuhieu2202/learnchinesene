@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,16 +14,21 @@ import '../features/system/presentation/pages/splash_page.dart';
 import '../features/vocabulary/domain/entities/word.dart';
 import '../features/vocabulary/data/datasources/example_local_data_source.dart';
 import '../features/vocabulary/data/datasources/progress_local_data_source.dart';
+import '../features/vocabulary/data/datasources/user_stats_local_data_source.dart';
 import '../features/vocabulary/data/datasources/word_local_data_source.dart';
 import '../features/vocabulary/data/repositories/example_repository_impl.dart';
 import '../features/vocabulary/data/repositories/progress_repository_impl.dart';
+import '../features/vocabulary/data/repositories/user_stats_repository_impl.dart';
 import '../features/vocabulary/data/repositories/word_repository_impl.dart';
 import '../features/vocabulary/domain/repositories/example_repository.dart';
 import '../features/vocabulary/domain/repositories/progress_repository.dart';
 import '../features/vocabulary/domain/repositories/word_repository.dart';
+import '../features/vocabulary/domain/repositories/user_stats_repository.dart';
+import '../features/vocabulary/domain/usecases/add_experience.dart';
 import '../features/vocabulary/domain/usecases/get_examples_by_word.dart';
 import '../features/vocabulary/domain/usecases/get_progress_for_word.dart';
 import '../features/vocabulary/domain/usecases/get_sections.dart';
+import '../features/vocabulary/domain/usecases/get_user_stats.dart';
 import '../features/vocabulary/domain/usecases/get_word_by_id.dart';
 import '../features/vocabulary/domain/usecases/get_words_by_section.dart';
 import '../features/vocabulary/domain/usecases/get_words_to_review_today.dart';
@@ -58,6 +64,10 @@ class AppBindings extends Bindings {
       () => ProgressLocalDataSourceImpl(),
       fenix: true,
     );
+    Get.lazyPut<UserStatsLocalDataSource>(
+      () => UserStatsLocalDataSourceImpl(),
+      fenix: true,
+    );
 
     Get.lazyPut<WordRepository>(
       () => WordRepositoryImpl(
@@ -75,6 +85,12 @@ class AppBindings extends Bindings {
     Get.lazyPut<ProgressRepository>(
       () => ProgressRepositoryImpl(
         Get.find<ProgressLocalDataSource>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut<UserStatsRepository>(
+      () => UserStatsRepositoryImpl(
+        localDataSource: Get.find<UserStatsLocalDataSource>(),
       ),
       fenix: true,
     );
@@ -105,6 +121,14 @@ class AppBindings extends Bindings {
     );
     Get.lazyPut(
       () => UpdateProgressAfterQuiz(Get.find<ProgressRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetUserStatsUseCase(repository: Get.find<UserStatsRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => AddExperienceUseCase(repository: Get.find<UserStatsRepository>()),
       fenix: true,
     );
 
@@ -148,6 +172,7 @@ class AppPages {
         Get.put(SectionListController(
           getSections: Get.find(),
           getWordsBySection: Get.find(),
+          getProgressForWord: Get.find(),
           initialLevel: hskLevel,
         ));
       }),
@@ -163,6 +188,7 @@ class AppPages {
           sectionId: sectionId,
           sectionTitle: sectionTitle,
           getWordsBySection: Get.find(),
+          getProgressForWord: Get.find(),
         ));
       }),
     ),
@@ -200,6 +226,8 @@ class AppPages {
           getExamplesByWord: Get.find(),
           getProgressForWord: Get.find(),
           updateProgressAfterQuiz: Get.find(),
+          addExperienceUseCase: Get.find(),
+          userStatsRepository: Get.find(),
         ));
       }),
     ),
