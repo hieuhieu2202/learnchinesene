@@ -15,7 +15,7 @@ class SettingsPage extends StatelessWidget {
         children: [
           Card(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+            color: theme.colorScheme.surfaceVariant.withAlpha(102),
             child: ListTile(
               leading: Icon(Icons.pending_actions_outlined, color: theme.colorScheme.primary),
               title: const Text('Một số thiết lập đang hoàn thiện'),
@@ -37,7 +37,7 @@ class SettingsPage extends StatelessWidget {
               onChanged: null,
               secondary: Chip(
                 label: const Text('Sắp ra mắt'),
-                backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
+                backgroundColor: theme.colorScheme.primary.withAlpha(31),
                 labelStyle: TextStyle(
                   color: theme.colorScheme.primary,
                   fontWeight: FontWeight.w700,

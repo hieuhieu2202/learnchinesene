@@ -1,12 +1,17 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:get/get.dart' hide Progress;
 import '../../domain/entities/practice_models.dart';
 import '../../domain/entities/progress_entity.dart';
 import '../../domain/entities/word.dart';
+import '../../domain/repositories/user_stats_repository.dart';
+import '../../domain/usecases/add_experience.dart';
 import '../../domain/usecases/get_examples_by_word.dart';
 import '../../domain/usecases/get_progress_for_word.dart';
 import '../../domain/usecases/update_progress_after_quiz.dart';
+import 'section_list_controller.dart';
+import 'word_list_controller.dart';
 
 class PracticeSessionController extends GetxController {
   PracticeSessionController({
@@ -14,20 +19,27 @@ class PracticeSessionController extends GetxController {
     required this.getExamplesByWord,
     required this.getProgressForWord,
     required this.updateProgressAfterQuiz,
+    required this.addExperienceUseCase,
+    required this.userStatsRepository,
     this.maxWords = 5,
   });
+
+  static const _stringListEquality = ListEquality<String>();
 
   final List<Word> words;
   final GetExamplesByWord getExamplesByWord;
   final GetProgressForWord getProgressForWord;
   final UpdateProgressAfterQuiz updateProgressAfterQuiz;
+  final AddExperienceUseCase addExperienceUseCase;
+  final UserStatsRepository userStatsRepository;
   final int maxWords;
 
   final isLoading = true.obs;
   final isFinished = false.obs;
   final currentIndex = 0.obs;
+  final currentExercise = Rx<Exercise?>(null);
   final score = 0.obs;
-  final currentExercise = Rx<SentenceExercise?>(null);
+  final expEarned = 0.obs; // ⭐ Theo dõi EXP kiếm được trong bài
   final results = <ExerciseResult>[].obs;
   final process = Rx<UnitPracticeProcess?>(null);
 
@@ -61,6 +73,10 @@ class PracticeSessionController extends GetxController {
   Future<bool> submitTypedAnswer(String input) async {
     final exercise = currentExercise.value;
     if (exercise == null || _isHandlingResult) {
+      return false;
+    }
+
+    if (exercise.type == ExerciseType.typeArrangeSentence) {
       return false;
     }
 
@@ -123,21 +139,17 @@ class PracticeSessionController extends GetxController {
     }
 
     final selectedWords = words.take(maxWords).toList();
-    final exercises = <SentenceExercise>[];
+    final exercises = <Exercise>[];
     final wordIds = <int>[];
 
     for (final word in selectedWords) {
       wordIds.add(word.id);
       await _loadProgress(word.id);
       final baseSentences = await _loadBaseSentences(word.id);
-      final topExamples = baseSentences.take(2);
-      for (final base in topExamples) {
+      // Use all available examples instead of just top 2
+      // Remove AI-generated sentences and increase database examples
+      for (final base in baseSentences) {
         exercises.addAll(_generateExercisesForBaseSentence(base, word));
-      }
-
-      final aiSentences = _generateAiSentences(word, baseSentences: baseSentences);
-      for (final ai in aiSentences) {
-        exercises.addAll(_generateExercisesForAiSentence(ai));
       }
     }
 
@@ -146,6 +158,10 @@ class PracticeSessionController extends GetxController {
       isFinished.value = true;
       return;
     }
+
+    // Shuffle exercises để có sự đa dạng trong luyện tập
+    // Tránh tình trạng câu giống nhau lặp lại nhiều lần liên tiếp
+    exercises.shuffle(Random());
 
     final processModel = UnitPracticeProcess(
       sectionId: selectedWords.first.sectionId,
@@ -158,7 +174,7 @@ class PracticeSessionController extends GetxController {
   }
 
   Future<void> _finalizeExercise({
-    required SentenceExercise exercise,
+    required Exercise exercise,
     required String userInput,
     required bool correct,
     required bool advance,
@@ -172,11 +188,32 @@ class PracticeSessionController extends GetxController {
     final newCorrect = progress.correctCount + (correct ? 1 : 0);
     final newWrong = progress.wrongCount + (correct ? 0 : 1);
 
+    print('📝 [PRACTICE] Cập nhật progress:');
+    print('   Từ ID: ${exercise.sentence.mainWordId}');
+    print('   Câu trả lời: ${correct ? "✅ Đúng" : "❌ Sai"}');
+    print('   correctCount cũ: ${progress.correctCount}');
+    print('   correctCount mới: $newCorrect');
+    print('   wrongCount mới: $newWrong');
+
     final updatedLevel = _calculateNextLevel(
       previousLevel: progress.level,
       correct: correct,
       totalCorrect: newCorrect,
     );
+
+    print('   Level cũ: ${progress.level}');
+    print('   Level mới: $updatedLevel');
+
+    // ⭐ Kiểm tra nếu từ này vừa được mastered (level từ < 5 → >= 5)
+    final isMastered = updatedLevel >= 5;
+    final wasMastered = progress.mastered;
+
+    print('🎯 [PRACTICE] Kiểm tra mastery:');
+    print('   📊 Level cũ: ${progress.level}');
+    print('   📊 Level mới: $updatedLevel');
+    print('   ✨ isMastered: $isMastered');
+    print('   ✨ wasMastered: $wasMastered');
+    print('   🔥 Sẽ cập nhật streak? ${isMastered && !wasMastered}');
 
     await updateProgressAfterQuiz(
       UpdateProgressParams(
@@ -185,9 +222,15 @@ class PracticeSessionController extends GetxController {
         wrongCount: newWrong,
         lastPractice: DateTime.now(),
         level: updatedLevel,
-        mastered: updatedLevel >= 5,
+        mastered: isMastered,
       ),
     );
+
+    // ⭐ Nếu vừa mastered từ (chưa mastered trước) → Cập nhật streak
+    if (isMastered && !wasMastered) {
+      print('🔥 [PRACTICE] Từ vừa được mastered, cập nhật streak...');
+      await _updateStreakOnWordMastered();
+    }
 
     _progressCache[progress.wordId] = progress.copyWith(
       correctCount: newCorrect,
@@ -208,6 +251,18 @@ class PracticeSessionController extends GetxController {
 
     if (correct) {
       score.value += 1;
+      expEarned.value += 1; // ⭐ +1 EXP cho mỗi câu đúng
+
+      // 🎉 Cập nhật EXP vào database ngay lập tức
+      try {
+        await addExperienceUseCase(
+          correctAnswers: 1,
+          lessonCompleted: false, // Chỉ tính 1 EXP/câu, không cần hoàn thành
+        );
+        print('✅ +1 EXP | Tổng: ${expEarned.value}');
+      } catch (e) {
+        print('❌ Lỗi cập nhật EXP: $e');
+      }
     }
 
     if (advance) {
@@ -260,7 +315,7 @@ class PracticeSessionController extends GetxController {
     return base;
   }
 
-  List<SentenceExercise> _generateExercisesForBaseSentence(
+  List<Exercise> _generateExercisesForBaseSentence(
     BaseSentence base,
     Word word,
   ) {
@@ -278,121 +333,116 @@ class PracticeSessionController extends GetxController {
       SentenceExercise(
         type: ExerciseType.typeFromVietnamese,
         sentence: practiceSentence,
-        hintVietnamese: base.vietnamese,
-        hintPinyin: base.pinyin,
         correctAnswer: base.chinese,
       ),
       SentenceExercise(
         type: ExerciseType.typeFromPinyin,
         sentence: practiceSentence,
-        hintVietnamese: base.vietnamese,
-        hintPinyin: base.pinyin,
         correctAnswer: base.chinese,
       ),
-      SentenceExercise(
+      MissingWordExercise(
         type: ExerciseType.typeMissingWord,
         sentence: practiceSentence,
-        hiddenWord: word.word,
-        hintVietnamese: base.vietnamese,
-        hintPinyin: base.pinyin,
         correctAnswer: word.word,
+        hiddenWord: word.word,
+        userAnswer: [], // Truyền đúng kiểu List<String>
       ),
       SentenceExercise(
         type: ExerciseType.typeFullSentenceCopy,
         sentence: practiceSentence,
-        hintVietnamese: base.vietnamese,
-        hintPinyin: base.pinyin,
         correctAnswer: base.chinese,
       ),
+      SentenceExercise(
+        type: ExerciseType.typeArrangeSentence,
+        sentence: practiceSentence,
+        correctAnswer: base.chinese,
+        arrangeSegments: _splitSentence(base.chinese),
+        arrangeOptions: _generateArrangeOptions(_splitSentence(base.chinese)),
+      ),
     ];
   }
 
-  List<PracticeSentence> _generateAiSentences(
-    Word word, {
-    required List<BaseSentence> baseSentences,
-  }) {
-    final existingTexts = baseSentences.map((s) => s.chinese).toSet();
-    final pinyinWord = _normalizePinyin(word.transliteration);
-    final suggestions = <PracticeSentence>[];
+  List<String> _splitSentence(String sentence) {
+    // First, remove all punctuation and special characters.
+    final punctuation = RegExp(r'[，,。.?!？！；;："""()（）·…—《》〈〉、:_【】\[\]\-' + r"''" + r']');
+    final cleaned = sentence.replaceAll(punctuation, '');
 
-    final templates = [
-      _AiTemplate(
-        chinese: '我们每天都需要${word.word}。',
-        pinyin: 'wǒmen měitiān dōu xūyào $pinyinWord.',
-        vietnamese: 'Chúng ta cần ${word.translation} mỗi ngày.',
-      ),
-      _AiTemplate(
-        chinese: '他对${word.word}很感兴趣。',
-        pinyin: 'tā duì $pinyinWord hěn gǎn xìngqù.',
-        vietnamese: 'Anh ấy rất hứng thú với ${word.translation}.',
-      ),
-    ];
+    // Split into individual characters (each Chinese character becomes a segment)
+    final segments = <String>[];
+    for (int i = 0; i < cleaned.length; i++) {
+      final char = cleaned[i];
+      // Skip whitespace
+      if (char.trim().isEmpty) continue;
+      segments.add(char);
+    }
 
-    var index = 0;
-    for (final template in templates) {
-      final chinese = template.chinese;
-      if (existingTexts.contains(chinese)) {
-        continue;
-      }
-      suggestions.add(
-        PracticeSentence(
-          id: 'ai-${word.id}-${index++}',
-          baseExampleId: null,
-          mainWordId: word.id,
-          chinese: chinese,
-          pinyin: template.pinyin,
-          vietnamese: template.vietnamese,
-          isFromAI: true,
-        ),
-      );
-      if (suggestions.isNotEmpty) {
-        break;
+    return segments;
+  }
+
+  List<String> _generateArrangeOptions(List<String> segments) {
+    final options = List<String>.from(segments);
+    options.shuffle();
+    return options;
+  }
+
+  Future<void> _generateExercises() async {
+    final selectedWords = words.take(maxWords).toList();
+    final exercises = <Exercise>[];
+
+    for (final word in selectedWords) {
+      final baseSentences = await _loadBaseSentences(word.id);
+      for (final base in baseSentences) {
+        exercises.addAll(_generateExercisesForBaseSentence(base, word));
       }
     }
 
-    if (suggestions.isEmpty) {
-      suggestions.add(
-        PracticeSentence(
-          id: 'ai-${word.id}-fallback',
-          baseExampleId: null,
-          mainWordId: word.id,
-          chinese: '${word.word}让生活更好。',
-          pinyin: '$pinyinWord ràng shēnghuó gèng hǎo.',
-          vietnamese: '${word.translation} khiến cuộc sống tốt hơn.',
-          isFromAI: true,
-        ),
-      );
+    // Shuffle exercises để có sự đa dạng trong luyện tập
+    // Tránh tình trạng câu giống nhau lặp lại nhiều lần liên tiếp
+    exercises.shuffle(Random());
+
+    final processModel = UnitPracticeProcess(
+      sectionId: selectedWords.first.sectionId,
+      wordIds: selectedWords.map((word) => word.id).toList(),
+      exercises: exercises,
+    );
+
+    process.value = processModel;
+    currentExercise.value = processModel.exercises.first;
+  }
+
+  Future<bool> submitArrangeAnswer(List<String> orderedSegments) async {
+    final exercise = currentExercise.value;
+    if (exercise == null || _isHandlingResult) {
+      return false;
+    }
+    if (exercise.type != ExerciseType.typeArrangeSentence) {
+      return false;
+    }
+    if (orderedSegments.isEmpty) {
+      return false;
     }
 
-    return suggestions;
+    final target = (exercise as SentenceExercise).arrangeSegments ?? _splitSentence(exercise.correctAnswer);
+    final isCorrect = _stringListEquality.equals(orderedSegments, target);
+    if (!isCorrect) {
+      return false;
+    }
+
+    await _finalizeExercise(
+      exercise: exercise,
+      userInput: orderedSegments.join(''), // Join without space for Chinese
+      correct: true,
+      advance: true,
+    );
+    return true;
   }
 
-  List<SentenceExercise> _generateExercisesForAiSentence(
-    PracticeSentence sentence,
-  ) {
-    return [
-      SentenceExercise(
-        type: ExerciseType.typeTransformed,
-        sentence: sentence,
-        hintVietnamese: sentence.vietnamese,
-        hintPinyin: sentence.pinyin,
-        correctAnswer: sentence.chinese,
-      ),
-      SentenceExercise(
-        type: ExerciseType.typeFullSentenceCopy,
-        sentence: sentence,
-        hintVietnamese: sentence.vietnamese,
-        hintPinyin: sentence.pinyin,
-        correctAnswer: sentence.chinese,
-      ),
-    ];
-  }
-
-  String _normalizePinyin(String input) {
-    return input.replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
-  }
-
-  bool _isAnswerCorrect(SentenceExercise exercise, String input) {
+  bool _isAnswerCorrect(Exercise exercise, String input) {
+    if (exercise.type == ExerciseType.typeArrangeSentence) {
+      final userAnswer = (exercise.userAnswer as List<String>).join('');
+      final correctAnswer = exercise.correctAnswer.replaceAll(RegExp(r'\s+'), '');
+      return userAnswer == correctAnswer;
+    }
     final normalizedInput = _normalizeForComparison(
       exercise.type,
       input,
@@ -410,11 +460,13 @@ class PracticeSessionController extends GetxController {
       case ExerciseType.typeMissingWord:
         normalized = normalized.replaceAll(RegExp(r'\s+'), '');
         break;
+      case ExerciseType.typeArrangeSentence:
+        normalized = normalized.replaceAll(RegExp(r'\s+'), '');
+        break;
       default:
-        const punctuationPattern =
-            r"""[，,。.?!？！；;：“”"'()（）·…—《》〈〉、:_【】\[\]-]""";
+        final punctuation = RegExp(r'[，,。.?!？！；;："""()（）·…—《》〈〉、:_【】\[\]\-' + r"''" + r']');
         normalized = normalized
-            .replaceAll(RegExp(punctuationPattern), '')
+            .replaceAll(punctuation, '')
             .replaceAll(RegExp(r'\s+'), '')
             .toLowerCase();
         break;
@@ -432,6 +484,7 @@ class PracticeSessionController extends GetxController {
     if (nextIndex >= processModel.exercises.length) {
       currentExercise.value = null;
       isFinished.value = true;
+      // ⭐ Hoàn thành bài - cập nhật EXP và Streak
       _autoCloseAfterFinish();
       return;
     }
@@ -441,9 +494,23 @@ class PracticeSessionController extends GetxController {
   }
 
   void _autoCloseAfterFinish() {
+    // Gọi hàm update (không cần await ở đây vì là void)
+    _updateExperienceAndStreak();
+
     final navigator = Get.key.currentState;
     Future.delayed(const Duration(milliseconds: 400), () {
       if (navigator != null && navigator.canPop()) {
+        // Refresh word list progress in UI (if controller is registered)
+        try {
+          if (Get.isRegistered<WordListController>()) {
+            Get.find<WordListController>().loadWords();
+          }
+          if (Get.isRegistered<SectionListController>()) {
+            Get.find<SectionListController>().loadSections();
+          }
+        } catch (_) {
+          // ignore if not present
+        }
         navigator.pop({
           'results': results.toList(),
           'score': score.value,
@@ -451,6 +518,35 @@ class PracticeSessionController extends GetxController {
         });
       }
     });
+  }
+
+  // ⭐ CẬP NHẬT STREAK KHI HOÀN THÀNH BÀI
+  void _updateExperienceAndStreak() {
+    try {
+      final correctCount = score.value;
+      final totalCount = totalExercises;
+
+      print('\n═══════════════════════════════════════��═══════════════════');
+      print('🎉 HOÀN THÀNH BÀI LUYỆN TẬP');
+      print('═══════════════════════���═══════════════════════════════════');
+      print('📊 Kết quả: $correctCount/$totalCount câu trả lời đúng');
+      print('⭐ EXP kiếm được: ${expEarned.value} EXP');
+
+      // ⚠️ QUAN TRỌNG: Chỉ cần cập nhật STREAK khi hoàn thành bài
+      // EXP đã được cập nhật từng câu trong _finalizeExercise()
+
+      // 🔄 Gọi updateStreak() để cập nhật chuỗi ngày
+      addExperienceUseCase(correctAnswers: 0, lessonCompleted: false).then((_) {
+        print('✅ Streak đã cập nhật');
+        print('═══════════════════════════════���═══════���═══════════════════\n');
+      }).catchError((e) {
+        print('❌ Lỗi cập nhật Streak: $e');
+        print('════════════��═══════════════════════���══════════���═══════════\n');
+      });
+
+    } catch (e) {
+      print('❌ Lỗi: $e');
+    }
   }
 
   int _calculateNextLevel({
@@ -461,30 +557,29 @@ class PracticeSessionController extends GetxController {
     if (!correct) {
       return max(0, previousLevel - 1);
     }
-    if (totalCorrect >= 12) {
+    // ⭐ Sửa: 7 câu đúng → level 5 (mastered)
+    if (totalCorrect >= 7) {
       return 5;
     }
-    if (totalCorrect >= 8) {
+    if (totalCorrect >= 5) {
       return max(previousLevel, 4);
     }
-    if (totalCorrect >= 5) {
+    if (totalCorrect >= 3) {
       return max(previousLevel, 3);
     }
-    if (totalCorrect >= 3) {
+    if (totalCorrect >= 2) {
       return max(previousLevel, 2);
     }
     return max(previousLevel, 1);
   }
-}
 
-class _AiTemplate {
-  const _AiTemplate({
-    required this.chinese,
-    required this.pinyin,
-    required this.vietnamese,
-  });
-
-  final String chinese;
-  final String pinyin;
-  final String vietnamese;
+  /// ⭐ Cập nhật streak khi người dùng hoàn thành 1 từ vựng (mastered)
+  Future<void> _updateStreakOnWordMastered() async {
+    try {
+      await userStatsRepository.updateStreak();
+      print('🔥 [PRACTICE] Từ vựng được mastered! Streak được cập nhật');
+    } catch (e) {
+      print('❌ [PRACTICE] Lỗi cập nhật streak: $e');
+    }
+  }
 }

@@ -39,25 +39,76 @@ enum ExerciseType {
   typeFromPinyin,
   typeMissingWord,
   typeFullSentenceCopy,
+  typeArrangeSentence,
   typeTransformed,
 }
 
-class SentenceExercise {
-  const SentenceExercise({
+abstract class Exercise {
+  const Exercise({
     required this.type,
     required this.sentence,
     required this.correctAnswer,
-    this.hiddenWord,
-    this.hintVietnamese,
-    this.hintPinyin,
+    this.userAnswer,
   });
 
   final ExerciseType type;
   final PracticeSentence sentence;
   final String correctAnswer;
-  final String? hiddenWord;
-  final String? hintVietnamese;
-  final String? hintPinyin;
+  final dynamic userAnswer;
+}
+
+class SentenceExercise extends Exercise {
+  const SentenceExercise({
+    required ExerciseType type,
+    required PracticeSentence sentence,
+    required String correctAnswer,
+    dynamic userAnswer,
+    this.arrangeSegments,
+    this.arrangeOptions,
+  }) : super(
+          type: type,
+          sentence: sentence,
+          correctAnswer: correctAnswer,
+          userAnswer: userAnswer,
+        );
+
+  final List<String>? arrangeSegments;
+  final List<String>? arrangeOptions;
+
+  SentenceExercise copyWith({
+    List<String>? arrangeSegments,
+    List<String>? arrangeOptions,
+    dynamic userAnswer,
+  }) {
+    return SentenceExercise(
+      type: type,
+      sentence: sentence,
+      correctAnswer: correctAnswer,
+      userAnswer: userAnswer ?? this.userAnswer,
+      arrangeSegments: arrangeSegments ?? this.arrangeSegments,
+      arrangeOptions: arrangeOptions ?? this.arrangeOptions,
+    );
+  }
+}
+
+class MissingWordExercise extends Exercise {
+  const MissingWordExercise({
+    required ExerciseType type,
+    required PracticeSentence sentence,
+    required String correctAnswer,
+    required this.hiddenWord,
+    required this.userAnswer,
+    this.arrangeOptions,
+  }) : super(
+          type: type,
+          sentence: sentence,
+          correctAnswer: correctAnswer,
+          userAnswer: userAnswer,
+        );
+
+  final String hiddenWord;
+  final List<String> userAnswer;
+  final List<String>? arrangeOptions;
 }
 
 class UnitPracticeProcess {
@@ -69,7 +120,7 @@ class UnitPracticeProcess {
 
   final int sectionId;
   final List<int> wordIds;
-  final List<SentenceExercise> exercises;
+  final List<Exercise> exercises;
 }
 
 class ExerciseResult {
@@ -80,7 +131,7 @@ class ExerciseResult {
     required this.doneAt,
   });
 
-  final SentenceExercise exercise;
+  final Exercise exercise;
   final String userInput;
   final bool isCorrect;
   final DateTime doneAt;

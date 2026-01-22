@@ -61,7 +61,7 @@ class _SplashPageState extends State<SplashPage> {
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
-                      color: accent.withOpacity(0.12),
+                      color: accent.withAlpha(31),
                       blurRadius: 28,
                       offset: const Offset(0, 18),
                     ),
@@ -73,7 +73,7 @@ class _SplashPageState extends State<SplashPage> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [accent.withOpacity(0.18), accent.withOpacity(0.32)],
+                      colors: [accent.withAlpha(46), accent.withAlpha(82)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -100,7 +100,7 @@ class _SplashPageState extends State<SplashPage> {
               Text(
                 'Luyện gõ câu · Nhớ chữ vững bền',
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onBackground.withOpacity(0.7),
+                  color: theme.colorScheme.onBackground.withAlpha(179),
                 ),
               ),
               const SizedBox(height: 32),
@@ -108,7 +108,7 @@ class _SplashPageState extends State<SplashPage> {
                 width: 160,
                 child: LinearProgressIndicator(
                   color: accent,
-                  backgroundColor: accent.withOpacity(0.15),
+                  backgroundColor: accent.withAlpha(38),
                   minHeight: 6,
                   borderRadius: BorderRadius.circular(12),
                 ),

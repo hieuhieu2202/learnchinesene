@@ -123,7 +123,7 @@ class _WordHero extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.12),
+            color: accent.withAlpha(31),
             blurRadius: 24,
             offset: const Offset(0, 16),
           ),
@@ -139,7 +139,7 @@ class _WordHero extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: theme.colorScheme.background.withOpacity(0.8),
+              color: theme.colorScheme.background.withAlpha(204),
               borderRadius: BorderRadius.circular(32),
             ),
             child: LayoutBuilder(
@@ -212,7 +212,7 @@ class _WordHero extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: accent.withOpacity(0.12),
+                    color: accent.withAlpha(31),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
@@ -248,7 +248,7 @@ class _PrimaryActions extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.08),
+            color: accent.withAlpha(20),
             blurRadius: 18,
             offset: const Offset(0, 12),
           ),
@@ -331,7 +331,7 @@ class _ExamplesSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: accent.withOpacity(0.05),
+              color: accent.withAlpha(13),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -352,7 +352,7 @@ class _ExamplesSection extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                    color: theme.colorScheme.surfaceVariant.withAlpha(77),
                   ),
                   padding: const EdgeInsets.all(16),
                   child: Column(

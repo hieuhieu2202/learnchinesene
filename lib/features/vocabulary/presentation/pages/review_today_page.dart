@@ -148,7 +148,7 @@ class _ReviewSummary extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.1),
+            color: accent.withAlpha(26),
             blurRadius: 20,
             offset: const Offset(0, 12),
           ),

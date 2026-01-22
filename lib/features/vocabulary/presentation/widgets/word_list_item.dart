@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/hsk_palette.dart';
 import '../../domain/entities/word.dart';
 
-class WordListItem extends StatelessWidget {
+class WordListItem extends StatefulWidget {
   const WordListItem({
     super.key,
     required this.word,
@@ -24,13 +24,65 @@ class WordListItem extends StatelessWidget {
   final bool showTranslation;
 
   @override
+  State<WordListItem> createState() => _WordListItemState();
+}
+
+class _WordListItemState extends State<WordListItem> with TickerProviderStateMixin {
+  late AnimationController _progressController;
+  late Animation<double> _progressAnimation;
+  double _previousProgress = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _progressController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    // Normalize incoming progress: accept either 0..1 or 0..100
+    final raw = widget.progress ?? (widget.word.mastered ? 1.0 : 0.0);
+    final normalized = raw > 1.0 ? (raw / 100.0) : raw;
+    _previousProgress = normalized.clamp(0.0, 1.0);
+    // Initialize animation to avoid LateInitializationError
+    _progressAnimation = Tween<double>(
+      begin: _previousProgress,
+      end: _previousProgress,
+    ).animate(CurvedAnimation(parent: _progressController, curve: Curves.easeInOut));
+  }
+
+  @override
+  void didUpdateWidget(WordListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Normalize incoming progress: accept either 0..1 or 0..100
+    final rawNew = widget.progress ?? (widget.word.mastered ? 1.0 : 0.0);
+    final newProgress = (rawNew > 1.0 ? (rawNew / 100.0) : rawNew).clamp(0.0, 1.0);
+
+    // Nếu progress thay đổi → trigger animation (chỉ khi tăng lên)
+    if (newProgress > _previousProgress) {
+      _progressAnimation = Tween<double>(
+        begin: _previousProgress,
+        end: newProgress,
+      ).animate(CurvedAnimation(parent: _progressController, curve: Curves.easeInOut));
+
+      _progressController.forward(from: 0);
+      _previousProgress = newProgress;
+    }
+  }
+
+  @override
+  void dispose() {
+    _progressController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = HskPalette.accentForLevel(level ?? 1, theme.colorScheme);
-    final progressValue =
-        (progress ?? (word.mastered ? 1.0 : 0.0)).clamp(0.0, 1.0);
+    final accent = HskPalette.accentForLevel(widget.level ?? 1, theme.colorScheme);
+    final rawProgress = widget.progress ?? (widget.word.mastered ? 1.0 : 0.0);
+    final progressValue = (rawProgress > 1.0 ? (rawProgress / 100.0) : rawProgress).clamp(0.0, 1.0);
     final indicatorValue = progressValue == 0 ? 0.04 : progressValue;
-    final isCompact = !showTranslation && !showTransliteration;
+    final isCompact = !widget.showTranslation && !widget.showTransliteration;
     final surfaceTint = Color.lerp(
           theme.colorScheme.surface,
           accent,
@@ -40,7 +92,7 @@ class WordListItem extends StatelessWidget {
     final borderColor = Color.lerp(
           Colors.transparent,
           accent,
-          word.mastered ? 0.55 : (isCompact ? 0.25 : 0.35),
+          widget.word.mastered ? 0.55 : (isCompact ? 0.25 : 0.35),
         ) ??
         Colors.transparent;
     final indicatorBackground = Color.lerp(
@@ -79,7 +131,7 @@ class WordListItem extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  word.word,
+                  widget.word.word,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -97,7 +149,7 @@ class WordListItem extends StatelessWidget {
                     color: accent,
                     shape: BoxShape.circle,
                   ),
-                  child: word.mastered
+                  child: widget.word.mastered
                       ? const Center(
                           child: Icon(
                             Icons.check,
@@ -111,16 +163,26 @@ class WordListItem extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: SizedBox(
-              height: 3,
-              child: LinearProgressIndicator(
-                value: indicatorValue,
-                backgroundColor: indicatorBackground,
-                valueColor: AlwaysStoppedAnimation<Color>(accent),
-              ),
-            ),
+          // ⭐ Progress bar với animation
+          AnimatedBuilder(
+            animation: _progressAnimation,
+            builder: (context, child) {
+              final displayValue = _progressAnimation.isAnimating
+                  ? _progressAnimation.value
+                  : indicatorValue;
+
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: SizedBox(
+                  height: 3,
+                  child: LinearProgressIndicator(
+                    value: displayValue == 0 ? 0.04 : displayValue,
+                    backgroundColor: indicatorBackground,
+                    valueColor: AlwaysStoppedAnimation<Color>(accent),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       );
@@ -136,7 +198,7 @@ class WordListItem extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  word.word,
+                  widget.word.word,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleLarge?.copyWith(
@@ -148,7 +210,7 @@ class WordListItem extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Icon(
-                word.mastered
+                widget.word.mastered
                     ? Icons.check_circle_rounded
                     : Icons.radio_button_unchecked,
                 size: 16,
@@ -156,10 +218,10 @@ class WordListItem extends StatelessWidget {
               ),
             ],
           ),
-          if (showTranslation && word.translation.trim().isNotEmpty) ...[
+          if (widget.showTranslation && widget.word.translation.trim().isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              word.translation,
+              widget.word.translation,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -168,11 +230,11 @@ class WordListItem extends StatelessWidget {
               ),
             ),
           ],
-          if (showTransliteration &&
-              word.transliteration.trim().isNotEmpty) ...[
+          if (widget.showTransliteration &&
+              widget.word.transliteration.trim().isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
-              word.transliteration,
+              widget.word.transliteration,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall?.copyWith(
@@ -183,18 +245,28 @@ class WordListItem extends StatelessWidget {
           ],
           SizedBox(
             height:
-                showTranslation || showTransliteration ? 12 : 8,
+                widget.showTranslation || widget.showTransliteration ? 12 : 8,
           ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: SizedBox(
-              height: 4,
-              child: LinearProgressIndicator(
-                value: indicatorValue,
-                backgroundColor: indicatorBackground,
-                valueColor: AlwaysStoppedAnimation<Color>(accent),
-              ),
-            ),
+          // ⭐ Progress bar với animation
+          AnimatedBuilder(
+            animation: _progressAnimation,
+            builder: (context, child) {
+              final displayValue = _progressAnimation.isAnimating
+                  ? _progressAnimation.value
+                  : indicatorValue;
+
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: SizedBox(
+                  height: 4,
+                  child: LinearProgressIndicator(
+                    value: displayValue == 0 ? 0.04 : displayValue,
+                    backgroundColor: indicatorBackground,
+                    valueColor: AlwaysStoppedAnimation<Color>(accent),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       );
@@ -205,7 +277,7 @@ class WordListItem extends StatelessWidget {
     Widget tile = Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         borderRadius: borderRadius,
         child: Ink(
           decoration: BoxDecoration(
@@ -215,14 +287,14 @@ class WordListItem extends StatelessWidget {
             boxShadow: isCompact
                 ? [
                     BoxShadow(
-                      color: accent.withOpacity(0.05),
+                      color: accent.withAlpha(13),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
                   ]
                 : [
                     BoxShadow(
-                      color: accent.withOpacity(0.08),
+                      color: accent.withAlpha(20),
                       blurRadius: 18,
                       offset: const Offset(0, 10),
                     ),
@@ -234,18 +306,18 @@ class WordListItem extends StatelessWidget {
       ),
     );
 
-    if (maxWidth != null) {
+    if (widget.maxWidth != null) {
       tile = ConstrainedBox(
         constraints: BoxConstraints(
-          minWidth: maxWidth! * 0.6,
-          maxWidth: maxWidth!,
+          minWidth: widget.maxWidth! * 0.6,
+          maxWidth: widget.maxWidth!,
         ),
         child: tile,
       );
     }
 
     return isCompact
-        ? SizedBox(width: maxWidth ?? 148, child: tile)
-        : SizedBox(width: maxWidth ?? double.infinity, child: tile);
+        ? SizedBox(width: widget.maxWidth ?? 148, child: tile)
+        : SizedBox(width: widget.maxWidth ?? double.infinity, child: tile);
   }
 }

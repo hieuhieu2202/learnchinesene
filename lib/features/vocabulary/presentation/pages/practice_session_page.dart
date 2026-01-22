@@ -11,6 +11,14 @@ import '../widgets/practice_question_card.dart';
 class PracticeSessionPage extends GetView<PracticeSessionController> {
   const PracticeSessionPage({super.key});
 
+  void _handleExit() {
+    final navigatorState = Get.key.currentState;
+    if (navigatorState == null || !navigatorState.canPop()) {
+      return;
+    }
+    Get.back();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,12 +67,55 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
           child: SafeArea(
             child: Column(
               children: [
+                // ⭐ EXP Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Progress
+                      Expanded(
+                        child: _AnimatedLinearProgress(
+                          value: progress,
+                          height: 4,
+                          color: Colors.white,
+                          backgroundColor: Colors.white.withAlpha(77),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // EXP Display
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star, color: Colors.white, size: 18),
+                            const SizedBox(width: 4),
+                            Text(
+                              '+${controller.expEarned.value}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 _PracticeHeader(
                   controller: controller,
                   word: word,
                   level: level,
                   progress: progress,
                   total: total,
+                  onExit: _handleExit,
                 ),
                 Expanded(
                   child: AnimatedSwitcher(
@@ -95,6 +146,7 @@ class _PracticeHeader extends StatelessWidget {
     required this.level,
     required this.progress,
     required this.total,
+    required this.onExit,
   });
 
   final PracticeSessionController controller;
@@ -102,6 +154,7 @@ class _PracticeHeader extends StatelessWidget {
   final int level;
   final double progress;
   final int total;
+  final VoidCallback onExit;
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +173,7 @@ class _PracticeHeader extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.close_rounded),
-                onPressed: () => Navigator.of(context).maybePop(),
+                onPressed: onExit,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -142,17 +195,17 @@ class _PracticeHeader extends StatelessWidget {
                 Chip(
                   label: Text('HSK $level'),
                   labelStyle: theme.textTheme.labelMedium?.copyWith(color: accent),
-                  backgroundColor: accent.withOpacity(0.15),
+                  backgroundColor: accent.withAlpha(38),
                   shape: const StadiumBorder(),
                 ),
             ],
           ),
           const SizedBox(height: 16),
-          LinearProgressIndicator(
+          _AnimatedLinearProgress(
             value: progress,
-            minHeight: 8,
-            backgroundColor: accent.withOpacity(0.15),
+            height: 8,
             color: accent,
+            backgroundColor: accent.withAlpha(38),
             borderRadius: BorderRadius.circular(8),
           ),
           const SizedBox(height: 12),
@@ -175,8 +228,8 @@ class _PracticeHeader extends StatelessWidget {
         return 'Điền từ bị ẩn trong câu';
       case ExerciseType.typeFullSentenceCopy:
         return 'Chép lại câu tiếng Trung';
-      case ExerciseType.typeTransformed:
-        return 'Viết câu biến đổi/AI';
+      case ExerciseType.typeArrangeSentence:
+        return 'Sắp xếp câu';
       default:
         return 'Luyện gõ câu ví dụ';
     }
@@ -196,7 +249,7 @@ class _ResultView extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            theme.colorScheme.background,
+            theme.colorScheme.surfaceContainer,
             theme.colorScheme.surface,
           ],
           begin: Alignment.topCenter,
@@ -214,7 +267,7 @@ class _ResultView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.08),
+                    color: theme.colorScheme.primary.withAlpha(20),
                     blurRadius: 26,
                     offset: const Offset(0, 18),
                   ),
@@ -253,7 +306,12 @@ class _ResultView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   TextButton.icon(
-                    onPressed: () => Navigator.of(context).maybePop(),
+                    onPressed: () {
+                      final navigatorState = Get.key.currentState;
+                      if (navigatorState != null && navigatorState.canPop()) {
+                        Get.back();
+                      }
+                    },
                     icon: const Icon(Icons.arrow_back_ios_new_rounded),
                     label: const Text('Quay về'),
                   ),
@@ -277,7 +335,7 @@ class _EmptyPracticeState extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            scheme.background,
+            scheme.surfaceContainer,
             scheme.surface,
           ],
           begin: Alignment.topCenter,
@@ -313,6 +371,44 @@ class _EmptyPracticeState extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AnimatedLinearProgress extends StatelessWidget {
+  const _AnimatedLinearProgress({
+    required this.value,
+    required this.height,
+    required this.color,
+    required this.backgroundColor,
+    this.borderRadius,
+  });
+
+  final double value;
+  final double height;
+  final Color color;
+  final Color backgroundColor;
+  final BorderRadius? borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutCubic,
+      builder: (context, animatedValue, child) {
+        return ClipRRect(
+          borderRadius: borderRadius ?? BorderRadius.circular(height / 2),
+          child: SizedBox(
+            height: height,
+            child: LinearProgressIndicator(
+              value: animatedValue,
+              backgroundColor: backgroundColor,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
+        );
+      },
     );
   }
 }

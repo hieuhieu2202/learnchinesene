@@ -76,12 +76,14 @@ class SectionListPage extends GetView<SectionListController> {
                           ],
                         ),
                         const SizedBox(height: 20),
+                        // Count sections that are fully completed (100%)
                         _LevelSummaryCard(
                           selectedLevel: selectedLevel,
                           sectionCount: sectionCount,
                           totalWords: totalWords,
                           masteredWords: masteredWords,
                           progress: progress,
+                          completedSections: sections.where((s) => s.progress >= 1.0).length,
                           firstSection: sections.isEmpty ? null : sections.first,
                         ),
                       ],
@@ -152,6 +154,7 @@ class _LevelSummaryCard extends StatelessWidget {
     required this.totalWords,
     required this.masteredWords,
     required this.progress,
+    required this.completedSections,
     required this.firstSection,
   });
 
@@ -160,6 +163,7 @@ class _LevelSummaryCard extends StatelessWidget {
   final int totalWords;
   final int masteredWords;
   final double progress;
+  final int completedSections;
   final SectionProgress? firstSection;
 
   @override
@@ -183,7 +187,7 @@ class _LevelSummaryCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.16),
+            color: accent.withAlpha(41),
             blurRadius: 28,
             offset: const Offset(0, 18),
           ),
@@ -202,7 +206,7 @@ class _LevelSummaryCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progressValue,
               minHeight: 8,
-              backgroundColor: accent.withOpacity(0.18),
+              backgroundColor: accent.withAlpha(46),
               color: accent,
             ),
           ),
@@ -221,6 +225,12 @@ class _LevelSummaryCard extends StatelessWidget {
                 icon: Icons.book_rounded,
                 label: 'Tổng số từ',
                 value: '$totalWords',
+                accent: accent,
+              ),
+              _SummaryStat(
+                icon: Icons.emoji_events_outlined,
+                label: 'Hoàn thành',
+                value: '$completedSections',
                 accent: accent,
               ),
               _SummaryStat(
@@ -286,11 +296,11 @@ class _SummaryStat extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
+        color: Colors.white.withAlpha(217),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: accent.withOpacity(0.12),
+            color: accent.withAlpha(31),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -335,34 +345,43 @@ class _UnitCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = HskPalette.accentForLevel(level, theme.colorScheme);
+    final isLocked = progress.isLocked;
+    final bgColors = isLocked
+        ? [theme.colorScheme.surfaceVariant, theme.colorScheme.surface]
+        : [theme.colorScheme.surface, theme.colorScheme.surfaceVariant];
+    final statusColor = isLocked
+        ? theme.colorScheme.error.withAlpha(204)
+        : accent;
+    final statusText = isLocked
+        ? 'Hoàn thành unit trước để mở khóa'
+        : '${(progress.progress * 100).toStringAsFixed(0)}% hoàn thành';
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(26),
-        onTap: () => navigateAfterFrame(() {
-          Get.toNamed(
-            AppRoutes.wordList,
-            arguments: {
-              'sectionId': progress.sectionId,
-              'sectionTitle': progress.sectionTitle,
-            },
-          );
-        }),
+        onTap: isLocked
+            ? null
+            : () => navigateAfterFrame(() {
+                  Get.toNamed(
+                    AppRoutes.wordList,
+                    arguments: {
+                      'sectionId': progress.sectionId,
+                      'sectionTitle': progress.sectionTitle,
+                    },
+                  );
+                }),
         child: Ink(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(26),
             gradient: LinearGradient(
-              colors: [
-                theme.colorScheme.surface,
-                theme.colorScheme.surfaceVariant,
-              ],
+              colors: bgColors,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: accent.withOpacity(0.12),
+                color: accent.withAlpha(31),
                 blurRadius: 28,
                 offset: const Offset(0, 18),
               ),
@@ -379,7 +398,7 @@ class _UnitCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.background.withOpacity(0.8),
+                        color: theme.colorScheme.background.withAlpha(204),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
@@ -391,10 +410,34 @@ class _UnitCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    ProgressChip(
-                      progress: progress.progress,
-                      color: accent,
-                    ),
+                    if (isLocked)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface.withAlpha(204),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: statusColor, width: 1.2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.lock_rounded, color: statusColor, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Đã khóa',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: statusColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ProgressChip(
+                        progress: progress.progress,
+                        color: accent,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 18),
@@ -414,17 +457,24 @@ class _UnitCard extends StatelessWidget {
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    Icon(Icons.auto_graph_rounded, color: accent, size: 20),
+                    Icon(
+                      isLocked ? Icons.lock_clock_rounded : Icons.auto_graph_rounded,
+                      color: statusColor,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
-                      '${(progress.progress * 100).toStringAsFixed(0)}% hoàn thành',
+                      statusText,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: accent,
+                        color: statusColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const Spacer(),
-                    Icon(Icons.arrow_forward_rounded, color: accent),
+                    Icon(
+                      isLocked ? Icons.remove_red_eye_outlined : Icons.arrow_forward_rounded,
+                      color: statusColor,
+                    ),
                   ],
                 ),
               ],
@@ -451,7 +501,7 @@ class _EmptyState extends StatelessWidget {
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.shadow.withOpacity(0.08),
+              color: theme.colorScheme.shadow.withAlpha(20),
               blurRadius: 20,
               offset: const Offset(0, 12),
             ),
