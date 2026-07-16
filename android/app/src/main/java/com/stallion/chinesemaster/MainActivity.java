@@ -1,4 +1,4 @@
-package com.learne.leanrchinefast;
+package com.stallion.chinesemaster;
 
 import io.flutter.embedding.android.FlutterActivity;
 
