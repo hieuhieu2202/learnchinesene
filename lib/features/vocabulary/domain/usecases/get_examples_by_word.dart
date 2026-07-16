@@ -3,8 +3,8 @@ import 'package:learnchinese/core/usecase/usecase.dart';
 import '../entities/example_sentence.dart';
 import '../repositories/example_repository.dart';
 
-class GetExamplesByWord extends UseCase<List<ExampleSentence>, int> {
-  GetExamplesByWord(this.repository);
+class GetExamplesByWordVer1Ne extends UseCaseVer1Ne<List<ExampleSentence>, int> {
+  GetExamplesByWordVer1Ne(this.repository);
 
   final ExampleRepository repository;
 
@@ -13,3 +13,6 @@ class GetExamplesByWord extends UseCase<List<ExampleSentence>, int> {
     return repository.getExamplesByWord(wordId);
   }
 }
+
+@Deprecated('Use GetExamplesByWordVer1Ne')
+typedef GetExamplesByWord = GetExamplesByWordVer1Ne;

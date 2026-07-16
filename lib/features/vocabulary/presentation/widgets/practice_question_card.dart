@@ -41,8 +41,13 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
     super.initState();
     _controller = Get.find<PracticeSessionController>();
     _textController = TextEditingController();
-    accent = HskPalette.accentForLevel(widget.accentLevel, Theme.of(context).colorScheme);
     _resetArrangeBuffers(widget.exercise);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    accent = HskPalette.accentForLevel(widget.accentLevel, Theme.of(context).colorScheme);
   }
 
   @override
@@ -74,6 +79,8 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
       final options = exercise.arrangeOptions ?? segments;
       _selectedSegments = [];
       _availableSegments = List<String>.from(options);
+      // Shuffle once per question. Never shuffle inside build().
+      _availableSegments.shuffle();
     } else {
       _selectedSegments = [];
       _availableSegments = [];
@@ -183,10 +190,8 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final exercise = widget.exercise;
-    final isArrange = exercise.type == ExerciseType.typeArrangeSentence;
-    if (isArrange) {
-      _availableSegments.shuffle();
-    }
+    // NOTE: Don't mutate state in build (no shuffle here).
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
       child: Container(
@@ -195,7 +200,7 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
           gradient: LinearGradient(
             colors: [
               theme.colorScheme.surface,
-              theme.colorScheme.surfaceVariant,
+              theme.colorScheme.surfaceContainerHighest,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -304,6 +309,16 @@ class _TypingContent extends StatelessWidget {
             prompt,
             style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
+
+          // Show correct answer when user taps “Xem đáp án”
+          if (showAnswer) ...[
+            const SizedBox(height: 12),
+            _AnswerBanner(
+              answer: exercise.correctAnswer,
+              accent: accent,
+            ),
+          ],
+
           if (extraHints.isNotEmpty) ...[
             const SizedBox(height: 12),
             ...extraHints.map(
@@ -315,6 +330,7 @@ class _TypingContent extends StatelessWidget {
           ],
           const SizedBox(height: 20),
           if (isArrange) ...[
+            // Make selected area more flexible & taller
             _SelectedSegmentsArea(
               selectedSegments: selectedSegments,
               accent: accent,
@@ -340,9 +356,13 @@ class _TypingContent extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
-          Row(
+          // Make buttons less cramped on small screens
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              Expanded(
+              SizedBox(
+                width: double.infinity,
                 child: FilledButton(
                   onPressed: onChecked,
                   style: FilledButton.styleFrom(
@@ -351,25 +371,28 @@ class _TypingContent extends StatelessWidget {
                   child: const Text('Kiểm tra'),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: onShowAnswer,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: onShowAnswer,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Xem đáp án'),
+                    ),
                   ),
-                  child: const Text('Xem đáp án'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: onSkip,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: onSkip,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Bỏ qua'),
+                    ),
                   ),
-                  child: const Text('Bỏ qua'),
-                ),
+                ],
               ),
             ],
           ),
@@ -438,6 +461,49 @@ class _TypingContent extends StatelessWidget {
   }
 }
 
+class _AnswerBanner extends StatelessWidget {
+  const _AnswerBanner({
+    required this.answer,
+    required this.accent,
+  });
+
+  final String answer;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: accent.withAlpha(20),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: accent.withAlpha(90), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Đáp án đúng',
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: accent,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            answer.isEmpty ? '—' : answer,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SelectedSegmentsArea extends StatelessWidget {
   const _SelectedSegmentsArea({
     required this.selectedSegments,
@@ -454,7 +520,7 @@ class _SelectedSegmentsArea extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      height: 100,
+      constraints: const BoxConstraints(minHeight: 64),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         border: Border.all(color: accent.withAlpha(77), width: 2),
@@ -479,7 +545,7 @@ class _SelectedSegmentsArea extends StatelessWidget {
                       (segment) => GestureDetector(
                         onTap: () => onSegmentSelected(segment),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
                             color: accent.withAlpha(51),
                             borderRadius: BorderRadius.circular(12),
@@ -489,7 +555,7 @@ class _SelectedSegmentsArea extends StatelessWidget {
                             segment,
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: accent,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -518,34 +584,37 @@ class _ArrangeSentenceWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: segments
-          .map(
-            (segment) => GestureDetector(
-              onTap: () => onSegmentSelected(segment),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: accent.withAlpha(38),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: selectedSegments.contains(segment) ? accent : theme.colorScheme.onSurfaceVariant,
-                    width: 2,
+    return SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: segments
+            .map(
+              (segment) => GestureDetector(
+                onTap: () => onSegmentSelected(segment),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: accent.withAlpha(38),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: selectedSegments.contains(segment) ? accent : theme.colorScheme.onSurfaceVariant,
+                      width: 2,
+                    ),
                   ),
-                ),
-                child: Text(
-                  segment,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: selectedSegments.contains(segment) ? accent : theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
+                  child: Text(
+                    segment,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: selectedSegments.contains(segment) ? accent : theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
-            ),
-          )
-          .toList(),
+            )
+            .toList(),
+      ),
     );
   }
 }

@@ -1,4 +1,4 @@
-class AppRoutes {
+class AppRoutesVer1Ne {
   static const home = '/';
   static const splash = '/splash';
   static const sections = '/sections';
@@ -10,3 +10,6 @@ class AppRoutes {
   static const settings = '/settings';
   static const profile = '/profile';
 }
+
+@Deprecated('Use AppRoutesVer1Ne')
+typedef AppRoutes = AppRoutesVer1Ne;

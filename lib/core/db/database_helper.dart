@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-class DatabaseHelper {
+class DatabaseHelperVer1Ne {
   static const _dbName = 'chinese.db';
   static Database? _database;
 
@@ -21,7 +21,10 @@ class DatabaseHelper {
 
     if (!await File(path).exists()) {
       final data = await rootBundle.load('assets/db/$_dbName');
-      final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+      final bytes = data.buffer.asUint8List(
+        data.offsetInBytes,
+        data.lengthInBytes,
+      );
       await File(path).writeAsBytes(bytes, flush: true);
     }
 
@@ -44,7 +47,11 @@ class DatabaseHelper {
       ''');
 
       // Chèn dữ liệu mặc định nếu chưa có
-      final result = await db.query('user_stats', where: 'id = ?', whereArgs: [1]);
+      final result = await db.query(
+        'user_stats',
+        where: 'id = ?',
+        whereArgs: [1],
+      );
       if (result.isEmpty) {
         await db.insert('user_stats', {
           'id': 1,
@@ -60,3 +67,6 @@ class DatabaseHelper {
     }
   }
 }
+
+@Deprecated('Use DatabaseHelperVer1Ne')
+typedef DatabaseHelper = DatabaseHelperVer1Ne;

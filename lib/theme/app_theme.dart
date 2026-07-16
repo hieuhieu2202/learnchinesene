@@ -1,72 +1,75 @@
 import 'package:flutter/material.dart';
 
-class AppColors {
-  static const Color snowBackground = Color(0xFFF7FAFD);
-  static const Color snowSurface = Color(0xFFE8F0F6);
-  static const Color snowSurfaceHigh = Color(0xFFDCE7F0);
-  static const Color hollyRed = Color(0xFFD7263D);
-  static const Color hollyRedDark = Color(0xFFB01F32);
-  static const Color firGreen = Color(0xFF0F5132);
-  static const Color pineGreen = Color(0xFF0A3F26);
-  static const Color candleGold = Color(0xFFF4CE73);
-  static const Color outline = Color(0xFFB5C6D8);
+class AppColorsVer1Ne {
+  // Tết-inspired colors
+  static const Color tetRed = Color(0xFFFF2D2D); // Bright festive red
+  static const Color tetRedDark = Color(0xFFD7263D); // Slightly darker red
+  static const Color tetGold = Color(0xFFFFD700); // Gold/yellow
+  static const Color tetGreen = Color(0xFF228B22); // Prosperity green
+  static const Color background = Color(0xFFFFF8E1); // Light gold background
+  static const Color surface = Color(0xFFFFFDE7); // Lighter gold surface
+  static const Color surfaceHigh = Color(0xFFFFF9C4); // High surface gold
+  static const Color outline = Color(0xFFE1B700); // Gold outline
+
+  // Backwards-compat aliases (some screens still reference these names)
+  static const Color snowBackground = background;
+  static const Color snowSurface = surface;
+  static const Color snowSurfaceHigh = surfaceHigh;
 }
 
-class AppTheme {
-  const AppTheme._();
+class AppThemeVer1Ne {
+  const AppThemeVer1Ne._();
 
   static ThemeData light() {
     const scheme = ColorScheme(
       brightness: Brightness.light,
-      primary: AppColors.hollyRed,
+      primary: AppColorsVer1Ne.tetRed,
       onPrimary: Colors.white,
-      primaryContainer: Color(0xFFFFD0D6),
-      onPrimaryContainer: AppColors.pineGreen,
-      secondary: AppColors.firGreen,
+      primaryContainer: AppColorsVer1Ne.tetGold,
+      onPrimaryContainer: AppColorsVer1Ne.tetGreen,
+      secondary: AppColorsVer1Ne.tetGreen,
       onSecondary: Colors.white,
-      secondaryContainer: Color(0xFFC5E3D3),
-      onSecondaryContainer: AppColors.pineGreen,
-      tertiary: AppColors.candleGold,
+      secondaryContainer: Color(0xFFC5E3D3), // Optional: keep for contrast
+      onSecondaryContainer: AppColorsVer1Ne.tetRedDark,
+      tertiary: AppColorsVer1Ne.tetGold,
       onTertiary: Colors.white,
       tertiaryContainer: Color(0xFFFFE8B9),
-      onTertiaryContainer: AppColors.pineGreen,
+      onTertiaryContainer: AppColorsVer1Ne.tetGreen,
       error: Color(0xFFC62828),
       onError: Colors.white,
       errorContainer: Color(0xFFFFDAD6),
       onErrorContainer: Color(0xFF410002),
-      background: AppColors.snowBackground,
-      onBackground: AppColors.pineGreen,
-      surface: AppColors.snowSurface,
-      onSurface: AppColors.pineGreen,
-      surfaceTint: AppColors.hollyRed,
-      surfaceVariant: AppColors.snowSurfaceHigh,
-      onSurfaceVariant: AppColors.pineGreen,
-      outline: AppColors.outline,
-      outlineVariant: Color(0xFFD1DEE9),
+      surface: AppColorsVer1Ne.surface,
+      onSurface: AppColorsVer1Ne.tetRedDark,
+      surfaceTint: AppColorsVer1Ne.tetGold,
+      surfaceContainerHighest: AppColorsVer1Ne.surfaceHigh,
+      onSurfaceVariant: AppColorsVer1Ne.tetGreen,
+      outline: AppColorsVer1Ne.outline,
+      outlineVariant: Color(0xFFFFECB3),
       shadow: Colors.black12,
       scrim: Colors.black54,
-      inverseSurface: Color(0xFF0F2C1D),
-      onInverseSurface: AppColors.snowBackground,
-      inversePrimary: AppColors.hollyRedDark,
+      inverseSurface: AppColorsVer1Ne.tetRedDark,
+      onInverseSurface: AppColorsVer1Ne.background,
+      inversePrimary: AppColorsVer1Ne.tetRedDark,
     );
 
     final textTheme = Typography.englishLike2021.apply(
-      displayColor: scheme.onBackground,
-      bodyColor: scheme.onBackground,
+      displayColor: scheme.onSurface,
+      bodyColor: scheme.onSurface,
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: scheme.background,
+      scaffoldBackgroundColor: scheme.surface,
       cardColor: scheme.surface,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: scheme.background,
-        foregroundColor: scheme.onBackground,
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
         elevation: 0,
         titleTextStyle: textTheme.titleLarge?.copyWith(
-          color: scheme.onBackground,
+          color: scheme.onSurface,
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -74,17 +77,17 @@ class AppTheme {
         backgroundColor: scheme.surface,
         indicatorColor: scheme.primary.withAlpha(46),
         height: 72,
-        labelTextStyle: MaterialStateProperty.resolveWith(
+        labelTextStyle: WidgetStateProperty.resolveWith(
           (states) => textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: states.contains(MaterialState.selected)
+            color: states.contains(WidgetState.selected)
                 ? scheme.primary
                 : scheme.onSurface.withAlpha(179),
           ),
         ),
-        iconTheme: MaterialStateProperty.resolveWith(
+        iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
-            color: states.contains(MaterialState.selected)
+            color: states.contains(WidgetState.selected)
                 ? scheme.primary
                 : scheme.onSurface.withAlpha(153),
           ),
@@ -138,3 +141,9 @@ class AppTheme {
     );
   }
 }
+
+@Deprecated('Use AppColorsVer1Ne')
+typedef AppColors = AppColorsVer1Ne;
+
+@Deprecated('Use AppThemeVer1Ne')
+typedef AppTheme = AppThemeVer1Ne;

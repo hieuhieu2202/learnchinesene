@@ -8,7 +8,7 @@ abstract class ExampleLocalDataSource {
 }
 
 class ExampleLocalDataSourceImpl implements ExampleLocalDataSource {
-  Future<Database> get _db async => DatabaseHelper.database;
+  Future<Database> get _db async => DatabaseHelperVer1Ne.database;
 
   @override
   Future<List<ExampleModel>> getExamplesByWord(int wordId) async {

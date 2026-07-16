@@ -3,8 +3,8 @@ import 'package:learnchinese/core/usecase/usecase.dart';
 import '../entities/ai_message.dart';
 import '../repositories/ai_repository.dart';
 
-class AskAI extends UseCase<AiMessage, AskAiParams> {
-  AskAI(this.repository);
+class AskAIVer1Ne extends UseCaseVer1Ne<AiMessage, AskAiParams> {
+  AskAIVer1Ne(this.repository);
 
   final AiRepository repository;
 
@@ -16,6 +16,9 @@ class AskAI extends UseCase<AiMessage, AskAiParams> {
     );
   }
 }
+
+@Deprecated('Use AskAIVer1Ne')
+typedef AskAI = AskAIVer1Ne;
 
 class AskAiParams {
   const AskAiParams({

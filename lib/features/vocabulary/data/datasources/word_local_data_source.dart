@@ -11,7 +11,7 @@ abstract class WordLocalDataSource {
 }
 
 class WordLocalDataSourceImpl implements WordLocalDataSource {
-  Future<Database> get _db async => DatabaseHelper.database;
+  Future<Database> get _db async => DatabaseHelperVer1Ne.database;
 
   @override
   Future<List<int>> getSections() async {

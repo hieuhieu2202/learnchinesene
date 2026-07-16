@@ -11,7 +11,7 @@ abstract class ProgressLocalDataSource {
 }
 
 class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
-  Future<Database> get _db async => DatabaseHelper.database;
+  Future<Database> get _db async => DatabaseHelperVer1Ne.database;
 
   @override
   Future<ProgressModel?> getProgressForWord(int wordId) async {

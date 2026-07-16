@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
@@ -47,7 +46,7 @@ import '../features/vocabulary/presentation/pages/word_detail_page.dart';
 import '../features/vocabulary/presentation/pages/word_list_page.dart';
 import 'app_routes.dart';
 
-class AppBindings extends Bindings {
+class AppBindingsVer1Ne extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<http.Client>(() => http.Client(), fenix: true);
@@ -96,33 +95,34 @@ class AppBindings extends Bindings {
     );
 
     Get.lazyPut(
-      () => GetSections(Get.find<WordRepository>()),
+      () => GetSectionsVer1Ne(Get.find<WordRepository>()),
       fenix: true,
     );
     Get.lazyPut(
-      () => GetWordsBySection(Get.find<WordRepository>()),
+      () => GetWordsBySectionVer1Ne(Get.find<WordRepository>()),
       fenix: true,
     );
     Get.lazyPut(
-      () => GetWordById(Get.find<WordRepository>()),
+      () => GetWordByIdVer1Ne(Get.find<WordRepository>()),
       fenix: true,
     );
     Get.lazyPut(
-      () => GetExamplesByWord(Get.find<ExampleRepository>()),
+      () => GetExamplesByWordVer1Ne(Get.find<ExampleRepository>()),
       fenix: true,
     );
     Get.lazyPut(
-      () => GetWordsToReviewToday(Get.find<ProgressRepository>()),
+      () => GetWordsToReviewTodayVer1Ne(Get.find<ProgressRepository>()),
       fenix: true,
     );
     Get.lazyPut(
-      () => GetProgressForWord(Get.find<ProgressRepository>()),
+      () => GetProgressForWordVer1Ne(Get.find<ProgressRepository>()),
       fenix: true,
     );
     Get.lazyPut(
-      () => UpdateProgressAfterQuiz(Get.find<ProgressRepository>()),
+      () => UpdateProgressAfterQuizVer1Ne(Get.find<ProgressRepository>()),
       fenix: true,
     );
+
     Get.lazyPut(
       () => GetUserStatsUseCase(repository: Get.find<UserStatsRepository>()),
       fenix: true,
@@ -135,25 +135,25 @@ class AppBindings extends Bindings {
     Get.lazyPut<AiRepository>(
       () => AiRemoteDataSource(
         client: Get.find<http.Client>(),
-        apiKey: AppConfig.geminiApiKey,
+        apiKey: AppConfigVer1Ne.geminiApiKey,
       ),
       fenix: true,
     );
     Get.lazyPut(
-      () => AskAI(Get.find<AiRepository>()),
+      () => AskAIVer1Ne(Get.find<AiRepository>()),
       fenix: true,
     );
   }
 }
 
-class AppPages {
+class AppPagesVer1Ne {
   static final pages = <GetPage<dynamic>>[
     GetPage(
-      name: AppRoutes.splash,
+      name: AppRoutesVer1Ne.splash,
       page: () => const SplashPage(),
     ),
     GetPage(
-      name: AppRoutes.home,
+      name: AppRoutesVer1Ne.home,
       page: () => const HomePage(),
       binding: BindingsBuilder(() {
         Get.put(HomeController(
@@ -164,7 +164,7 @@ class AppPages {
       }),
     ),
     GetPage(
-      name: AppRoutes.sections,
+      name: AppRoutesVer1Ne.sections,
       page: () => const SectionListPage(),
       binding: BindingsBuilder(() {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
@@ -178,7 +178,7 @@ class AppPages {
       }),
     ),
     GetPage(
-      name: AppRoutes.wordList,
+      name: AppRoutesVer1Ne.wordList,
       page: () => const WordListPage(),
       binding: BindingsBuilder(() {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
@@ -193,7 +193,7 @@ class AppPages {
       }),
     ),
     GetPage(
-      name: AppRoutes.wordDetail,
+      name: AppRoutesVer1Ne.wordDetail,
       page: () => const WordDetailPage(),
       binding: BindingsBuilder(() {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
@@ -206,7 +206,7 @@ class AppPages {
       }),
     ),
     GetPage(
-      name: AppRoutes.reviewToday,
+      name: AppRoutesVer1Ne.reviewToday,
       page: () => const ReviewTodayPage(),
       binding: BindingsBuilder(() {
         Get.put(ReviewTodayController(
@@ -216,7 +216,7 @@ class AppPages {
       }),
     ),
     GetPage(
-      name: AppRoutes.practiceSession,
+      name: AppRoutesVer1Ne.practiceSession,
       page: () => const PracticeSessionPage(),
       binding: BindingsBuilder(() {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
@@ -232,26 +232,29 @@ class AppPages {
       }),
     ),
     GetPage(
-      name: AppRoutes.aiChat,
+      name: AppRoutesVer1Ne.aiChat,
       page: () => const AiChatPage(),
       binding: BindingsBuilder(() {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
         Get.put(AiChatController(
           askAI: Get.find(),
-          bootPrompt:
-              (args['prompt'] as String?) ?? (args['context'] as String?),
+          bootPrompt: (args['prompt'] as String?) ?? (args['context'] as String?),
           bootDisplayText: args['displayText'] as String?,
           bootWordContext: args['wordContext'] as String?,
         ));
       }),
     ),
     GetPage(
-      name: AppRoutes.settings,
+      name: AppRoutesVer1Ne.settings,
       page: () => const SettingsPage(),
     ),
     GetPage(
-      name: AppRoutes.profile,
+      name: AppRoutesVer1Ne.profile,
       page: () => const ProfilePage(),
     ),
   ];
 }
+
+// Replace old AppPages implementation with alias to the versioned one.
+@Deprecated('Use AppPagesVer1Ne')
+typedef AppPages = AppPagesVer1Ne;

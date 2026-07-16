@@ -8,7 +8,7 @@ abstract class CharacterLocalDataSource {
 }
 
 class CharacterLocalDataSourceImpl implements CharacterLocalDataSource {
-  Future<Database> get _db async => DatabaseHelper.database;
+  Future<Database> get _db async => DatabaseHelperVer1Ne.database;
 
   @override
   Future<CharacterModel?> getCharacterById(int id) async {

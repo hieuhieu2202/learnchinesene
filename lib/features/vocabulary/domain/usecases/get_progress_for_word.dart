@@ -3,8 +3,8 @@ import 'package:learnchinese/core/usecase/usecase.dart';
 import '../entities/progress_entity.dart';
 import '../repositories/progress_repository.dart';
 
-class GetProgressForWord extends UseCase<Progress?, int> {
-  GetProgressForWord(this.repository);
+class GetProgressForWordVer1Ne extends UseCaseVer1Ne<Progress?, int> {
+  GetProgressForWordVer1Ne(this.repository);
 
   final ProgressRepository repository;
 
@@ -13,3 +13,6 @@ class GetProgressForWord extends UseCase<Progress?, int> {
     return repository.getProgressForWord(params);
   }
 }
+
+@Deprecated('Use GetProgressForWordVer1Ne')
+typedef GetProgressForWord = GetProgressForWordVer1Ne;

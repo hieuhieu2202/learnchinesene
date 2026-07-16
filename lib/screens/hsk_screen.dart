@@ -1,0 +1,191 @@
+import 'package:flutter/material.dart';
+import '../core/theme/app_colors.dart';
+import '../database/db_helper.dart';
+import '../models/hsk_level.dart';
+import '../widgets/empty_state_widget.dart';
+import '../core/responsive/responsive_layout.dart';
+import 'unit_screen.dart';
+
+class HskScreen extends StatefulWidget {
+  static const routeName = '/hsk';
+  const HskScreen({super.key});
+  @override
+  State<HskScreen> createState() => _HskScreenState();
+}
+
+class _HskScreenState extends State<HskScreen> {
+  late Future<List<HskLevel>> future;
+  @override
+  void initState() {
+    super.initState();
+    future = DbHelper.instance.getHskLevels();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text(
+        'Chọn cấp độ HSK',
+        style: TextStyle(fontWeight: FontWeight.w800),
+      ),
+    ),
+    body: FutureBuilder<List<HskLevel>>(
+      future: future,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done)
+          return const Center(child: CircularProgressIndicator());
+        if (snap.hasError)
+          return const EmptyStateWidget(
+            icon: Icons.cloud_off_rounded,
+            title: 'Không thể tải cấp độ',
+            message: 'Không thể mở dữ liệu bài học ngoại tuyến.',
+          );
+        final levels = snap.data ?? [];
+        if (levels.isEmpty)
+          return const EmptyStateWidget(
+            icon: Icons.layers_outlined,
+            title: 'Chưa có cấp độ',
+            message: 'Không tìm thấy cấp độ HSK trong cơ sở dữ liệu.',
+          );
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: ResponsiveHelper.contentMaxWidth(context)),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveHelper.horizontalPadding(context),
+                vertical: 24,
+              ),
+              child: CustomScrollView(
+                slivers: [
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      'Học theo lộ trình HSK với tốc độ của riêng bạn. Mọi bài học đều dùng được ngoại tuyến.',
+                      style: TextStyle(color: AppColors.muted, height: 1.5),
+                    ),
+                  ),
+                ),
+                SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 450,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    mainAxisExtent: 110,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _LevelCard(level: levels[index], index: index),
+                    childCount: levels.length,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+    ),
+  );
+}
+
+class _LevelCard extends StatelessWidget {
+  const _LevelCard({required this.level, required this.index});
+  final HskLevel level;
+  final int index;
+  @override
+  Widget build(BuildContext context) => FutureBuilder<List<Object>>(
+    future: Future.wait<Object>([
+      DbHelper.instance.getUnitCountForLevel(level.id),
+      DbHelper.instance.getLevelProgress(level.id),
+    ]),
+    builder: (context, snap) {
+      final count = snap.hasData ? snap.data![0] as int : 0;
+      final progress = snap.hasData ? snap.data![1] as double : 0.0;
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0B3B1518),
+              blurRadius: 18,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: () => Navigator.pushNamed(
+            context,
+            UnitScreen.routeName,
+            arguments: {'hskLevelId': level.id, 'hskTitle': level.title},
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.red,
+                        index.isEven ? AppColors.orange : AppColors.redDark,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(17),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${level.order}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        level.title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$count bài • hoàn thành ${(progress * 100).round()}%',
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 7,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: AppColors.muted,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}

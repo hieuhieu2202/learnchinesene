@@ -100,7 +100,7 @@ class SectionListController extends GetxController {
   Future<void> loadSections() async {
     isLoading.value = true;
     try {
-      final sectionIds = await getSections(const NoParams());
+      final sectionIds = await getSections(const NoParamsVer1Ne());
       final items = <SectionProgress>[];
       for (final id in sectionIds) {
         final words = await getWordsBySection(id);

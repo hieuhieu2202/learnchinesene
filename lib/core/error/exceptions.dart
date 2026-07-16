@@ -1,5 +1,5 @@
-class CacheException implements Exception {
-  const CacheException([this.message]);
+class CacheExceptionVer1Ne implements Exception {
+  const CacheExceptionVer1Ne([this.message]);
 
   final String? message;
 
@@ -7,20 +7,22 @@ class CacheException implements Exception {
   String toString() => 'CacheException: ${message ?? 'Unknown cache error'}';
 }
 
-class DatabaseException implements Exception {
-  const DatabaseException([this.message]);
+class DatabaseExceptionVer1Ne implements Exception {
+  const DatabaseExceptionVer1Ne([this.message]);
 
   final String? message;
 
   @override
-  String toString() => 'DatabaseException: ${message ?? 'Unknown database error'}';
+  String toString() =>
+      'DatabaseException: ${message ?? 'Unknown database error'}';
 }
 
-class NetworkException implements Exception {
-  const NetworkException([this.message]);
+class NetworkExceptionVer1Ne implements Exception {
+  const NetworkExceptionVer1Ne([this.message]);
 
   final String? message;
 
   @override
-  String toString() => 'NetworkException: ${message ?? 'Unknown network error'}';
+  String toString() =>
+      'NetworkException: ${message ?? 'Unknown network error'}';
 }

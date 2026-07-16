@@ -7,16 +7,23 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get.dart';
 
 import 'package:learnchinese/main.dart';
+import 'package:learnchinese/services/speech_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const HeroChineseTypingApp());
+  testWidgets('App renders branded startup experience', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const LearnChineseApp());
+    expect(find.byType(MaterialApp), findsOneWidget);
+    expect(find.text('Học tiếng Trung'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+  });
 
-    expect(find.byType(MaterialApp), findsNothing);
-    expect(find.byType(GetMaterialApp), findsOneWidget);
+  test('Speaking similarity handles exact and different phrases', () {
+    final service = SpeechService();
+    expect(service.similarityScore('你好', '你好'), 100);
+    expect(service.similarityScore('你好', '再见'), lessThan(80));
   });
 }

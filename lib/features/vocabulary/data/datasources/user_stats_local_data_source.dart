@@ -16,7 +16,7 @@ abstract class UserStatsLocalDataSource {
 class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
   @override
   Future<UserStats> getUserStats() async {
-    final db = await DatabaseHelper.database;
+    final db = await DatabaseHelperVer1Ne.database;
     final result = await db.query('user_stats', where: 'id = ?', whereArgs: [1]);
 
     if (result.isEmpty) {
@@ -39,7 +39,7 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
 
   @override
   Future<void> updateUserStats(UserStats stats) async {
-    final db = await DatabaseHelper.database;
+    final db = await DatabaseHelperVer1Ne.database;
     await db.update(
       'user_stats',
       stats.toMap(),
@@ -70,7 +70,7 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
   @override
   Future<void> updateStreak() async {
     try {
-      final db = await DatabaseHelper.database;  // ⭐ Get database reference
+      final db = await DatabaseHelperVer1Ne.database;  // ⭐ Get database reference
       final stats = await getUserStats();
       final today = DateTime.now();
       final lastStudy = stats.lastStudyDate;

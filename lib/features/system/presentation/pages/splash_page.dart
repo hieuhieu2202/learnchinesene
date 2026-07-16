@@ -20,9 +20,12 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     super.initState();
     _timer = Timer(const Duration(milliseconds: 1400), () {
-      if (mounted) {
-        Get.offAllNamed(AppRoutes.home);
-      }
+      if (!mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offAllNamed(AppRoutesVer1Ne.home);
+        }
+      });
     });
   }
 
@@ -42,9 +45,9 @@ class _SplashPageState extends State<SplashPage> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.snowBackground,
-              AppColors.snowSurface,
-              AppColors.snowSurfaceHigh,
+              AppColorsVer1Ne.background,
+              AppColorsVer1Ne.surface,
+              AppColorsVer1Ne.surfaceHigh,
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -93,14 +96,14 @@ class _SplashPageState extends State<SplashPage> {
                 'Hán Ngữ Typing',
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: theme.colorScheme.onBackground,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
                 'Luyện gõ câu · Nhớ chữ vững bền',
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onBackground.withAlpha(179),
+                  color: theme.colorScheme.onSurface.withAlpha(179),
                 ),
               ),
               const SizedBox(height: 32),

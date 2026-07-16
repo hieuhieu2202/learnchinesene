@@ -3,8 +3,8 @@ import 'package:learnchinese/core/usecase/usecase.dart';
 import '../entities/word.dart';
 import '../repositories/word_repository.dart';
 
-class GetWordsBySection extends UseCase<List<Word>, int> {
-  GetWordsBySection(this.repository);
+class GetWordsBySectionVer1Ne extends UseCaseVer1Ne<List<Word>, int> {
+  GetWordsBySectionVer1Ne(this.repository);
 
   final WordRepository repository;
 
@@ -13,3 +13,6 @@ class GetWordsBySection extends UseCase<List<Word>, int> {
     return repository.getWordsBySection(sectionId);
   }
 }
+
+@Deprecated('Use GetWordsBySectionVer1Ne')
+typedef GetWordsBySection = GetWordsBySectionVer1Ne;
