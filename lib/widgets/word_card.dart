@@ -57,16 +57,6 @@ class WordCard extends StatelessWidget {
       ),
       const SizedBox(height: 18),
       Text(
-        word.pinyin,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-          color: AppColors.orange,
-        ),
-      ),
-      const SizedBox(height: 10),
-      Text(
         word.vietnamese,
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 19, height: 1.4, color: AppColors.ink),
@@ -112,14 +102,7 @@ class WordCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              word.pinyin,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: AppColors.orange,
-              ),
-            ),
-            const SizedBox(height: 4),
+
             Text(
               word.vietnamese,
               maxLines: 2,

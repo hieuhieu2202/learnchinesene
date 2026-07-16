@@ -170,16 +170,6 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                           fontFamilyFallback: ['FZKaiTiPinyin_1', 'PingFang SC', 'Heiti SC', 'Microsoft YaHei', 'Noto Sans SC'],
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        w.pinyin,
-                        style: const TextStyle(
-                          color: Color(0xFFFFDDD2),
-                          fontSize: 21,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
                       Text(
                         w.vietnamese,
                         textAlign: TextAlign.center,
@@ -283,16 +273,6 @@ class _WordDetailScreenState extends State<WordDetailScreen> {
                                         fontFamilyFallback: ['FZKaiTiPinyin_1', 'PingFang SC', 'Heiti SC', 'Microsoft YaHei', 'Noto Sans SC'],
                                       ),
                                     ),
-                                    if (e.pinyin.isNotEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 4),
-                                        child: Text(
-                                          e.pinyin,
-                                          style: const TextStyle(
-                                            color: AppColors.orange,
-                                          ),
-                                        ),
-                                      ),
                                     if (e.vietnamese.isNotEmpty)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 5),

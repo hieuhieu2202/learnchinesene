@@ -173,14 +173,7 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
                                 ),
                                 title: Row(
                                   children: [
-                                    Text(
-                                      char.pinyin ?? '',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.orange,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
+
                                     if (char.hskLevel != null)
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

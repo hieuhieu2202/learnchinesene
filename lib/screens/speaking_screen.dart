@@ -272,20 +272,15 @@ class _SpeakingScreenState extends State<SpeakingScreen>
             ),
             child: Column(
               children: [
-                PinyinText(
-                  chinese: item.targetText,
-                  pinyin: item.pinyin,
-                  chineseStyle: TextStyle(
+                Text(
+                  item.targetText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
                     fontSize: item.targetText.length > 8 ? 32 : 46,
                     height: 1.2,
                     fontWeight: FontWeight.w400,
                     fontFamily: 'FZKaiTiPinyin',
                     fontFamilyFallback: const ['FZKaiTiPinyin_1', 'PingFang SC', 'Heiti SC', 'Microsoft YaHei', 'Noto Sans SC'],
-                  ),
-                  pinyinStyle: const TextStyle(
-                    fontSize: 16,
-                    color: AppColors.orange,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 if (item.meaning.isNotEmpty) ...[
