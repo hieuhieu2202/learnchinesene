@@ -85,7 +85,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver, 
 
 ### Step 1: Xóa database (nếu cần)
 ```bash
-adb shell rm /data/data/com.example.learnchinese/databases/chinese.db
+adb shell rm /data/data/com.example.chinese_master/databases/chinese.db
 ```
 
 ### Step 2: Mở app

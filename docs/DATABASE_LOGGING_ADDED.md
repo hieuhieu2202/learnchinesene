@@ -72,7 +72,7 @@ void _printDatabaseContent(Database db) async {
 
 ### Step 1: Xóa database
 ```bash
-adb shell rm /data/data/com.example.learnchinese/databases/chinese.db
+adb shell rm /data/data/com.example.chinese_master/databases/chinese.db
 ```
 
 ### Step 2: Khởi động app & Practice

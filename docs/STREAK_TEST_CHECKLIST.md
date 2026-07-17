@@ -104,7 +104,7 @@ Kiểm tra:
 ```bash
 # Check database
 adb shell
-sqlite3 /data/data/com.example.learnchinese/databases/chinese.db
+sqlite3 /data/data/com.example.chinese_master/databases/chinese.db
 SELECT currentStreak, lastStudyDate FROM user_stats;
 ```
 

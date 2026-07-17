@@ -27,7 +27,7 @@ Tại file `practice_session_page.dart` hoặc `review_today_page.dart`, sau khi
 
 ```dart
 import 'package:get/get.dart';
-import 'package:learnchinese/features/vocabulary/domain/usecases/add_experience.dart';
+import 'package:chinese_master/features/vocabulary/domain/usecases/add_experience.dart';
 
 // Trong Controller hoặc Page
 final addExpUseCase = Get.find<AddExperienceUseCase>();
@@ -52,7 +52,7 @@ if (quizCompleted) {
 
 ```dart
 import 'package:get/get.dart';
-import 'package:learnchinese/features/vocabulary/domain/usecases/get_user_stats.dart';
+import 'package:chinese_master/features/vocabulary/domain/usecases/get_user_stats.dart';
 
 final getUserStats = Get.find<GetUserStatsUseCase>();
 final userStats = await getUserStats();
@@ -68,7 +68,7 @@ Khi một từ đạt mức "mastered" (10 lần trả lời đúng), hãy cập
 
 ```dart
 import 'package:get/get.dart';
-import 'package:learnchinese/features/vocabulary/domain/repositories/user_stats_repository.dart';
+import 'package:chinese_master/features/vocabulary/domain/repositories/user_stats_repository.dart';
 
 final userStatsRepo = Get.find<UserStatsRepository>();
 

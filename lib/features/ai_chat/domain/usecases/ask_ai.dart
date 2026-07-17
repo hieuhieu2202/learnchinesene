@@ -1,4 +1,4 @@
-import 'package:learnchinese/core/usecase/usecase.dart';
+import 'package:chinese_master/core/usecase/usecase.dart';
 
 import '../entities/ai_message.dart';
 import '../repositories/ai_repository.dart';

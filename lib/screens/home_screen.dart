@@ -27,7 +27,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refresh() async {
-    setState(() => stats = DbHelper.instance.getStats());
+    setState(() {
+      stats = DbHelper.instance.getStats();
+    });
     await stats;
   }
 
@@ -36,198 +38,202 @@ class _HomeScreenState extends State<HomeScreen> {
       onRefresh: _refresh,
       child: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: ResponsiveHelper.contentMaxWidth(context)),
+          constraints: BoxConstraints(
+              maxWidth: ResponsiveHelper.contentMaxWidth(context)),
           child: CustomScrollView(
             slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.red,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        '学',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '你好!',
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppColors.red,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            '学',
                             style: TextStyle(
-                              fontSize: 24,
+                              color: Colors.white,
+                              fontSize: 26,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                          Text(
-                            'Sẵn sàng cho bài học hôm nay?',
-                            style: TextStyle(color: AppColors.muted),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '你好!',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              Text(
+                                'Sẵn sàng cho bài học hôm nay?',
+                                style: TextStyle(color: AppColors.muted),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton.filledTonal(
+                          onPressed: () => Navigator.pushNamed(
+                              context, StatsScreen.routeName),
+                          icon: const Icon(Icons.insights_rounded),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 26),
+                    Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            AppColors.redDark,
+                            AppColors.red,
+                            AppColors.orange,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x30B4232C),
+                            blurRadius: 24,
+                            offset: Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'TIẾP TỤC HỌC',
+                            style: TextStyle(
+                              color: Color(0xCCFFFFFF),
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'Chinh phục tiếng Trung\ntừng từ mỗi ngày',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 25,
+                              height: 1.2,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 22),
+                          FilledButton.icon(
+                            onPressed: () => Navigator.pushNamed(
+                                context, HskScreen.routeName),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: AppColors.redDark,
+                              minimumSize: const Size(0, 48),
+                            ),
+                            icon: const Icon(Icons.play_arrow_rounded),
+                            label: const Text('Bắt đầu học'),
                           ),
                         ],
                       ),
                     ),
-                    IconButton.filledTonal(
-                      onPressed: () =>
-                          Navigator.pushNamed(context, StatsScreen.routeName),
-                      icon: const Icon(Icons.insights_rounded),
+                    const SizedBox(height: 26),
+                    const Text(
+                      'Tiến độ của bạn',
+                      style:
+                          TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 26),
-                Container(
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        AppColors.redDark,
-                        AppColors.red,
-                        AppColors.orange,
-                      ],
+                    const SizedBox(height: 12),
+                    FutureBuilder<Map<String, num>>(
+                      future: stats,
+                      builder: (context, snap) {
+                        final s = snap.data ?? const <String, num>{};
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: StatCard(
+                                icon: Icons.auto_stories_rounded,
+                                value: '${s['learned']?.toInt() ?? 0}',
+                                label: 'Từ đã học',
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: StatCard(
+                                icon: Icons.mic_rounded,
+                                value:
+                                    '${(s['speakingAverage'] ?? 0).round()}%',
+                                label: 'Phát âm',
+                                color: AppColors.orange,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: StatCard(
+                                icon: Icons.task_alt_rounded,
+                                value: '${s['correct']?.toInt() ?? 0}',
+                                label: 'Đúng',
+                                color: AppColors.success,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x30B4232C),
-                        blurRadius: 24,
-                        offset: Offset(0, 12),
+                    const SizedBox(height: 26),
+                    const Text(
+                      'Luyện tập theo cách của bạn',
+                      style:
+                          TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 12),
+                    _Action(
+                      icon: Icons.replay_rounded,
+                      title: 'Ôn lại từ sai',
+                      subtitle: 'Biến những từ khó thành điểm mạnh',
+                      color: AppColors.error,
+                      onTap: () =>
+                          Navigator.pushNamed(context, ReviewScreen.routeName),
+                    ),
+                    const SizedBox(height: 10),
+                    _Action(
+                      icon: Icons.record_voice_over_rounded,
+                      title: 'Luyện phát âm',
+                      subtitle: 'Cải thiện phát âm với điểm số tức thì',
+                      color: AppColors.orange,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        SpeakingScreen.routeName,
+                        arguments: const {'standalone': true},
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'TIẾP TỤC HỌC',
-                        style: TextStyle(
-                          color: Color(0xCCFFFFFF),
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Chinh phục tiếng Trung\ntừng từ mỗi ngày',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 25,
-                          height: 1.2,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 22),
-                      FilledButton.icon(
-                        onPressed: () =>
-                            Navigator.pushNamed(context, HskScreen.routeName),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.redDark,
-                          minimumSize: const Size(0, 48),
-                        ),
-                        icon: const Icon(Icons.play_arrow_rounded),
-                        label: const Text('Bắt đầu học'),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 10),
+                    _Action(
+                      icon: Icons.menu_book_rounded,
+                      title: 'Kho từ vựng',
+                      subtitle: 'Xem từ theo cấp độ HSK và bài học',
+                      color: AppColors.red,
+                      onTap: () =>
+                          Navigator.pushNamed(context, HskScreen.routeName),
+                    ),
+                  ]),
                 ),
-                const SizedBox(height: 26),
-                const Text(
-                  'Tiến độ của bạn',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 12),
-                FutureBuilder<Map<String, num>>(
-                  future: stats,
-                  builder: (context, snap) {
-                    final s = snap.data ?? const <String, num>{};
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: StatCard(
-                            icon: Icons.auto_stories_rounded,
-                            value: '${s['learned']?.toInt() ?? 0}',
-                            label: 'Từ đã học',
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: StatCard(
-                            icon: Icons.mic_rounded,
-                            value: '${(s['speakingAverage'] ?? 0).round()}%',
-                            label: 'Phát âm',
-                            color: AppColors.orange,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: StatCard(
-                            icon: Icons.task_alt_rounded,
-                            value: '${s['correct']?.toInt() ?? 0}',
-                            label: 'Đúng',
-                            color: AppColors.success,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 26),
-                const Text(
-                  'Luyện tập theo cách của bạn',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 12),
-                _Action(
-                  icon: Icons.replay_rounded,
-                  title: 'Ôn lại từ sai',
-                  subtitle: 'Biến những từ khó thành điểm mạnh',
-                  color: AppColors.error,
-                  onTap: () =>
-                      Navigator.pushNamed(context, ReviewScreen.routeName),
-                ),
-                const SizedBox(height: 10),
-                _Action(
-                  icon: Icons.record_voice_over_rounded,
-                  title: 'Luyện phát âm',
-                  subtitle: 'Cải thiện phát âm với điểm số tức thì',
-                  color: AppColors.orange,
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    SpeakingScreen.routeName,
-                    arguments: const {'standalone': true},
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _Action(
-                  icon: Icons.menu_book_rounded,
-                  title: 'Kho từ vựng',
-                  subtitle: 'Xem từ theo cấp độ HSK và bài học',
-                  color: AppColors.red,
-                  onTap: () =>
-                      Navigator.pushNamed(context, HskScreen.routeName),
-                ),
-              ]),
-            ),
-          ),
-        ],
-      ),
+              ),
+            ],
           ),
         ),
+      ),
     );
   }
 
@@ -250,8 +256,14 @@ class _HomeScreenState extends State<HomeScreen> {
           selectedIndex: _currentIndex,
           onDestinationSelected: (i) => setState(() => _currentIndex = i),
           destinations: const [
-            NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'Học'),
-            NavigationDestination(icon: Icon(Icons.draw_outlined), selectedIcon: Icon(Icons.draw), label: 'Viết chữ'),
+            NavigationDestination(
+                icon: Icon(Icons.school_outlined),
+                selectedIcon: Icon(Icons.school),
+                label: 'Học'),
+            NavigationDestination(
+                icon: Icon(Icons.draw_outlined),
+                selectedIcon: Icon(Icons.draw),
+                label: 'Viết chữ'),
           ],
         ),
       ),
@@ -263,8 +275,14 @@ class _HomeScreenState extends State<HomeScreen> {
               onDestinationSelected: (i) => setState(() => _currentIndex = i),
               labelType: NavigationRailLabelType.all,
               destinations: const [
-                NavigationRailDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: Text('Học')),
-                NavigationRailDestination(icon: Icon(Icons.draw_outlined), selectedIcon: Icon(Icons.draw), label: Text('Viết chữ')),
+                NavigationRailDestination(
+                    icon: Icon(Icons.school_outlined),
+                    selectedIcon: Icon(Icons.school),
+                    label: Text('Học')),
+                NavigationRailDestination(
+                    icon: Icon(Icons.draw_outlined),
+                    selectedIcon: Icon(Icons.draw),
+                    label: Text('Viết chữ')),
               ],
             ),
             const VerticalDivider(thickness: 1, width: 1),
@@ -280,8 +298,14 @@ class _HomeScreenState extends State<HomeScreen> {
               selectedIndex: _currentIndex,
               onDestinationSelected: (i) => setState(() => _currentIndex = i),
               destinations: const [
-                NavigationRailDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: Text('Học')),
-                NavigationRailDestination(icon: Icon(Icons.draw_outlined), selectedIcon: Icon(Icons.draw), label: Text('Viết chữ')),
+                NavigationRailDestination(
+                    icon: Icon(Icons.school_outlined),
+                    selectedIcon: Icon(Icons.school),
+                    label: Text('Học')),
+                NavigationRailDestination(
+                    icon: Icon(Icons.draw_outlined),
+                    selectedIcon: Icon(Icons.draw),
+                    label: Text('Viết chữ')),
               ],
             ),
             const VerticalDivider(thickness: 1, width: 1),
@@ -308,50 +332,50 @@ class _Action extends StatelessWidget {
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) => Material(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(20),
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: .1),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: color),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: .1),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: AppColors.muted,
-                      fontSize: 13,
-                    ),
+                  child: Icon(icon, color: color),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
+              ],
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.muted),
-          ],
+          ),
         ),
-      ),
-    ),
-  );
+      );
 }

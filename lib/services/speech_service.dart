@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 
-import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -20,11 +19,6 @@ class SpeechResult {
 
 class SpeechService {
   final SpeechToText _speech = SpeechToText();
-
-  Future<bool> ensureMicPermission() async {
-    final status = await Permission.microphone.request();
-    return status.isGranted;
-  }
 
   Future<bool> initialize() async {
     return _speech.initialize();

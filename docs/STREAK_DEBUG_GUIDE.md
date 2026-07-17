@@ -60,7 +60,7 @@
 
 ### Step 1: Xóa Database
 ```bash
-adb shell rm /data/data/com.example.learnchinese/databases/chinese.db
+adb shell rm /data/data/com.example.chinese_master/databases/chinese.db
 # Hoặc uninstall + reinstall app
 ```
 

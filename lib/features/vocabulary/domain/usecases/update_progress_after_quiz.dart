@@ -1,9 +1,10 @@
-import 'package:learnchinese/core/usecase/usecase.dart';
+import 'package:chinese_master/core/usecase/usecase.dart';
 
 import '../entities/progress_entity.dart';
 import '../repositories/progress_repository.dart';
 
-class UpdateProgressAfterQuizVer1Ne extends UseCaseVer1Ne<void, UpdateProgressParams> {
+class UpdateProgressAfterQuizVer1Ne
+    extends UseCaseVer1Ne<void, UpdateProgressParams> {
   UpdateProgressAfterQuizVer1Ne(this.repository);
 
   final ProgressRepository repository;
