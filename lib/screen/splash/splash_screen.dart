@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
-import 'home_screen.dart';
+import 'package:get/get.dart';
+import '../../../core/theme/app_colors.dart';
+import 'controller/splash_controller.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key, required this.databaseReady});
-  final Future<void> databaseReady;
+  const SplashScreen({super.key});
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  String? error;
+  final SplashController controller = Get.find<SplashController>();
   late final AnimationController _animationController;
   late final Animation<double> _scaleAnimation;
   late final Animation<double> _opacityAnimation;
@@ -30,29 +30,12 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
     _animationController.forward();
-    _start();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
-  }
-
-  Future<void> _start() async {
-    try {
-      await Future.wait([
-        widget.databaseReady,
-        Future<void>.delayed(const Duration(milliseconds: 1500)),
-      ]);
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => error = 'Không thể chuẩn bị bài học ngoại tuyến.');
-      }
-    }
   }
 
   @override
@@ -125,36 +108,39 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 48),
-                      if (error == null)
-                        const SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 3,
-                          ),
-                        )
-                      else ...[
-                        Text(
-                          error!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        const SizedBox(height: 16),
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() => error = null);
-                            _start();
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: Colors.white),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
-                          ),
-                          child: const Text('Thử lại'),
-                        ),
-                      ],
+                      Obx(() {
+                        if (controller.error.value == null) {
+                          return const SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          );
+                        } else {
+                          return Column(
+                            children: [
+                              Text(
+                                controller.error.value!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              const SizedBox(height: 16),
+                              OutlinedButton(
+                                onPressed: () => controller.start(),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: const BorderSide(color: Colors.white),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24, vertical: 12),
+                                ),
+                                child: const Text('Thử lại'),
+                              ),
+                            ],
+                          );
+                        }
+                      }),
                     ],
                   ),
                 ),

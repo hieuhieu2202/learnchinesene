@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
-import '../database/db_helper.dart';
-import '../widgets/stat_card.dart';
-import 'hsk_screen.dart';
-import 'review_screen.dart';
-import 'speaking_screen.dart';
-import 'stats_screen.dart';
-import '../features/hanzi_writing/screens/hanzi_writing_home_screen.dart';
-import '../core/responsive/responsive_layout.dart';
+import '../../core/theme/app_colors.dart';
+import '../../widgets/stat_card.dart';
+import 'package:get/get.dart';
+import '../hsk/hsk_screen.dart';
+import '../review/review_screen.dart';
+import '../speaking/speaking_screen.dart';
+import '../stats/stats_screen.dart';
+import 'controller/home_controller.dart';
+import '../../features/hanzi_writing/screens/hanzi_writing_home_screen.dart';
+import '../../core/responsive/responsive_layout.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -17,25 +18,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Future<Map<String, num>> stats;
-  int _currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    stats = DbHelper.instance.getStats();
-  }
-
-  Future<void> _refresh() async {
-    setState(() {
-      stats = DbHelper.instance.getStats();
-    });
-    await stats;
-  }
+  HomeController get controller => Get.find<HomeController>();
 
   Widget _buildHomeDashboard() {
     return RefreshIndicator(
-      onRefresh: _refresh,
+      onRefresh: () => controller.refreshStats(),
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -85,8 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         IconButton.filledTonal(
-                          onPressed: () => Navigator.pushNamed(
-                              context, StatsScreen.routeName),
+                          onPressed: () => Get.to(() => const StatsScreen()),
                           icon: const Icon(Icons.insights_rounded),
                         ),
                       ],
@@ -135,8 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 22),
                           FilledButton.icon(
-                            onPressed: () => Navigator.pushNamed(
-                                context, HskScreen.routeName),
+                            onPressed: () => Get.to(() => const HskScreen()),
                             style: FilledButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: AppColors.redDark,
@@ -155,42 +140,38 @@ class _HomeScreenState extends State<HomeScreen> {
                           TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 12),
-                    FutureBuilder<Map<String, num>>(
-                      future: stats,
-                      builder: (context, snap) {
-                        final s = snap.data ?? const <String, num>{};
-                        return Row(
-                          children: [
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.auto_stories_rounded,
-                                value: '${s['learned']?.toInt() ?? 0}',
-                                label: 'Từ đã học',
-                              ),
+                    Obx(() {
+                      final s = controller.stats;
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: StatCard(
+                              icon: Icons.auto_stories_rounded,
+                              value: '${s['learned']?.toInt() ?? 0}',
+                              label: 'Từ đã học',
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.mic_rounded,
-                                value:
-                                    '${(s['speakingAverage'] ?? 0).round()}%',
-                                label: 'Phát âm',
-                                color: AppColors.orange,
-                              ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: StatCard(
+                              icon: Icons.mic_rounded,
+                              value: '${(s['speakingAverage'] ?? 0).round()}%',
+                              label: 'Phát âm',
+                              color: AppColors.orange,
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.task_alt_rounded,
-                                value: '${s['correct']?.toInt() ?? 0}',
-                                label: 'Đúng',
-                                color: AppColors.success,
-                              ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: StatCard(
+                              icon: Icons.task_alt_rounded,
+                              value: '${s['correct']?.toInt() ?? 0}',
+                              label: 'Đúng',
+                              color: AppColors.success,
                             ),
-                          ],
-                        );
-                      },
-                    ),
+                          ),
+                        ],
+                      );
+                    }),
                     const SizedBox(height: 26),
                     const Text(
                       'Luyện tập theo cách của bạn',
@@ -203,8 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'Ôn lại từ sai',
                       subtitle: 'Biến những từ khó thành điểm mạnh',
                       color: AppColors.error,
-                      onTap: () =>
-                          Navigator.pushNamed(context, ReviewScreen.routeName),
+                      onTap: () => Get.to(() => const ReviewScreen()),
                     ),
                     const SizedBox(height: 10),
                     _Action(
@@ -212,9 +192,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'Luyện phát âm',
                       subtitle: 'Cải thiện phát âm với điểm số tức thì',
                       color: AppColors.orange,
-                      onTap: () => Navigator.pushNamed(
-                        context,
-                        SpeakingScreen.routeName,
+                      onTap: () => Get.to(
+                        () => const SpeakingScreen(),
                         arguments: const {'standalone': true},
                       ),
                     ),
@@ -224,8 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'Kho từ vựng',
                       subtitle: 'Xem từ theo cấp độ HSK và bài học',
                       color: AppColors.red,
-                      onTap: () =>
-                          Navigator.pushNamed(context, HskScreen.routeName),
+                      onTap: () => Get.to(() => const HskScreen()),
                     ),
                   ]),
                 ),
@@ -239,81 +217,83 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final body = SafeArea(
-      child: IndexedStack(
-        index: _currentIndex,
-        children: [
-          _buildHomeDashboard(),
-          const HanziWritingHomeScreen(),
-        ],
-      ),
-    );
+    return Obx(() {
+      final body = SafeArea(
+        child: IndexedStack(
+          index: controller.currentIndex.value,
+          children: [
+            _buildHomeDashboard(),
+            const HanziWritingHomeScreen(),
+          ],
+        ),
+      );
 
-    return ResponsiveLayout(
-      mobile: Scaffold(
-        body: body,
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (i) => setState(() => _currentIndex = i),
-          destinations: const [
-            NavigationDestination(
-                icon: Icon(Icons.school_outlined),
-                selectedIcon: Icon(Icons.school),
-                label: 'Học'),
-            NavigationDestination(
-                icon: Icon(Icons.draw_outlined),
-                selectedIcon: Icon(Icons.draw),
-                label: 'Viết chữ'),
-          ],
+      return ResponsiveLayout(
+        mobile: Scaffold(
+          body: body,
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: controller.currentIndex.value,
+            onDestinationSelected: controller.setIndex,
+            destinations: const [
+              NavigationDestination(
+                  icon: Icon(Icons.school_outlined),
+                  selectedIcon: Icon(Icons.school),
+                  label: 'Học'),
+              NavigationDestination(
+                  icon: Icon(Icons.draw_outlined),
+                  selectedIcon: Icon(Icons.draw),
+                  label: 'Viết chữ'),
+            ],
+          ),
         ),
-      ),
-      tablet: Scaffold(
-        body: Row(
-          children: [
-            NavigationRail(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (i) => setState(() => _currentIndex = i),
-              labelType: NavigationRailLabelType.all,
-              destinations: const [
-                NavigationRailDestination(
-                    icon: Icon(Icons.school_outlined),
-                    selectedIcon: Icon(Icons.school),
-                    label: Text('Học')),
-                NavigationRailDestination(
-                    icon: Icon(Icons.draw_outlined),
-                    selectedIcon: Icon(Icons.draw),
-                    label: Text('Viết chữ')),
-              ],
-            ),
-            const VerticalDivider(thickness: 1, width: 1),
-            Expanded(child: body),
-          ],
+        tablet: Scaffold(
+          body: Row(
+            children: [
+              NavigationRail(
+                selectedIndex: controller.currentIndex.value,
+                onDestinationSelected: controller.setIndex,
+                labelType: NavigationRailLabelType.all,
+                destinations: const [
+                  NavigationRailDestination(
+                      icon: Icon(Icons.school_outlined),
+                      selectedIcon: Icon(Icons.school),
+                      label: Text('Học')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.draw_outlined),
+                      selectedIcon: Icon(Icons.draw),
+                      label: Text('Viết chữ')),
+                ],
+              ),
+              const VerticalDivider(thickness: 1, width: 1),
+              Expanded(child: body),
+            ],
+          ),
         ),
-      ),
-      desktop: Scaffold(
-        body: Row(
-          children: [
-            NavigationRail(
-              extended: true,
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (i) => setState(() => _currentIndex = i),
-              destinations: const [
-                NavigationRailDestination(
-                    icon: Icon(Icons.school_outlined),
-                    selectedIcon: Icon(Icons.school),
-                    label: Text('Học')),
-                NavigationRailDestination(
-                    icon: Icon(Icons.draw_outlined),
-                    selectedIcon: Icon(Icons.draw),
-                    label: Text('Viết chữ')),
-              ],
-            ),
-            const VerticalDivider(thickness: 1, width: 1),
-            Expanded(child: body),
-          ],
+        desktop: Scaffold(
+          body: Row(
+            children: [
+              NavigationRail(
+                extended: true,
+                selectedIndex: controller.currentIndex.value,
+                onDestinationSelected: controller.setIndex,
+                destinations: const [
+                  NavigationRailDestination(
+                      icon: Icon(Icons.school_outlined),
+                      selectedIcon: Icon(Icons.school),
+                      label: Text('Học')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.draw_outlined),
+                      selectedIcon: Icon(Icons.draw),
+                      label: Text('Viết chữ')),
+                ],
+              ),
+              const VerticalDivider(thickness: 1, width: 1),
+              Expanded(child: body),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
 
