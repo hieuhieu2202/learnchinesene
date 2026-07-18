@@ -58,9 +58,7 @@ int calculatePrefilledStrokeCount({
     return 0;
   }
 
-  return (strokeCount * ratio)
-      .floor()
-      .clamp(1, strokeCount - 1);
+  return (strokeCount * ratio).floor().clamp(1, strokeCount - 1);
 }
 
 List<HanziPracticeRoundConfig> generateRoundConfigs(int strokeCount) {
@@ -102,7 +100,8 @@ List<HanziPracticeRoundConfig> generateRoundConfigs(int strokeCount) {
     HanziPracticeRoundConfig(
       roundNumber: 4,
       mode: HanziPracticeMode.completeRemaining,
-      prefilledStrokeCount: calculatePrefilledStrokeCount(strokeCount: strokeCount, ratio: 0.25),
+      prefilledStrokeCount:
+          calculatePrefilledStrokeCount(strokeCount: strokeCount, ratio: 0.25),
       guideOpacity: 0.15,
       showCurrentStroke: true,
       showStartPoint: true,
@@ -113,7 +112,8 @@ List<HanziPracticeRoundConfig> generateRoundConfigs(int strokeCount) {
     HanziPracticeRoundConfig(
       roundNumber: 5,
       mode: HanziPracticeMode.completeRemaining,
-      prefilledStrokeCount: calculatePrefilledStrokeCount(strokeCount: strokeCount, ratio: 0.50),
+      prefilledStrokeCount:
+          calculatePrefilledStrokeCount(strokeCount: strokeCount, ratio: 0.50),
       guideOpacity: 0.15,
       showCurrentStroke: true,
       showStartPoint: true,

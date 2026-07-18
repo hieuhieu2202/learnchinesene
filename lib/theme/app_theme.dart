@@ -106,7 +106,8 @@ class AppThemeVer1Ne {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: scheme.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
           borderSide: BorderSide(color: scheme.outline.withAlpha(77)),
@@ -124,7 +125,8 @@ class AppThemeVer1Ne {
         style: ElevatedButton.styleFrom(
           backgroundColor: scheme.primary,
           foregroundColor: scheme.onPrimary,
-          textStyle: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          textStyle:
+              textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),

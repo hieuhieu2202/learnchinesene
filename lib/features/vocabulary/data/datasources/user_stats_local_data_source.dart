@@ -17,7 +17,8 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
   @override
   Future<UserStats> getUserStats() async {
     final db = await DatabaseHelperVer1Ne.database;
-    final result = await db.query('user_stats', where: 'id = ?', whereArgs: [1]);
+    final result =
+        await db.query('user_stats', where: 'id = ?', whereArgs: [1]);
 
     if (result.isEmpty) {
       // ⭐ Initialize lastStudyDate = hôm qua để có thể cập nhật streak lần đầu
@@ -70,13 +71,15 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
   @override
   Future<void> updateStreak() async {
     try {
-      final db = await DatabaseHelperVer1Ne.database;  // ⭐ Get database reference
+      final db =
+          await DatabaseHelperVer1Ne.database; // ⭐ Get database reference
       final stats = await getUserStats();
       final today = DateTime.now();
       final lastStudy = stats.lastStudyDate;
 
       // So sánh chỉ ngày, không giờ
-      final lastStudyDate = DateTime(lastStudy.year, lastStudy.month, lastStudy.day);
+      final lastStudyDate =
+          DateTime(lastStudy.year, lastStudy.month, lastStudy.day);
       final todayDate = DateTime(today.year, today.month, today.day);
       final difference = todayDate.difference(lastStudyDate).inDays;
 
@@ -112,7 +115,8 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
           lastStudyDate: today,
         );
         await updateUserStats(newStats);
-        print('   ⬆️ Streak tăng: ${stats.currentStreak} → ${newStats.currentStreak}');
+        print(
+            '   ⬆️ Streak tăng: ${stats.currentStreak} → ${newStats.currentStreak}');
         print('   ✅ Streak đã lưu vào database');
         // ⭐ In dữ liệu từ database để verify
         _printDatabaseContent(db);
@@ -141,7 +145,8 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
     final today = DateTime.now();
     final lastStudy = stats.lastStudyDate;
 
-    final lastStudyDate = DateTime(lastStudy.year, lastStudy.month, lastStudy.day);
+    final lastStudyDate =
+        DateTime(lastStudy.year, lastStudy.month, lastStudy.day);
     final todayDate = DateTime(today.year, today.month, today.day);
     final difference = todayDate.difference(lastStudyDate).inDays;
 
@@ -170,7 +175,8 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
   void _printDatabaseContent(Database db) async {
     try {
       print('\n📊 [DATABASE] Dữ liệu sau update:');
-      final result = await db.query('user_stats', where: 'id = ?', whereArgs: [1]);
+      final result =
+          await db.query('user_stats', where: 'id = ?', whereArgs: [1]);
       if (result.isNotEmpty) {
         final row = result.first;
         print('   ID: ${row['id']}');

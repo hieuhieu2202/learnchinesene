@@ -66,20 +66,20 @@ class QuizOptionButton extends StatelessWidget {
                         size: 20,
                       )
                     : state == QuizOptionState.wrong
-                    ? const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      )
-                    : Text(
-                        String.fromCharCode(65 + (index ?? 0)),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          color: state == QuizOptionState.idle
-                              ? AppColors.muted
-                              : Colors.white,
-                        ),
-                      ),
+                        ? const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          )
+                        : Text(
+                            String.fromCharCode(65 + (index ?? 0)),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: state == QuizOptionState.idle
+                                  ? AppColors.muted
+                                  : Colors.white,
+                            ),
+                          ),
               ),
               const SizedBox(width: 13),
               Expanded(

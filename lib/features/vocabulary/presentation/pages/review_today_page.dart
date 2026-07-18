@@ -162,7 +162,8 @@ class _ReviewSummary extends StatelessWidget {
             total == 0
                 ? 'Không có từ nào cần ôn hôm nay'
                 : 'Bạn có $total từ cần ôn',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(

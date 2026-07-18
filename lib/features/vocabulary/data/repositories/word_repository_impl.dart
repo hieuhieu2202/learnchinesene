@@ -22,7 +22,8 @@ class WordRepositoryImpl implements WordRepository {
   @override
   Future<List<Word>> getWordsBySection(int sectionId) async {
     final words = await wordLocalDataSource.getWordsBySection(sectionId);
-    final progressMap = await progressLocalDataSource.getProgressForSection(sectionId);
+    final progressMap =
+        await progressLocalDataSource.getProgressForSection(sectionId);
 
     return [
       for (final word in words)

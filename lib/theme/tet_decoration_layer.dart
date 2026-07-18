@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 ///
 /// NOTE: Deprecated in favor of a small badge next to the greeting on Home.
 /// This full-screen overlay approach was removed because it could cover/shift UI.
-@Deprecated('Use the small greeting badge in Home instead of a full-screen overlay.')
+@Deprecated(
+    'Use the small greeting badge in Home instead of a full-screen overlay.')
 class TetDecorationLayerVer1Ne extends StatelessWidget {
   const TetDecorationLayerVer1Ne({
     super.key,
@@ -48,7 +49,8 @@ class TetDecorationLayerVer1Ne extends StatelessWidget {
     const gold = Color(0xFFFFD700);
 
     final reservedTop = reserveTopSpace ? (topInset + topSpaceHeight) : 0.0;
-    final reservedBottom = reserveBottomSpace ? (bottomInset + bottomSpaceHeight) : 0.0;
+    final reservedBottom =
+        reserveBottomSpace ? (bottomInset + bottomSpaceHeight) : 0.0;
 
     return Stack(
       children: [
@@ -99,7 +101,8 @@ class TetDecorationLayerVer1Ne extends StatelessWidget {
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   child: Row(
                     children: [
                       Container(

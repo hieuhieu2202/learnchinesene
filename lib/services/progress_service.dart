@@ -5,7 +5,7 @@ class ProgressService {
   final DbHelper _dbHelper;
 
   ProgressService({DbHelper? dbHelper})
-    : _dbHelper = dbHelper ?? DbHelper.instance;
+      : _dbHelper = dbHelper ?? DbHelper.instance;
 
   Future<void> submitAnswer({
     required int wordId,

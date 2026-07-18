@@ -11,7 +11,8 @@ class UserStatsRepositoryImpl implements UserStatsRepository {
   Future<UserStats> getUserStats() => localDataSource.getUserStats();
 
   @override
-  Future<void> updateUserStats(UserStats stats) => localDataSource.updateUserStats(stats);
+  Future<void> updateUserStats(UserStats stats) =>
+      localDataSource.updateUserStats(stats);
 
   @override
   Future<void> addExp(int exp) => localDataSource.addExp(exp);
@@ -23,9 +24,10 @@ class UserStatsRepositoryImpl implements UserStatsRepository {
   Future<void> resetStreakIfNeeded() => localDataSource.resetStreakIfNeeded();
 
   @override
-  Future<void> updateWordsMastered(int count) => localDataSource.updateWordsMastered(count);
+  Future<void> updateWordsMastered(int count) =>
+      localDataSource.updateWordsMastered(count);
 
   @override
-  Future<void> updateFavorites(int count) => localDataSource.updateFavorites(count);
+  Future<void> updateFavorites(int count) =>
+      localDataSource.updateFavorites(count);
 }
-

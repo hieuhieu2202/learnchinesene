@@ -70,8 +70,8 @@ class HskScreen extends StatelessWidget {
                       mainAxisExtent: 110,
                     ),
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => _LevelCard(
-                          level: levels[index], index: index),
+                      (context, index) =>
+                          _LevelCard(level: levels[index], index: index),
                       childCount: levels.length,
                     ),
                   ),
@@ -128,9 +128,7 @@ class _LevelCard extends StatelessWidget {
                         gradient: LinearGradient(
                           colors: [
                             AppColors.red,
-                            index.isEven
-                                ? AppColors.orange
-                                : AppColors.redDark,
+                            index.isEven ? AppColors.orange : AppColors.redDark,
                           ],
                         ),
                         borderRadius: BorderRadius.circular(17),

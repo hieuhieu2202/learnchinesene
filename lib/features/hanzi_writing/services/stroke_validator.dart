@@ -27,7 +27,7 @@ class StrokeValidator {
         errorMessage: 'Lỗi nét mẫu.',
       );
     }
-    
+
     final refMetric = refMetrics.first;
     final refLength = refMetric.length;
     final List<Offset> refPoints = [];
@@ -38,21 +38,24 @@ class StrokeValidator {
         refPoints.add(tangent.position);
       }
     }
-    
+
     if (refPoints.length < sampleCount) {
       while (refPoints.length < sampleCount) {
         refPoints.add(refPoints.isNotEmpty ? refPoints.last : Offset.zero);
       }
     }
 
-    final List<Offset> userResampled = StrokeSampler.resample(userPoints, sampleCount);
+    final List<Offset> userResampled =
+        StrokeSampler.resample(userPoints, sampleCount);
 
     final startToStart = (userResampled.first - refPoints.first).distance;
     final startToEnd = (userResampled.first - refPoints.last).distance;
     final endToStart = (userResampled.last - refPoints.first).distance;
     final endToEnd = (userResampled.last - refPoints.last).distance;
 
-    if (startToEnd < maxStartDistance && endToStart < maxEndDistance && startToStart > startToEnd) {
+    if (startToEnd < maxStartDistance &&
+        endToStart < maxEndDistance &&
+        startToStart > startToEnd) {
       return StrokeValidationResult(
         isValid: false,
         errorMessage: 'Sai chiều viết.',
@@ -90,7 +93,7 @@ class StrokeValidator {
     for (int i = 0; i < userPoints.length - 1; i++) {
       userLength += (userPoints[i + 1] - userPoints[i]).distance;
     }
-    
+
     final lengthRatioDiff = (userLength - refLength).abs() / refLength;
     if (lengthRatioDiff > maxLengthRatioDifference) {
       return StrokeValidationResult(

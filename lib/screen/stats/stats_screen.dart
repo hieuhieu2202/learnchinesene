@@ -26,9 +26,8 @@ class StatsScreen extends StatelessWidget {
         final s = controller.stats;
         final correct = s['correct'] ?? 0;
         final wrong = s['wrong'] ?? 0;
-        final accuracy = correct + wrong == 0
-            ? 0
-            : correct / (correct + wrong) * 100;
+        final accuracy =
+            correct + wrong == 0 ? 0 : correct / (correct + wrong) * 100;
         return Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -78,8 +77,7 @@ class StatsScreen extends StatelessWidget {
                 GridView(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate:
-                      const SliverGridDelegateWithMaxCrossAxisExtent(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                     maxCrossAxisExtent: 250,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
@@ -114,8 +112,7 @@ class StatsScreen extends StatelessWidget {
                 const SizedBox(height: 22),
                 const Text(
                   'Tiếp tục cố gắng',
-                  style:
-                      TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 8),
                 const Text(

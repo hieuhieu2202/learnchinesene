@@ -364,7 +364,8 @@ class PracticeSessionController extends GetxController {
 
   List<String> _splitSentence(String sentence) {
     // First, remove all punctuation and special characters.
-    final punctuation = RegExp(r'[，,。.?!？！；;："""()（）·…—《》〈〉、:_【】\[\]\-' + r"''" + r']');
+    final punctuation =
+        RegExp(r'[，,。.?!？！；;："""()（）·…—《》〈〉、:_【】\[\]\-' + r"''" + r']');
     final cleaned = sentence.replaceAll(punctuation, '');
 
     // Split into individual characters (each Chinese character becomes a segment)
@@ -422,7 +423,8 @@ class PracticeSessionController extends GetxController {
       return false;
     }
 
-    final target = (exercise as SentenceExercise).arrangeSegments ?? _splitSentence(exercise.correctAnswer);
+    final target = (exercise as SentenceExercise).arrangeSegments ??
+        _splitSentence(exercise.correctAnswer);
     final isCorrect = _stringListEquality.equals(orderedSegments, target);
     if (!isCorrect) {
       return false;
@@ -440,7 +442,8 @@ class PracticeSessionController extends GetxController {
   bool _isAnswerCorrect(Exercise exercise, String input) {
     if (exercise.type == ExerciseType.typeArrangeSentence) {
       final userAnswer = (exercise.userAnswer as List<String>).join('');
-      final correctAnswer = exercise.correctAnswer.replaceAll(RegExp(r'\s+'), '');
+      final correctAnswer =
+          exercise.correctAnswer.replaceAll(RegExp(r'\s+'), '');
       return userAnswer == correctAnswer;
     }
     final normalizedInput = _normalizeForComparison(
@@ -464,7 +467,8 @@ class PracticeSessionController extends GetxController {
         normalized = normalized.replaceAll(RegExp(r'\s+'), '');
         break;
       default:
-        final punctuation = RegExp(r'[，,。.?!？！；;："""()（）·…—《》〈〉、:_【】\[\]\-' + r"''" + r']');
+        final punctuation =
+            RegExp(r'[，,。.?!？！；;："""()（）·…—《》〈〉、:_【】\[\]\-' + r"''" + r']');
         normalized = normalized
             .replaceAll(punctuation, '')
             .replaceAll(RegExp(r'\s+'), '')
@@ -538,12 +542,13 @@ class PracticeSessionController extends GetxController {
       // 🔄 Gọi updateStreak() để cập nhật chuỗi ngày
       addExperienceUseCase(correctAnswers: 0, lessonCompleted: false).then((_) {
         print('✅ Streak đã cập nhật');
-        print('═══════════════════════════════���═══════���═══════════════════\n');
+        print(
+            '═══════════════════════════════���═══════���═══════════════════\n');
       }).catchError((e) {
         print('❌ Lỗi cập nhật Streak: $e');
-        print('════════════��═══════════════════════���══════════���═══════════\n');
+        print(
+            '════════════��═══════════════════════���══════════���═══════════\n');
       });
-
     } catch (e) {
       print('❌ Lỗi: $e');
     }

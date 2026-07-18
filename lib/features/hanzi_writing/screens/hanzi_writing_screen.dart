@@ -24,7 +24,8 @@ class HanziWritingScreen extends StatefulWidget {
   State<HanziWritingScreen> createState() => _HanziWritingScreenState();
 }
 
-class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTickerProviderStateMixin {
+class _HanziWritingScreenState extends State<HanziWritingScreen>
+    with SingleTickerProviderStateMixin {
   HanziCharacter? _character;
   List<Path> _strokePaths = [];
   bool _isLoading = true;
@@ -85,7 +86,8 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
       _errorMessage = null;
     });
     try {
-      final char = await DbHelper.instance.getCharacterForWritingById(widget.characterId);
+      final char = await DbHelper.instance
+          .getCharacterForWritingById(widget.characterId);
       if (char == null) {
         setState(() {
           _errorMessage = 'Không tìm thấy dữ liệu chữ Hán này.';
@@ -149,7 +151,8 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
       );
 
     _currentRoundStrokeScores.clear();
-    _userStrokeNotifier.value = const UserStroke(points: [], color: Colors.blue);
+    _userStrokeNotifier.value =
+        const UserStroke(points: [], color: Colors.blue);
     _totalAttempts = 0;
     _failedAttemptsThisStroke = 0;
     _animatingStrokeIndex = null;
@@ -235,7 +238,8 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
       Future.delayed(const Duration(milliseconds: 700), () {
         if (mounted && _failedAttemptsThisStroke > 0) {
           if (_userStrokeNotifier.value.color == AppColors.error) {
-            _userStrokeNotifier.value = const UserStroke(points: [], color: Colors.blue);
+            _userStrokeNotifier.value =
+                const UserStroke(points: [], color: Colors.blue);
           }
         }
       });
@@ -247,7 +251,8 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
       _completedStrokeIndexes.add(_currentStrokeIndex);
       _currentRoundStrokeScores.add(score);
 
-      _userStrokeNotifier.value = const UserStroke(points: [], color: Colors.blue);
+      _userStrokeNotifier.value =
+          const UserStroke(points: [], color: Colors.blue);
       _failedAttemptsThisStroke = 0;
 
       // Start snap animation on this stroke
@@ -272,7 +277,8 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
     final duration = DateTime.now().difference(_roundStartedAt!).inMilliseconds;
     final roundScore = _currentRoundStrokeScores.isEmpty
         ? 0.0
-        : _currentRoundStrokeScores.reduce((a, b) => a + b) / _currentRoundStrokeScores.length;
+        : _currentRoundStrokeScores.reduce((a, b) => a + b) /
+            _currentRoundStrokeScores.length;
 
     final drawnStrokes = _strokePaths.length - roundConfig.prefilledStrokeCount;
 
@@ -308,9 +314,14 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
   Future<void> _saveProgress() async {
     try {
       final db = DbHelper.instance;
-      final totalScore = _completedRoundResults.map((r) => r.score).fold(0.0, (a, b) => a + b);
-      final avgScore = _completedRoundResults.isEmpty ? 0.0 : totalScore / _completedRoundResults.length;
-      final totalAttemptsSum = _completedRoundResults.map((r) => r.attemptCount).fold(0, (a, b) => a + b);
+      final totalScore =
+          _completedRoundResults.map((r) => r.score).fold(0.0, (a, b) => a + b);
+      final avgScore = _completedRoundResults.isEmpty
+          ? 0.0
+          : totalScore / _completedRoundResults.length;
+      final totalAttemptsSum = _completedRoundResults
+          .map((r) => r.attemptCount)
+          .fold(0, (a, b) => a + b);
 
       await db.saveHanziWritingProgress(
         characterId: widget.characterId,
@@ -332,7 +343,8 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
     final db = DbHelper.instance;
     final allChars = await db.getCharactersForWriting();
     if (allChars.isNotEmpty) {
-      final currentIndex = allChars.indexWhere((c) => c.id == widget.characterId);
+      final currentIndex =
+          allChars.indexWhere((c) => c.id == widget.characterId);
       if (currentIndex != -1 && currentIndex < allChars.length - 1) {
         final nextChar = allChars[currentIndex + 1];
         if (mounted) {
@@ -468,11 +480,13 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
     );
   }
 
-  Widget _buildRoundCompleteOverlay(BoxConstraints constraints, HanziPracticeRoundConfig currentConfig) {
+  Widget _buildRoundCompleteOverlay(
+      BoxConstraints constraints, HanziPracticeRoundConfig currentConfig) {
     final roundNumber = currentConfig.roundNumber;
     final roundScore = _currentRoundStrokeScores.isEmpty
         ? 0.0
-        : _currentRoundStrokeScores.reduce((a, b) => a + b) / _currentRoundStrokeScores.length;
+        : _currentRoundStrokeScores.reduce((a, b) => a + b) /
+            _currentRoundStrokeScores.length;
 
     return Positioned.fill(
       child: GestureDetector(
@@ -583,20 +597,32 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
   }
 
   Widget _buildSessionSummary() {
-    final totalScore = _completedRoundResults.map((r) => r.score).fold(0.0, (a, b) => a + b);
-    final avgScore = _completedRoundResults.isEmpty ? 0.0 : totalScore / _completedRoundResults.length;
+    final totalScore =
+        _completedRoundResults.map((r) => r.score).fold(0.0, (a, b) => a + b);
+    final avgScore = _completedRoundResults.isEmpty
+        ? 0.0
+        : totalScore / _completedRoundResults.length;
 
-    final lastThree = _completedRoundResults.sublist(math.max(0, _completedRoundResults.length - 3));
+    final lastThree = _completedRoundResults
+        .sublist(math.max(0, _completedRoundResults.length - 3));
     final avgLastThree = lastThree.isEmpty
         ? 0.0
-        : lastThree.map((r) => r.score).fold(0.0, (a, b) => a + b) / lastThree.length;
+        : lastThree.map((r) => r.score).fold(0.0, (a, b) => a + b) /
+            lastThree.length;
 
-    final totalDrawn = _completedRoundResults.map((r) => r.drawnStrokeCount).fold(0, (a, b) => a + b);
-    final totalAttemptsSum = _completedRoundResults.map((r) => r.attemptCount).fold(0, (a, b) => a + b);
-    final strokeAccuracy = totalAttemptsSum > 0 ? (totalDrawn / totalAttemptsSum) * 100 : 0.0;
+    final totalDrawn = _completedRoundResults
+        .map((r) => r.drawnStrokeCount)
+        .fold(0, (a, b) => a + b);
+    final totalAttemptsSum = _completedRoundResults
+        .map((r) => r.attemptCount)
+        .fold(0, (a, b) => a + b);
+    final strokeAccuracy =
+        totalAttemptsSum > 0 ? (totalDrawn / totalAttemptsSum) * 100 : 0.0;
     final totalWrong = totalAttemptsSum - totalDrawn;
 
-    final totalDurationMs = _completedRoundResults.map((r) => r.durationMilliseconds).fold(0, (a, b) => a + b);
+    final totalDurationMs = _completedRoundResults
+        .map((r) => r.durationMilliseconds)
+        .fold(0, (a, b) => a + b);
     final totalDurationSec = totalDurationMs ~/ 1000;
     final durationText = totalDurationSec >= 60
         ? '${totalDurationSec ~/ 60} phút ${totalDurationSec % 60} giây'
@@ -606,7 +632,9 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
         ? 0.0
         : _completedRoundResults.map((r) => r.score).reduce(math.max);
 
-    final lastRoundScore = _completedRoundResults.isEmpty ? 0.0 : _completedRoundResults.last.score;
+    final lastRoundScore = _completedRoundResults.isEmpty
+        ? 0.0
+        : _completedRoundResults.last.score;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
@@ -637,204 +665,302 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
                 return SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    constraints:
+                        BoxConstraints(minHeight: constraints.maxHeight),
                     child: Center(
                       child: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: ResponsiveHelper.contentMaxWidth(context)),
+                        constraints: BoxConstraints(
+                            maxWidth:
+                                ResponsiveHelper.contentMaxWidth(context)),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0, vertical: 16.0),
                           child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Header Row
-                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              TweenAnimationBuilder<double>(
-                                duration: const Duration(milliseconds: 600),
-                                tween: Tween(begin: 0.0, end: 1.0),
-                                curve: Curves.elasticOut,
-                                builder: (context, scale, child) {
-                                  return Transform.scale(
-                                    scale: scale,
-                                    child: Container(
-                                      width: 52,
-                                      height: 52,
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [AppColors.orange, AppColors.orange.withOpacity(0.7)],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppColors.orange.withOpacity(0.3),
-                                            blurRadius: 12,
-                                            offset: const Offset(0, 6),
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Icon(Icons.emoji_events_rounded, color: Colors.white, size: 28),
-                                    ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 16),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              // Header Row
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text(
-                                    'Tuyệt vời!',
-                                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.black87),
+                                  TweenAnimationBuilder<double>(
+                                    duration: const Duration(milliseconds: 600),
+                                    tween: Tween(begin: 0.0, end: 1.0),
+                                    curve: Curves.elasticOut,
+                                    builder: (context, scale, child) {
+                                      return Transform.scale(
+                                        scale: scale,
+                                        child: Container(
+                                          width: 52,
+                                          height: 52,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                AppColors.orange,
+                                                AppColors.orange
+                                                    .withOpacity(0.7)
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: AppColors.orange
+                                                    .withOpacity(0.3),
+                                                blurRadius: 12,
+                                                offset: const Offset(0, 6),
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Icon(
+                                              Icons.emoji_events_rounded,
+                                              color: Colors.white,
+                                              size: 28),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                  Text(
-                                    'Hoàn thành chữ "${_character?.character ?? ""}"',
-                                    style: const TextStyle(fontSize: 14, color: Colors.black54, fontWeight: FontWeight.w500),
+                                  const SizedBox(width: 16),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Tuyệt vời!',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.black87),
+                                      ),
+                                      Text(
+                                        'Hoàn thành chữ "${_character?.character ?? ""}"',
+                                        style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Main Score & Accuracy Card
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 24, horizontal: 20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 8)),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    // Left: Score
+                                    Column(
+                                      children: [
+                                        const Text('ĐIỂM TRUNG BÌNH',
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w800,
+                                                color: Colors.black45)),
+                                        TweenAnimationBuilder<double>(
+                                          duration: const Duration(
+                                              milliseconds: 1200),
+                                          tween:
+                                              Tween(begin: 0.0, end: avgScore),
+                                          curve: Curves.easeOutCubic,
+                                          builder: (context, value, child) {
+                                            return Text(
+                                              value.toStringAsFixed(0),
+                                              style: const TextStyle(
+                                                  fontSize: 48,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: AppColors.orange,
+                                                  height: 1.2),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                        width: 1,
+                                        height: 60,
+                                        color: Colors.grey[200]),
+                                    // Right: Accuracy
+                                    Column(
+                                      children: [
+                                        const Text('CHÍNH XÁC',
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w800,
+                                                color: Colors.black45)),
+                                        Text(
+                                          '${strokeAccuracy.toStringAsFixed(0)}%',
+                                          style: const TextStyle(
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.green,
+                                              height: 1.5),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Stats Grid (2x2 highly compact)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 20, horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black.withOpacity(0.03),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4)),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                            child: _buildCompactStat(
+                                                Icons.trending_up_rounded,
+                                                '3 lượt cuối',
+                                                avgLastThree.toStringAsFixed(0),
+                                                Colors.blue)),
+                                        Container(
+                                            width: 1,
+                                            height: 40,
+                                            color: Colors.grey[100]),
+                                        Expanded(
+                                            child: _buildCompactStat(
+                                                Icons.star_rounded,
+                                                'Cao nhất',
+                                                maxScore.toStringAsFixed(0),
+                                                Colors.orange)),
+                                      ],
+                                    ),
+                                    const Divider(
+                                        height: 32,
+                                        thickness: 1,
+                                        color: Color(0xFFF5F5F5)),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                            child: _buildCompactStat(
+                                                Icons.timer_rounded,
+                                                'Thời gian',
+                                                durationText,
+                                                Colors.purple)),
+                                        Container(
+                                            width: 1,
+                                            height: 40,
+                                            color: Colors.grey[100]),
+                                        Expanded(
+                                            child: _buildCompactStat(
+                                                Icons.error_outline_rounded,
+                                                'Viết sai',
+                                                '$totalWrong lần',
+                                                Colors.red)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+
+                              // Action Buttons
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton(
+                                  onPressed: _goToNextCharacter,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.orange,
+                                    foregroundColor: Colors.white,
+                                    elevation: 4,
+                                    shadowColor:
+                                        AppColors.orange.withOpacity(0.4),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16)),
+                                  ),
+                                  child: const Text('Học chữ tiếp theo',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: 48,
+                                      child: OutlinedButton(
+                                        onPressed: _resetWholeSession,
+                                        style: OutlinedButton.styleFrom(
+                                          side: BorderSide(
+                                              color: Colors.grey[300]!,
+                                              width: 1.5),
+                                          foregroundColor: Colors.black87,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16)),
+                                        ),
+                                        child: const Text('Luyện lại',
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: SizedBox(
+                                      height: 48,
+                                      child: OutlinedButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        style: OutlinedButton.styleFrom(
+                                          side: BorderSide(
+                                              color: Colors.grey[300]!,
+                                              width: 1.5),
+                                          foregroundColor: Colors.black87,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16)),
+                                        ),
+                                        child: const Text('Danh sách',
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold)),
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                          const SizedBox(height: 24),
-
-                          // Main Score & Accuracy Card
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8)),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                // Left: Score
-                                Column(
-                                  children: [
-                                    const Text('ĐIỂM TRUNG BÌNH', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.black45)),
-                                    TweenAnimationBuilder<double>(
-                                      duration: const Duration(milliseconds: 1200),
-                                      tween: Tween(begin: 0.0, end: avgScore),
-                                      curve: Curves.easeOutCubic,
-                                      builder: (context, value, child) {
-                                        return Text(
-                                          value.toStringAsFixed(0),
-                                          style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: AppColors.orange, height: 1.2),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                Container(width: 1, height: 60, color: Colors.grey[200]),
-                                // Right: Accuracy
-                                Column(
-                                  children: [
-                                    const Text('CHÍNH XÁC', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.black45)),
-                                    Text(
-                                      '${strokeAccuracy.toStringAsFixed(0)}%',
-                                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.green, height: 1.5),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Stats Grid (2x2 highly compact)
-                          Container(
-                            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(child: _buildCompactStat(Icons.trending_up_rounded, '3 lượt cuối', avgLastThree.toStringAsFixed(0), Colors.blue)),
-                                    Container(width: 1, height: 40, color: Colors.grey[100]),
-                                    Expanded(child: _buildCompactStat(Icons.star_rounded, 'Cao nhất', maxScore.toStringAsFixed(0), Colors.orange)),
-                                  ],
-                                ),
-                                const Divider(height: 32, thickness: 1, color: Color(0xFFF5F5F5)),
-                                Row(
-                                  children: [
-                                    Expanded(child: _buildCompactStat(Icons.timer_rounded, 'Thời gian', durationText, Colors.purple)),
-                                    Container(width: 1, height: 40, color: Colors.grey[100]),
-                                    Expanded(child: _buildCompactStat(Icons.error_outline_rounded, 'Viết sai', '$totalWrong lần', Colors.red)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 32),
-
-                          // Action Buttons
-                          SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: _goToNextCharacter,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.orange,
-                                foregroundColor: Colors.white,
-                                elevation: 4,
-                                shadowColor: AppColors.orange.withOpacity(0.4),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              ),
-                              child: const Text('Học chữ tiếp theo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: SizedBox(
-                                  height: 48,
-                                  child: OutlinedButton(
-                                    onPressed: _resetWholeSession,
-                                    style: OutlinedButton.styleFrom(
-                                      side: BorderSide(color: Colors.grey[300]!, width: 1.5),
-                                      foregroundColor: Colors.black87,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    ),
-                                    child: const Text('Luyện lại', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: SizedBox(
-                                  height: 48,
-                                  child: OutlinedButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    style: OutlinedButton.styleFrom(
-                                      side: BorderSide(color: Colors.grey[300]!, width: 1.5),
-                                      foregroundColor: Colors.black87,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    ),
-                                    child: const Text('Danh sách', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            );
-            },
+                );
+              },
             ),
           ),
         ],
@@ -842,22 +968,32 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
     );
   }
 
-  Widget _buildCompactStat(IconData icon, String title, String value, Color color) {
+  Widget _buildCompactStat(
+      IconData icon, String title, String value, Color color) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+          decoration: BoxDecoration(
+              color: color.withOpacity(0.1), shape: BoxShape.circle),
           child: Icon(icon, color: color, size: 18),
         ),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black45)),
+            Text(title,
+                style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black45)),
             const SizedBox(height: 2),
-            Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.black87)),
+            Text(value,
+                style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black87)),
           ],
         ),
       ],
@@ -870,13 +1006,16 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
       return _buildSessionSummary();
     }
 
-    final currentConfig = (_isLoading || _errorMessage != null || _roundConfigs.isEmpty)
-        ? null
-        : _roundConfigs[_currentRoundIndex];
+    final currentConfig =
+        (_isLoading || _errorMessage != null || _roundConfigs.isEmpty)
+            ? null
+            : _roundConfigs[_currentRoundIndex];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_character != null ? 'Viết chữ: ${_character!.character}' : 'Viết chữ Hán'),
+        title: Text(_character != null
+            ? 'Viết chữ: ${_character!.character}'
+            : 'Viết chữ Hán'),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -887,12 +1026,14 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline_rounded, size: 64, color: AppColors.error),
+                        const Icon(Icons.error_outline_rounded,
+                            size: 64, color: AppColors.error),
                         const SizedBox(height: 16),
                         Text(
                           _errorMessage!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton(
@@ -911,67 +1052,72 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
                         color: Colors.white,
                         child: Center(
                           child: ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: ResponsiveHelper.contentMaxWidth(context)),
+                            constraints: BoxConstraints(
+                                maxWidth:
+                                    ResponsiveHelper.contentMaxWidth(context)),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 16),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                            // Left Column (Pinyin, Vietnamese meaning)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _character!.pinyin ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.orange,
+                                  // Left Column (Pinyin, Vietnamese meaning)
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _character!.pinyin ?? '',
+                                        style: const TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.orange,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _character!.meaning ?? '',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          color: AppColors.muted,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _character!.meaning ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    color: AppColors.muted,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            // Right Column (Round/Stroke stats)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Lượt ${_currentRoundIndex + 1}/10',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.orange,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Nét ${math.min(_currentStrokeIndex + 1, _strokePaths.length)}/${_strokePaths.length}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
+                                  // Right Column (Round/Stroke stats)
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Lượt ${_currentRoundIndex + 1}/10',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.orange,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Nét ${math.min(_currentStrokeIndex + 1, _strokePaths.length)}/${_strokePaths.length}',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
                       const SizedBox(height: 14),
 
                       // Progress dots
@@ -982,7 +1128,8 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
                       Text(
                         _buildRoundInstruction(
                           mode: currentConfig!.mode,
-                          prefilledStrokeCount: currentConfig.prefilledStrokeCount,
+                          prefilledStrokeCount:
+                              currentConfig.prefilledStrokeCount,
                         ),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
@@ -1000,8 +1147,10 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
                         alignment: Alignment.center,
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 220),
-                          transitionBuilder: (Widget child, Animation<double> animation) {
-                            return FadeTransition(opacity: animation, child: child);
+                          transitionBuilder:
+                              (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                                opacity: animation, child: child);
                           },
                           child: _statusMessage.isEmpty
                               ? const SizedBox.shrink()
@@ -1032,89 +1181,115 @@ class _HanziWritingScreenState extends State<HanziWritingScreen> with SingleTick
                                 maxWidth: 390,
                                 maxHeight: 390,
                               ),
-                            child: AspectRatio(
-                              aspectRatio: 1.0,
-                              child: Container(
-                                clipBehavior: Clip.hardEdge,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(
-                                    color: Colors.grey[200]!,
-                                    width: 1.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 8),
+                              child: AspectRatio(
+                                aspectRatio: 1.0,
+                                child: Container(
+                                  clipBehavior: Clip.hardEdge,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                      color: Colors.grey[200]!,
+                                      width: 1.5,
                                     ),
-                                  ],
-                                ),
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    return GestureDetector(
-                                      onPanStart: (details) => _handlePanStart(details, constraints),
-                                      onPanUpdate: (details) => _handlePanUpdate(details, constraints),
-                                      onPanEnd: (details) => _handlePanEnd(details, constraints),
-                                      child: Stack(
-                                        children: [
-                                          // 1. Static grid guideline
-                                          RepaintBoundary(
-                                            child: CustomPaint(
-                                              size: Size(constraints.maxWidth, constraints.maxHeight),
-                                              painter: HanziGridPainter(),
-                                            ),
-                                          ),
-                                          // 2. Character SVG template and snap animations
-                                          RepaintBoundary(
-                                            child: CustomPaint(
-                                              size: Size(constraints.maxWidth, constraints.maxHeight),
-                                              painter: HanziWritingPainter(
-                                                strokePaths: _strokePaths,
-                                                completedIndexes: Set.from(_completedStrokeIndexes),
-                                                currentIndex: _currentStrokeIndex,
-                                                viewBoxWidth: _character!.viewBoxWidth,
-                                                viewBoxHeight: _character!.viewBoxHeight,
-                                                guideOpacity: currentConfig.guideOpacity,
-                                                showCurrentStroke: currentConfig.showCurrentStroke,
-                                                showStartPoint: currentConfig.showStartPoint,
-                                                showDirectionArrow: currentConfig.showDirectionArrow,
-                                                animatingStrokeIndex: _animatingStrokeIndex,
-                                                snapAnimationValue: _snapAnimationController.value,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      return GestureDetector(
+                                        onPanStart: (details) =>
+                                            _handlePanStart(
+                                                details, constraints),
+                                        onPanUpdate: (details) =>
+                                            _handlePanUpdate(
+                                                details, constraints),
+                                        onPanEnd: (details) =>
+                                            _handlePanEnd(details, constraints),
+                                        child: Stack(
+                                          children: [
+                                            // 1. Static grid guideline
+                                            RepaintBoundary(
+                                              child: CustomPaint(
+                                                size: Size(constraints.maxWidth,
+                                                    constraints.maxHeight),
+                                                painter: HanziGridPainter(),
                                               ),
                                             ),
-                                          ),
-                                          // 3. User active hand drawing points (optimised repaint using ValueListenableBuilder)
-                                          RepaintBoundary(
-                                            child: ValueListenableBuilder<UserStroke>(
-                                              valueListenable: _userStrokeNotifier,
-                                              builder: (context, stroke, child) {
-                                                return CustomPaint(
-                                                  size: Size(constraints.maxWidth, constraints.maxHeight),
-                                                  painter: UserStrokePainter(
-                                                    points: stroke.points,
-                                                    strokeColor: stroke.color,
-                                                  ),
-                                                );
-                                              },
+                                            // 2. Character SVG template and snap animations
+                                            RepaintBoundary(
+                                              child: CustomPaint(
+                                                size: Size(constraints.maxWidth,
+                                                    constraints.maxHeight),
+                                                painter: HanziWritingPainter(
+                                                  strokePaths: _strokePaths,
+                                                  completedIndexes: Set.from(
+                                                      _completedStrokeIndexes),
+                                                  currentIndex:
+                                                      _currentStrokeIndex,
+                                                  viewBoxWidth:
+                                                      _character!.viewBoxWidth,
+                                                  viewBoxHeight:
+                                                      _character!.viewBoxHeight,
+                                                  guideOpacity: currentConfig
+                                                      .guideOpacity,
+                                                  showCurrentStroke:
+                                                      currentConfig
+                                                          .showCurrentStroke,
+                                                  showStartPoint: currentConfig
+                                                      .showStartPoint,
+                                                  showDirectionArrow:
+                                                      currentConfig
+                                                          .showDirectionArrow,
+                                                  animatingStrokeIndex:
+                                                      _animatingStrokeIndex,
+                                                  snapAnimationValue:
+                                                      _snapAnimationController
+                                                          .value,
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                          // 4. Round Complete Overlay Card
-                                          if (_isRoundCompleted)
-                                            _buildRoundCompleteOverlay(constraints, currentConfig),
-                                        ],
-                                      ),
-                                    );
-                                  },
+                                            // 3. User active hand drawing points (optimised repaint using ValueListenableBuilder)
+                                            RepaintBoundary(
+                                              child: ValueListenableBuilder<
+                                                  UserStroke>(
+                                                valueListenable:
+                                                    _userStrokeNotifier,
+                                                builder:
+                                                    (context, stroke, child) {
+                                                  return CustomPaint(
+                                                    size: Size(
+                                                        constraints.maxWidth,
+                                                        constraints.maxHeight),
+                                                    painter: UserStrokePainter(
+                                                      points: stroke.points,
+                                                      strokeColor: stroke.color,
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            // 4. Round Complete Overlay Card
+                                            if (_isRoundCompleted)
+                                              _buildRoundCompleteOverlay(
+                                                  constraints, currentConfig),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),

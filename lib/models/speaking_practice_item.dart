@@ -19,9 +19,15 @@ class SpeakingPracticeItem {
     return SpeakingPracticeItem(
       wordId: map['word_id'] as int?,
       exampleId: map['example_id'] as int?,
-      targetText: (map['target_text'] ?? map['chinese'] ?? map['word'] ?? map['sentence_cn'] ?? '').toString(),
+      targetText: (map['target_text'] ??
+              map['chinese'] ??
+              map['word'] ??
+              map['sentence_cn'] ??
+              '')
+          .toString(),
       pinyin: (map['pinyin'] ?? map['sentence_pinyin'] ?? '').toString(),
-      meaning: (map['meaning_vi'] ?? map['meaning'] ?? map['sentence_vi'] ?? '').toString(),
+      meaning: (map['meaning_vi'] ?? map['meaning'] ?? map['sentence_vi'] ?? '')
+          .toString(),
       audioUrl: map['tts_url']?.toString(),
     );
   }

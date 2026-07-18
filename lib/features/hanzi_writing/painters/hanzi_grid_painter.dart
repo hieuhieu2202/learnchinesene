@@ -25,7 +25,7 @@ class HanziGridPainter extends CustomPainter {
       while (currentDistance < distance) {
         final double ratioStart = currentDistance / distance;
         final double ratioEnd = (currentDistance + dashWidth) / distance;
-        
+
         final start = Offset(
           p1.dx + (p2.dx - p1.dx) * ratioStart,
           p1.dy + (p2.dy - p1.dy) * ratioStart,
@@ -34,16 +34,18 @@ class HanziGridPainter extends CustomPainter {
           p1.dx + (p2.dx - p1.dx) * (ratioEnd > 1.0 ? 1.0 : ratioEnd),
           p1.dy + (p2.dy - p1.dy) * (ratioEnd > 1.0 ? 1.0 : ratioEnd),
         );
-        
+
         canvas.drawLine(start, end, dashPaint);
         currentDistance += dashWidth + spaceWidth;
       }
     }
 
     // Horizontal line
-    drawDottedLine(Offset(0, size.height / 2), Offset(size.width, size.height / 2));
+    drawDottedLine(
+        Offset(0, size.height / 2), Offset(size.width, size.height / 2));
     // Vertical line
-    drawDottedLine(Offset(size.width / 2, 0), Offset(size.width / 2, size.height));
+    drawDottedLine(
+        Offset(size.width / 2, 0), Offset(size.width / 2, size.height));
     // Diagonals
     drawDottedLine(Offset.zero, Offset(size.width, size.height));
     drawDottedLine(Offset(size.width, 0), Offset(0, size.height));

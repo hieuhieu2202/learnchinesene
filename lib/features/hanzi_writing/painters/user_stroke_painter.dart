@@ -33,6 +33,7 @@ class UserStrokePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant UserStrokePainter oldDelegate) {
     // Re-draw only if points or color change
-    return oldDelegate.points != points || oldDelegate.strokeColor != strokeColor;
+    return oldDelegate.points != points ||
+        oldDelegate.strokeColor != strokeColor;
   }
 }

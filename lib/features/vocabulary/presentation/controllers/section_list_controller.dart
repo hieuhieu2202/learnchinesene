@@ -77,8 +77,10 @@ class SectionListController extends GetxController {
   final selectedLevel = 1.obs;
   final isLoading = false.obs;
 
-  int get totalWords => sections.fold<int>(0, (sum, item) => sum + item.totalWords);
-  int get masteredWords => sections.fold<int>(0, (sum, item) => sum + item.masteredWords);
+  int get totalWords =>
+      sections.fold<int>(0, (sum, item) => sum + item.totalWords);
+  int get masteredWords =>
+      sections.fold<int>(0, (sum, item) => sum + item.masteredWords);
 
   // Progress for the selected HSK level is the weighted average of
   // each section's progress (weight = number of words in the section).
@@ -87,7 +89,8 @@ class SectionListController extends GetxController {
     if (secs.isEmpty) return 0.0;
     final total = secs.fold<int>(0, (s, item) => s + item.totalWords);
     if (total == 0) return 0.0;
-    final weighted = secs.fold<double>(0.0, (s, item) => s + (item.progress * item.totalWords));
+    final weighted = secs.fold<double>(
+        0.0, (s, item) => s + (item.progress * item.totalWords));
     return (weighted / total).clamp(0.0, 1.0);
   }
 
@@ -127,8 +130,10 @@ class SectionListController extends GetxController {
 
   // Build section progress by aggregating per-word progress values.
   // Per-word progress is computed as min(1.0, correctCount * 0.1).
-  Future<SectionProgress> _buildProgress(int sectionId, List<Word> words) async {
-    final rawTitle = words.isNotEmpty ? words.first.sectionTitle : 'Section $sectionId';
+  Future<SectionProgress> _buildProgress(
+      int sectionId, List<Word> words) async {
+    final rawTitle =
+        words.isNotEmpty ? words.first.sectionTitle : 'Section $sectionId';
     final topicTitle = words.isNotEmpty && words.first.groupSubtitle.isNotEmpty
         ? words.first.groupSubtitle
         : rawTitle;
@@ -205,7 +210,8 @@ class SectionListController extends GetxController {
 }
 
 int? _extractNumber(String source, String label) {
-  final match = RegExp('$label\\s*(\\d+)', caseSensitive: false).firstMatch(source);
+  final match =
+      RegExp('$label\\s*(\\d+)', caseSensitive: false).firstMatch(source);
   if (match == null) {
     return null;
   }

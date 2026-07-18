@@ -111,7 +111,8 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _buildFilterChip(null, 'Tất cả'),
-                ...List.generate(6, (i) => _buildFilterChip(i + 1, 'HSK ${i + 1}')),
+                ...List.generate(
+                    6, (i) => _buildFilterChip(i + 1, 'HSK ${i + 1}')),
               ],
             ),
           ),
@@ -128,7 +129,8 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         itemCount: _characters.length,
                         itemBuilder: (context, index) {
                           final char = _characters[index];
@@ -139,7 +141,8 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFFF0E7E5)),
+                              border:
+                                  Border.all(color: const Color(0xFFF0E7E5)),
                               boxShadow: const [
                                 BoxShadow(
                                   color: Color(0x05461419),
@@ -153,7 +156,8 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
                               clipBehavior: Clip.antiAlias,
                               borderRadius: BorderRadius.circular(20),
                               child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 8),
                                 leading: Container(
                                   width: 50,
                                   height: 50,
@@ -173,13 +177,14 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
                                 ),
                                 title: Row(
                                   children: [
-
                                     if (char.hskLevel != null)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: AppColors.red.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
                                         ),
                                         child: Text(
                                           'HSK ${char.hskLevel}',
@@ -196,7 +201,8 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
                                     char.meaning ?? '',
-                                    style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                                    style: const TextStyle(
+                                        color: AppColors.muted, fontSize: 13),
                                   ),
                                 ),
                                 trailing: Column(
@@ -205,13 +211,18 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
                                   children: [
                                     Text(
                                       '${char.strokeCount} nét',
-                                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13),
                                     ),
                                     const SizedBox(height: 4),
                                     if (!hasStrokeData)
                                       const Text(
                                         'Chưa có nét',
-                                        style: TextStyle(color: AppColors.error, fontSize: 11, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                            color: AppColors.error,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                   ],
                                 ),
@@ -219,7 +230,8 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
                                   if (!hasStrokeData) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Chữ này chưa có dữ liệu luyện viết.'),
+                                        content: Text(
+                                            'Chữ này chưa có dữ liệu luyện viết.'),
                                         backgroundColor: AppColors.error,
                                       ),
                                     );
@@ -228,7 +240,8 @@ class _HanziWritingHomeScreenState extends State<HanziWritingHomeScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => HanziWritingScreen(characterId: char.id),
+                                      builder: (_) => HanziWritingScreen(
+                                          characterId: char.id),
                                     ),
                                   );
                                 },

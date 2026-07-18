@@ -47,7 +47,8 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    accent = HskPalette.accentForLevel(widget.accentLevel, Theme.of(context).colorScheme);
+    accent = HskPalette.accentForLevel(
+        widget.accentLevel, Theme.of(context).colorScheme);
   }
 
   @override
@@ -216,7 +217,24 @@ class _PracticeQuestionCardState extends State<PracticeQuestionCard> {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: _TypingContent(
-            exercise: exercise is SentenceExercise ? exercise : (exercise is MissingWordExercise ? SentenceExercise(type: exercise.type, sentence: exercise.sentence, correctAnswer: exercise.correctAnswer) : SentenceExercise(type: exercise.type, sentence: PracticeSentence(id: '', baseExampleId: null, mainWordId: 0, chinese: '', pinyin: '', vietnamese: '', isFromAI: false), correctAnswer: '')),
+            exercise: exercise is SentenceExercise
+                ? exercise
+                : (exercise is MissingWordExercise
+                    ? SentenceExercise(
+                        type: exercise.type,
+                        sentence: exercise.sentence,
+                        correctAnswer: exercise.correctAnswer)
+                    : SentenceExercise(
+                        type: exercise.type,
+                        sentence: PracticeSentence(
+                            id: '',
+                            baseExampleId: null,
+                            mainWordId: 0,
+                            chinese: '',
+                            pinyin: '',
+                            vietnamese: '',
+                            isFromAI: false),
+                        correctAnswer: '')),
             word: widget.word,
             index: widget.index,
             total: widget.total,
@@ -287,14 +305,16 @@ class _TypingContent extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
                   color: accent.withAlpha(38),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
                   title,
-                  style: theme.textTheme.labelLarge?.copyWith(color: accent, fontWeight: FontWeight.w700),
+                  style: theme.textTheme.labelLarge
+                      ?.copyWith(color: accent, fontWeight: FontWeight.w700),
                 ),
               ),
               const SizedBox(width: 12),
@@ -307,7 +327,8 @@ class _TypingContent extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             prompt,
-            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
 
           // Show correct answer when user taps “Xem đáp án”
@@ -350,7 +371,8 @@ class _TypingContent extends StatelessWidget {
               autofocus: true,
               decoration: InputDecoration(
                 labelText: inputLabel,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                 errorText: errorMessage,
               ),
             ),
@@ -454,7 +476,8 @@ class _TypingContent extends StatelessWidget {
   List<String> _buildExtraHints(SentenceExercise exercise) {
     final hints = <String>[];
     final vietnameseHint = exercise.sentence.vietnamese;
-    if (exercise.type != ExerciseType.typeFromVietnamese && vietnameseHint.isNotEmpty) {
+    if (exercise.type != ExerciseType.typeFromVietnamese &&
+        vietnameseHint.isNotEmpty) {
       hints.add('Nghĩa: $vietnameseHint');
     }
     return hints;
@@ -545,7 +568,8 @@ class _SelectedSegmentsArea extends StatelessWidget {
                       (segment) => GestureDetector(
                         onTap: () => onSegmentSelected(segment),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
                             color: accent.withAlpha(51),
                             borderRadius: BorderRadius.circular(12),
@@ -594,19 +618,24 @@ class _ArrangeSentenceWidget extends StatelessWidget {
               (segment) => GestureDetector(
                 onTap: () => onSegmentSelected(segment),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: accent.withAlpha(38),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: selectedSegments.contains(segment) ? accent : theme.colorScheme.onSurfaceVariant,
+                      color: selectedSegments.contains(segment)
+                          ? accent
+                          : theme.colorScheme.onSurfaceVariant,
                       width: 2,
                     ),
                   ),
                   child: Text(
                     segment,
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color: selectedSegments.contains(segment) ? accent : theme.colorScheme.onSurfaceVariant,
+                      color: selectedSegments.contains(segment)
+                          ? accent
+                          : theme.colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

@@ -98,7 +98,8 @@ class _DashboardTab extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      _SimpleLevelList(isLoading: isLoading, overview: overview),
+                      _SimpleLevelList(
+                          isLoading: isLoading, overview: overview),
                     ],
                   ),
                 ),
@@ -257,7 +258,8 @@ class _AiHubTab extends StatelessWidget {
               _AiSectionItem(
                 icon: Icons.smart_toy_outlined,
                 title: 'AI trợ giảng',
-                subtitle: 'Đặt câu hỏi, xin ví dụ và nhận phản hồi ngay lập tức.',
+                subtitle:
+                    'Đặt câu hỏi, xin ví dụ và nhận phản hồi ngay lập tức.',
                 onTap: () => navigateAfterFrame(
                   () => Get.toNamed(AppRoutes.aiChat),
                 ),
@@ -285,9 +287,8 @@ class _AiHubTab extends StatelessWidget {
                     AppRoutes.aiChat,
                     arguments: {
                       'prompt':
-                        'Hãy tạo các câu ví dụ mới dễ gõ có chứa từ vựng tôi đang học. Ưu tiên câu ngắn gọn để luyện gõ nhanh.',
-                      'displayText':
-                          'Gợi ý giúp mình thêm câu luyện tập nhé!',
+                          'Hãy tạo các câu ví dụ mới dễ gõ có chứa từ vựng tôi đang học. Ưu tiên câu ngắn gọn để luyện gõ nhanh.',
+                      'displayText': 'Gợi ý giúp mình thêm câu luyện tập nhé!',
                     },
                   ),
                 ),
@@ -632,11 +633,11 @@ class _SimpleLevelList extends StatelessWidget {
         ? List.generate(
             4,
             (index) => HskLevelOverview(
-                  level: index + 1,
-                  sectionCount: 0,
-                  totalWords: 0,
-                  masteredWords: 0,
-                ),
+              level: index + 1,
+              sectionCount: 0,
+              totalWords: 0,
+              masteredWords: 0,
+            ),
           )
         : overview;
 
@@ -647,8 +648,7 @@ class _SimpleLevelList extends StatelessWidget {
             : MediaQuery.of(context).size.width - 48;
         final columns = _preferredLevelColumns(maxWidth);
         final spacing = 16.0;
-        final itemWidth =
-            (maxWidth - spacing * (columns - 1)) / columns;
+        final itemWidth = (maxWidth - spacing * (columns - 1)) / columns;
 
         return Wrap(
           spacing: spacing,
@@ -780,7 +780,6 @@ class _SimpleLevelCard extends StatelessWidget {
   }
 }
 
-
 class _NavigationCard extends StatelessWidget {
   const _NavigationCard({
     required this.icon,
@@ -904,7 +903,8 @@ class _NavigationGroup extends StatelessWidget {
       children: [
         Text(
           title,
-          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          style:
+              theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Text(

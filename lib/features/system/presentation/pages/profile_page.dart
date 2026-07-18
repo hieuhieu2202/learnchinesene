@@ -11,7 +11,8 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver, RouteAware {
+class _ProfilePageState extends State<ProfilePage>
+    with WidgetsBindingObserver, RouteAware {
   late GetUserStatsUseCase _getUserStats;
   late Future<UserStats> _userStatsFuture;
   late RouteObserver<ModalRoute<dynamic>> _routeObserver;
@@ -77,7 +78,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver, 
         return stats;
       }).catchError((e) {
         print('❌ [PROFILE] Lỗi load dữ liệu: $e');
-        throw e;  // ⭐ Throw error để FutureBuilder xử lý
+        throw e; // ⭐ Throw error để FutureBuilder xử lý
       });
     });
   }
@@ -144,7 +145,8 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver, 
                   CircleAvatar(
                     radius: 36,
                     backgroundColor: theme.colorScheme.primary.withAlpha(41),
-                    child: Icon(Icons.emoji_emotions_outlined, color: theme.colorScheme.primary, size: 36),
+                    child: Icon(Icons.emoji_emotions_outlined,
+                        color: theme.colorScheme.primary, size: 36),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -153,7 +155,8 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver, 
                       children: [
                         Text(
                           'Học viên HSK',
-                          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                          style: theme.textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 6),
                         Text(
@@ -195,12 +198,14 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver, 
                 icon: Icons.favorite_outline,
                 title: 'Câu ví dụ yêu thích',
                 value: '${userStats.totalFavorites}',
-                description: 'Bạn đã đánh dấu ${userStats.totalFavorites} câu để luyện lại.',
+                description:
+                    'Bạn đã đánh dấu ${userStats.totalFavorites} câu để luyện lại.',
               ),
               const SizedBox(height: 32),
               Text(
                 'Kỹ năng luyện gõ',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 12),
               Wrap(
@@ -268,12 +273,14 @@ class _StatTile extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                  style: theme.textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 6),
                 Text(description, style: theme.textTheme.bodyMedium),

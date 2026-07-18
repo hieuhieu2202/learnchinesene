@@ -31,7 +31,8 @@ class UserStats {
       id: map['id'] ?? 1,
       totalExp: map['total_exp'] ?? 0,
       currentStreak: map['current_streak'] ?? 0,
-      lastStudyDate: DateTime.parse(map['last_study_date'] ?? DateTime.now().toIso8601String()),
+      lastStudyDate: DateTime.parse(
+          map['last_study_date'] ?? DateTime.now().toIso8601String()),
       totalWordsMastered: map['total_words_mastered'] ?? 0,
       totalFavorites: map['total_favorites'] ?? 0,
     );
@@ -55,4 +56,3 @@ class UserStats {
     );
   }
 }
-

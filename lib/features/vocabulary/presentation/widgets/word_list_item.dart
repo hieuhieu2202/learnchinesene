@@ -27,7 +27,8 @@ class WordListItem extends StatefulWidget {
   State<WordListItem> createState() => _WordListItemState();
 }
 
-class _WordListItemState extends State<WordListItem> with TickerProviderStateMixin {
+class _WordListItemState extends State<WordListItem>
+    with TickerProviderStateMixin {
   late AnimationController _progressController;
   late Animation<double> _progressAnimation;
   double _previousProgress = 0.0;
@@ -47,7 +48,8 @@ class _WordListItemState extends State<WordListItem> with TickerProviderStateMix
     _progressAnimation = Tween<double>(
       begin: _previousProgress,
       end: _previousProgress,
-    ).animate(CurvedAnimation(parent: _progressController, curve: Curves.easeInOut));
+    ).animate(
+        CurvedAnimation(parent: _progressController, curve: Curves.easeInOut));
   }
 
   @override
@@ -55,14 +57,16 @@ class _WordListItemState extends State<WordListItem> with TickerProviderStateMix
     super.didUpdateWidget(oldWidget);
     // Normalize incoming progress: accept either 0..1 or 0..100
     final rawNew = widget.progress ?? (widget.word.mastered ? 1.0 : 0.0);
-    final newProgress = (rawNew > 1.0 ? (rawNew / 100.0) : rawNew).clamp(0.0, 1.0);
+    final newProgress =
+        (rawNew > 1.0 ? (rawNew / 100.0) : rawNew).clamp(0.0, 1.0);
 
     // Nếu progress thay đổi → trigger animation (chỉ khi tăng lên)
     if (newProgress > _previousProgress) {
       _progressAnimation = Tween<double>(
         begin: _previousProgress,
         end: newProgress,
-      ).animate(CurvedAnimation(parent: _progressController, curve: Curves.easeInOut));
+      ).animate(CurvedAnimation(
+          parent: _progressController, curve: Curves.easeInOut));
 
       _progressController.forward(from: 0);
       _previousProgress = newProgress;
@@ -78,9 +82,12 @@ class _WordListItemState extends State<WordListItem> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accent = HskPalette.accentForLevel(widget.level ?? 1, theme.colorScheme);
+    final accent =
+        HskPalette.accentForLevel(widget.level ?? 1, theme.colorScheme);
     final rawProgress = widget.progress ?? (widget.word.mastered ? 1.0 : 0.0);
-    final progressValue = (rawProgress > 1.0 ? (rawProgress / 100.0) : rawProgress).clamp(0.0, 1.0);
+    final progressValue =
+        (rawProgress > 1.0 ? (rawProgress / 100.0) : rawProgress)
+            .clamp(0.0, 1.0);
     final indicatorValue = progressValue == 0 ? 0.04 : progressValue;
     final isCompact = !widget.showTranslation && !widget.showTransliteration;
     final surfaceTint = Color.lerp(
@@ -218,7 +225,8 @@ class _WordListItemState extends State<WordListItem> with TickerProviderStateMix
               ),
             ],
           ),
-          if (widget.showTranslation && widget.word.translation.trim().isNotEmpty) ...[
+          if (widget.showTranslation &&
+              widget.word.translation.trim().isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               widget.word.translation,

@@ -48,9 +48,8 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
         );
         final gradient = HskPalette.gradientForLevel(level);
         final scheme = Theme.of(context).colorScheme;
-        final progress = total == 0
-            ? 0.0
-            : (controller.currentIndex.value + 1) / total;
+        final progress =
+            total == 0 ? 0.0 : (controller.currentIndex.value + 1) / total;
 
         return Container(
           decoration: BoxDecoration(
@@ -69,7 +68,8 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
               children: [
                 // ⭐ EXP Header
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -85,7 +85,8 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
                       const SizedBox(width: 16),
                       // EXP Display
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.amber,
                           borderRadius: BorderRadius.circular(20),
@@ -93,7 +94,8 @@ class PracticeSessionPage extends GetView<PracticeSessionController> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star, color: Colors.white, size: 18),
+                            const Icon(Icons.star,
+                                color: Colors.white, size: 18),
                             const SizedBox(width: 4),
                             Text(
                               '+${controller.expEarned.value}',
@@ -182,7 +184,8 @@ class _PracticeHeader extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                      style: theme.textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     Text(
                       stageLabel,
@@ -194,7 +197,8 @@ class _PracticeHeader extends StatelessWidget {
               if (level > 0)
                 Chip(
                   label: Text('HSK $level'),
-                  labelStyle: theme.textTheme.labelMedium?.copyWith(color: accent),
+                  labelStyle:
+                      theme.textTheme.labelMedium?.copyWith(color: accent),
                   backgroundColor: accent.withAlpha(38),
                   shape: const StadiumBorder(),
                 ),
@@ -284,7 +288,8 @@ class _ResultView extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     'Hoàn thành luyện gõ câu!',
-                    style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                    style: theme.textTheme.headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 8),
                   Text(

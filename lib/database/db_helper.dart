@@ -228,9 +228,8 @@ class DbHelper {
     // Fallback for databases where levels are encoded in words.section_id.
     final wordCols = await getTableColumns(DbTables.words);
     if (wordCols.contains('section_id')) {
-      final title = wordCols.contains('section_title')
-          ? 'section_title'
-          : 'section_id';
+      final title =
+          wordCols.contains('section_title') ? 'section_title' : 'section_id';
       final rows = await db.rawQuery(
         'SELECT section_id AS id, MIN($title) AS title, section_id AS level_order FROM ${DbTables.words} GROUP BY section_id ORDER BY section_id',
       );
@@ -337,7 +336,7 @@ class DbHelper {
     final id = cols.contains('id') ? 'id' : cols.first;
     final chinese =
         _pickCol(cols, <String>['sentence_cn', 'chinese_text', 'sentence']) ??
-        id;
+            id;
     final pinyin = _pickCol(cols, <String>['sentence_pinyin', 'pinyin']);
     final vi = _pickCol(cols, <String>[
       'sentence_vi',
@@ -447,7 +446,8 @@ class DbHelper {
     ''')).first;
     final speaking = (await db.rawQuery(
       'SELECT COUNT(*) AS attempts, AVG(score) AS average FROM ${DbTables.speakingPractice}',
-    )).first;
+    ))
+        .first;
     return <String, num>{
       'learned': (progress['learned'] as num?) ?? 0,
       'mastered': (progress['mastered'] as num?) ?? 0,
@@ -471,7 +471,8 @@ class DbHelper {
       WHERE wu.unit_id = ?
     ''',
       <Object?>[unitId],
-    )).first;
+    ))
+        .first;
     return row.map(
       (key, value) => MapEntry(key, (value as num?)?.toInt() ?? 0),
     );
@@ -515,16 +516,22 @@ class DbHelper {
     return SpeakingPracticeItem.fromMap(rows.first);
   }
 
-  Future<SpeakingPracticeItem?> getSpeakingItemByExampleId(int exampleId) async {
+  Future<SpeakingPracticeItem?> getSpeakingItemByExampleId(
+      int exampleId) async {
     final db = await database;
     final wordsCols = await getTableColumns(DbTables.words);
     final ttsUrl = _pickCol(wordsCols, ['tts_url']) ?? 'NULL';
-    
+
     final cols = await getTableColumns(DbTables.examples);
-    final chinese = _pickCol(cols, <String>['sentence_cn', 'chinese_text', 'sentence']) ?? 'NULL';
-    final pinyin = _pickCol(cols, <String>['sentence_pinyin', 'pinyin']) ?? 'NULL';
-    final vi = _pickCol(cols, <String>['sentence_vi', 'meaning_vi', 'translation']) ?? 'NULL';
-    
+    final chinese =
+        _pickCol(cols, <String>['sentence_cn', 'chinese_text', 'sentence']) ??
+            'NULL';
+    final pinyin =
+        _pickCol(cols, <String>['sentence_pinyin', 'pinyin']) ?? 'NULL';
+    final vi =
+        _pickCol(cols, <String>['sentence_vi', 'meaning_vi', 'translation']) ??
+            'NULL';
+
     final rows = await db.rawQuery(
       '''
       SELECT 
@@ -544,21 +551,27 @@ class DbHelper {
     return SpeakingPracticeItem.fromMap(rows.first);
   }
 
-  Future<List<SpeakingPracticeItem>> getSpeakingItemsByUnitId(int unitId) async {
+  Future<List<SpeakingPracticeItem>> getSpeakingItemsByUnitId(
+      int unitId) async {
     final words = await getWordsByUnit(unitId);
-    return words.map((w) => SpeakingPracticeItem(
-      wordId: w.id,
-      targetText: w.chinese,
-      pinyin: w.pinyin,
-      meaning: w.vietnamese,
-      audioUrl: w.ttsUrl,
-    )).toList();
+    return words
+        .map((w) => SpeakingPracticeItem(
+              wordId: w.id,
+              targetText: w.chinese,
+              pinyin: w.pinyin,
+              meaning: w.vietnamese,
+              audioUrl: w.ttsUrl,
+            ))
+        .toList();
   }
 
-  Future<List<SpeakingPracticeItem>> getRandomSpeakingItems({int limit = 20}) async {
+  Future<List<SpeakingPracticeItem>> getRandomSpeakingItems(
+      {int limit = 20}) async {
     final db = await database;
     final select = await _wordSelect('w');
-    final chineseCol = _pickCol(await getTableColumns(DbTables.words), ['word', 'chinese', 'hanzi']) ?? 'id';
+    final chineseCol = _pickCol(await getTableColumns(DbTables.words),
+            ['word', 'chinese', 'hanzi']) ??
+        'id';
     final rows = await db.rawQuery(
       'SELECT $select FROM ${DbTables.words} w WHERE w.$chineseCol IS NOT NULL AND TRIM(w.$chineseCol) != "" ORDER BY RANDOM() LIMIT ?',
       <Object?>[limit],
@@ -629,19 +642,20 @@ class DbHelper {
     final db = await database;
     String whereClause = '';
     List<Object?> whereArgs = [];
-    
+
     if (keyword != null && keyword.trim().isNotEmpty) {
       final kw = '%${keyword.trim()}%';
-      whereClause += '(c.character LIKE ? OR w1.pinyin LIKE ? OR w2.pinyin LIKE ? OR w1.meaning_vi LIKE ? OR w2.meaning_vi LIKE ?)';
+      whereClause +=
+          '(c.character LIKE ? OR w1.pinyin LIKE ? OR w2.pinyin LIKE ? OR w1.meaning_vi LIKE ? OR w2.meaning_vi LIKE ?)';
       whereArgs.addAll([kw, kw, kw, kw, kw]);
     }
-    
+
     if (hskLevel != null) {
       if (whereClause.isNotEmpty) whereClause += ' AND ';
       whereClause += '(w1.hsk_level_id = ? OR w2.hsk_level_id = ?)';
       whereArgs.addAll([hskLevel, hskLevel]);
     }
-    
+
     final query = '''
       SELECT c.id, c.character, c.stroke_count, c.stroke_width, c.stroke_height,
              COALESCE(w1.pinyin, w2.pinyin) as pinyin,
@@ -659,7 +673,7 @@ class DbHelper {
       GROUP BY c.id
       ORDER BY c.id
     ''';
-    
+
     final rows = await db.rawQuery(query, whereArgs);
     return rows.map(HanziCharacter.fromMap).toList();
   }
@@ -682,7 +696,7 @@ class DbHelper {
       GROUP BY c.id
       LIMIT 1
     ''', [characterId]);
-    
+
     if (rows.isEmpty) return null;
     return HanziCharacter.fromMap(rows.first);
   }
@@ -699,7 +713,7 @@ class DbHelper {
       limit: 1,
     );
     if (rows.isNotEmpty) return rows.first['id'] as int?;
-    
+
     // Fallback to first character of multi-char words
     final firstChar = charStr.substring(0, 1);
     rows = await db.query(
@@ -710,7 +724,7 @@ class DbHelper {
       limit: 1,
     );
     if (rows.isNotEmpty) return rows.first['id'] as int?;
-    
+
     return null;
   }
 
@@ -721,14 +735,14 @@ class DbHelper {
   }) async {
     final db = await database;
     final now = DateTime.now().toIso8601String();
-    
+
     final List<Map<String, Object?>> existing = await db.query(
       DbTables.hanziWritingProgress,
       where: 'character_id = ?',
       whereArgs: [characterId],
       limit: 1,
     );
-    
+
     if (existing.isEmpty) {
       await db.insert(DbTables.hanziWritingProgress, {
         'character_id': characterId,
@@ -744,9 +758,11 @@ class DbHelper {
       final row = existing.first;
       final currentBest = (row['best_score'] as num?)?.toDouble() ?? 0.0;
       final newBest = max(currentBest, score);
-      final totalAttempts = ((row['total_attempts'] as num?)?.toInt() ?? 0) + attempts;
-      final completedCount = ((row['completed_count'] as num?)?.toInt() ?? 0) + 1;
-      
+      final totalAttempts =
+          ((row['total_attempts'] as num?)?.toInt() ?? 0) + attempts;
+      final completedCount =
+          ((row['completed_count'] as num?)?.toInt() ?? 0) + 1;
+
       await db.update(
         DbTables.hanziWritingProgress,
         {

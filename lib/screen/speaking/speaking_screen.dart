@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
-import '../../widgets/pinyin_text.dart';
 import 'controller/speaking_controller.dart';
 
 class SpeakingScreen extends StatelessWidget {
@@ -41,8 +40,7 @@ class SpeakingScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.error),
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
               Text(controller.errorMessage.value!,
                   style: const TextStyle(color: AppColors.muted)),
@@ -115,10 +113,10 @@ class SpeakingScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      PinyinText(
-                        chinese: item.targetText,
-                        pinyin: item.pinyin,
-                        chineseStyle: TextStyle(
+                      Text(
+                        item.targetText,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
                           fontSize: item.targetText.length > 8 ? 32 : 46,
                           height: 1.2,
                           fontWeight: FontWeight.w400,
@@ -130,11 +128,6 @@ class SpeakingScreen extends StatelessWidget {
                             'Microsoft YaHei',
                             'Noto Sans SC',
                           ],
-                        ),
-                        pinyinStyle: const TextStyle(
-                          fontSize: 16,
-                          color: AppColors.orange,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       if (item.meaning.isNotEmpty) ...[

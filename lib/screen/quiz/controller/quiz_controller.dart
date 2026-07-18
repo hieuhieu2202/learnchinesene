@@ -42,7 +42,7 @@ class QuizController extends GetxController {
     final q = reviewWords.isNotEmpty
         ? await quiz.generateForWords(reviewWords)
         : await quiz.generateForUnit(unitId);
-    
+
     questions.value = q;
     index.value = 0;
     score.value = 0;

@@ -11,6 +11,8 @@ class ChineseMasterApp extends StatelessWidget {
         title: 'Học tiếng Trung',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.system,
         home: const SplashScreen(),
       );
 }

@@ -238,7 +238,8 @@ class AppPagesVer1Ne {
         final args = Get.arguments as Map<String, dynamic>? ?? {};
         Get.put(AiChatController(
           askAI: Get.find(),
-          bootPrompt: (args['prompt'] as String?) ?? (args['context'] as String?),
+          bootPrompt:
+              (args['prompt'] as String?) ?? (args['context'] as String?),
           bootDisplayText: args['displayText'] as String?,
           bootWordContext: args['wordContext'] as String?,
         ));

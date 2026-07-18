@@ -9,16 +9,18 @@ import 'package:chinese_master/app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:chinese_master/di.dart';
 import 'package:chinese_master/services/speech_service.dart';
 
 void main() {
   testWidgets('App renders branded startup experience', (
     WidgetTester tester,
   ) async {
+    initDI();
     await tester.pumpWidget(const ChineseMasterApp());
     expect(find.byType(MaterialApp), findsOneWidget);
-    expect(find.text('Học tiếng Trung'), findsOneWidget);
-    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('Chinese Master'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
   });
 
   test('Speaking similarity handles exact and different phrases', () {

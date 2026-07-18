@@ -10,11 +10,11 @@ class WordListController extends GetxController {
 
   int unitId = 0;
   String title = 'Từ vựng';
-  
+
   final words = <Word>[].obs;
   final isLoading = true.obs;
   final hasError = false.obs;
-  
+
   final index = 0.obs;
   final learned = <int>{}.obs;
 

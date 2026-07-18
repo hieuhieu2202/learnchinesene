@@ -9,8 +9,8 @@ class QuizService {
   final Random _random;
 
   QuizService({DbHelper? dbHelper, Random? random})
-    : _dbHelper = dbHelper ?? DbHelper.instance,
-      _random = random ?? Random();
+      : _dbHelper = dbHelper ?? DbHelper.instance,
+        _random = random ?? Random();
 
   Future<List<QuizQuestion>> generateForUnit(int unitId) async {
     final words = await _dbHelper.getWordsByUnit(unitId);
