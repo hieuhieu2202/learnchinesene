@@ -2,11 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/sqlite3.dart';
-import 'package:learnchinese/features/hanzi_writing/services/svg_stroke_parser.dart';
-import 'package:learnchinese/features/hanzi_writing/services/stroke_sampler.dart';
-import 'package:learnchinese/features/hanzi_writing/services/stroke_validator.dart';
-import 'package:learnchinese/features/hanzi_writing/models/hanzi_practice_config.dart';
-import 'package:learnchinese/features/hanzi_writing/painters/hanzi_writing_painter.dart';
+import 'package:chinese_master/features/hanzi_writing/services/svg_stroke_parser.dart';
+import 'package:chinese_master/features/hanzi_writing/services/stroke_sampler.dart';
+import 'package:chinese_master/features/hanzi_writing/services/stroke_validator.dart';
+import 'package:chinese_master/features/hanzi_writing/models/hanzi_practice_config.dart';
+import 'package:chinese_master/features/hanzi_writing/painters/hanzi_writing_painter.dart';
 
 class MockCanvas extends Fake implements Canvas {
   final List<Paint> paintsUsed = [];
@@ -46,7 +46,8 @@ void main() {
     });
 
     test('Tách nét bằng ký tự |', () {
-      final paths = SvgStrokeParser.parseStrokePaths('M 10,10 L 20,20|M 20,20 L 30,30');
+      final paths =
+          SvgStrokeParser.parseStrokePaths('M 10,10 L 20,20|M 20,20 L 30,30');
       expect(paths.length, 2);
       expect(paths[0], 'M 10,10 L 20,20');
       expect(paths[1], 'M 20,20 L 30,30');
@@ -65,7 +66,11 @@ void main() {
 
   group('StrokeSampler & StrokeValidator Tests', () {
     test('StrokeSampler resamples to correct point count', () {
-      final points = [const Offset(0, 0), const Offset(10, 10), const Offset(20, 20)];
+      final points = [
+        const Offset(0, 0),
+        const Offset(10, 10),
+        const Offset(20, 20)
+      ];
       final resampled = StrokeSampler.resample(points, 70);
       expect(resampled.length, 70);
     });
@@ -75,14 +80,16 @@ void main() {
         ..moveTo(0, 0)
         ..lineTo(100, 100);
 
-      final userCorrectPoints = List.generate(10, (i) => Offset(i * 10.0, i * 10.0));
+      final userCorrectPoints =
+          List.generate(10, (i) => Offset(i * 10.0, i * 10.0));
       final correctResult = StrokeValidator.validate(
         userPoints: userCorrectPoints,
         refPath: refPath,
       );
       expect(correctResult.isValid, isTrue);
 
-      final userReversePoints = List.generate(10, (i) => Offset(100.0 - i * 10.0, 100.0 - i * 10.0));
+      final userReversePoints =
+          List.generate(10, (i) => Offset(100.0 - i * 10.0, 100.0 - i * 10.0));
       final reverseResult = StrokeValidator.validate(
         userPoints: userReversePoints,
         refPath: refPath,
@@ -90,7 +97,8 @@ void main() {
       expect(reverseResult.isValid, isFalse);
       expect(reverseResult.errorMessage, 'Sai chiều viết.');
 
-      final wrongStartPoints = List.generate(10, (i) => Offset(50.0 + i * 10.0, 50.0 + i * 10.0));
+      final wrongStartPoints =
+          List.generate(10, (i) => Offset(50.0 + i * 10.0, 50.0 + i * 10.0));
       final wrongStartResult = StrokeValidator.validate(
         userPoints: wrongStartPoints,
         refPath: refPath,
@@ -175,9 +183,15 @@ void main() {
   });
 
   group('HanziWritingPainter PaintingStyle Tests', () {
-    test('Painter uses PaintingStyle.stroke for drawing templates and completed strokes', () {
-      final path1 = Path()..moveTo(10, 10)..lineTo(20, 20);
-      final path2 = Path()..moveTo(20, 20)..lineTo(30, 30);
+    test(
+        'Painter uses PaintingStyle.stroke for drawing templates and completed strokes',
+        () {
+      final path1 = Path()
+        ..moveTo(10, 10)
+        ..lineTo(20, 20);
+      final path2 = Path()
+        ..moveTo(20, 20)
+        ..lineTo(30, 30);
 
       final painter = HanziWritingPainter(
         strokePaths: [path1, path2],
@@ -195,10 +209,12 @@ void main() {
       painter.paint(mockCanvas, const Size(110, 110));
 
       expect(mockCanvas.paintsUsed, isNotEmpty);
-      
+
       // Filter out filled paints (like the start point dot which can use fill style)
       // Standard line paths MUST use style PaintingStyle.stroke
-      final strokePaints = mockCanvas.paintsUsed.where((p) => p.style == PaintingStyle.stroke).toList();
+      final strokePaints = mockCanvas.paintsUsed
+          .where((p) => p.style == PaintingStyle.stroke)
+          .toList();
       expect(strokePaints, isNotEmpty);
 
       // None of the line drawing paints should use fill style
@@ -231,7 +247,7 @@ void main() {
         GROUP BY c.id
       ''');
       expect(listResult, isNotEmpty);
-      
+
       final firstRow = listResult.first;
       expect(firstRow['character'], isNotNull);
       expect(firstRow['stroke_count'], isNotNull);

@@ -1,11 +1,11 @@
-name: learnchinese
+name: chinese_master
 description: "An offline-first HSK Chinese learning app."
 publish_to: 'none'
 
 version: 1.0.1+6
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.6.2
 
 dependencies:
   flutter:
@@ -36,7 +36,7 @@ flutter:
 
   assets:
     - assets/database/chinese_v2_sheet1_only.db
-    - assets/logo/LogoApp.png
+    - assets/logo/logo.png
 
   fonts:
     - family: PinyinFont
@@ -53,7 +53,7 @@ flutter:
         - asset: assets/fonts/Pinyinok.ttf
 
 icons_launcher:
-  image_path: "assets/logo/LogoApp.png"
+  image_path: "assets/logo/logo.png"
   platforms:
     android:
       enable: true

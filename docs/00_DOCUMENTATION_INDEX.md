@@ -66,7 +66,7 @@ Chào mừng bạn đến với bộ tài liệu của ứng dụng Learn Chines
 ## 📁 **Cấu trúc Folder**
 
 ```
-learnchinese/
+chinese_master/
 ├── docs/
 │   ├── 00_DOCUMENTATION_INDEX.md  ← Bạn đang xem
 │   ├── README_FEATURES.md

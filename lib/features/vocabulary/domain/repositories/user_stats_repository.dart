@@ -1,4 +1,4 @@
-import 'package:learnchinese/features/vocabulary/data/models/user_stats_model.dart';
+import 'package:chinese_master/features/vocabulary/data/models/user_stats_model.dart';
 
 abstract class UserStatsRepository {
   Future<UserStats> getUserStats();
@@ -9,4 +9,3 @@ abstract class UserStatsRepository {
   Future<void> updateWordsMastered(int count);
   Future<void> updateFavorites(int count);
 }
-

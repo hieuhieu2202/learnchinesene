@@ -1,9 +1,10 @@
-import 'package:learnchinese/core/usecase/usecase.dart';
+import 'package:chinese_master/core/usecase/usecase.dart';
 
 import '../entities/example_sentence.dart';
 import '../repositories/example_repository.dart';
 
-class GetExamplesByWordVer1Ne extends UseCaseVer1Ne<List<ExampleSentence>, int> {
+class GetExamplesByWordVer1Ne
+    extends UseCaseVer1Ne<List<ExampleSentence>, int> {
   GetExamplesByWordVer1Ne(this.repository);
 
   final ExampleRepository repository;

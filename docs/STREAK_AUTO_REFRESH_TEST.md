@@ -31,7 +31,7 @@ class _ProfilePageState extends State<ProfilePage> with WidgetsBindingObserver {
 ### Step 1: Xóa Database (nếu cần)
 ```bash
 # Xóa database để reset
-adb shell rm /data/data/com.example.learnchinese/databases/chinese.db
+adb shell rm /data/data/com.example.chinese_master/databases/chinese.db
 ```
 
 Hoặc đơn giản hơn: **Xóa app rồi cài lại**
@@ -89,7 +89,7 @@ Chuỗi ngày học: 0 ngày
 ### Kiểm tra Database
 ```bash
 adb shell
-sqlite3 /data/data/com.example.learnchinese/databases/chinese.db
+sqlite3 /data/data/com.example.chinese_master/databases/chinese.db
 
 # Lệnh query
 SELECT currentStreak, lastStudyDate FROM user_stats WHERE id = 1;

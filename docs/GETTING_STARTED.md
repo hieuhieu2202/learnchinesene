@@ -8,7 +8,7 @@ Chào mừng! Đây là hướng dẫn bắt đầu nhanh cho tính năng **Kinh
 
 ### Bước 1: Build
 ```bash
-cd F:\Projects\learnchinese
+cd F:\Projects\chinese_master
 flutter clean
 flutter pub get
 flutter run

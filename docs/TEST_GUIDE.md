@@ -9,7 +9,7 @@
 ### 2. Kiểm tra dữ liệu trong Database
 ```bash
 # Kết nối đến database SQLite (sau khi ứng dụng chạy)
-# File database nằm tại: /data/data/com.example.learnchinese/databases/chinese.db
+# File database nằm tại: /data/data/com.example.chinese_master/databases/chinese.db
 
 # Query kiểm tra dữ liệu
 SELECT * FROM user_stats WHERE id = 1;

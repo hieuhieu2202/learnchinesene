@@ -5,17 +5,17 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:chinese_master/app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:learnchinese/main.dart';
-import 'package:learnchinese/services/speech_service.dart';
+import 'package:chinese_master/services/speech_service.dart';
 
 void main() {
   testWidgets('App renders branded startup experience', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const LearnChineseApp());
+    await tester.pumpWidget(const ChineseMasterApp());
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.text('Học tiếng Trung'), findsOneWidget);
     await tester.pump(const Duration(seconds: 1));
