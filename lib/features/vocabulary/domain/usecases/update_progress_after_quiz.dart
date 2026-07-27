@@ -3,8 +3,8 @@ import 'package:learnchinese/core/usecase/usecase.dart';
 import '../entities/progress_entity.dart';
 import '../repositories/progress_repository.dart';
 
-class UpdateProgressAfterQuiz extends UseCase<void, UpdateProgressParams> {
-  UpdateProgressAfterQuiz(this.repository);
+class UpdateProgressAfterQuizVer1Ne extends UseCaseVer1Ne<void, UpdateProgressParams> {
+  UpdateProgressAfterQuizVer1Ne(this.repository);
 
   final ProgressRepository repository;
 
@@ -20,6 +20,9 @@ class UpdateProgressAfterQuiz extends UseCase<void, UpdateProgressParams> {
     return repository.upsertProgress(updated);
   }
 }
+
+@Deprecated('Use UpdateProgressAfterQuizVer1Ne')
+typedef UpdateProgressAfterQuiz = UpdateProgressAfterQuizVer1Ne;
 
 class UpdateProgressParams {
   UpdateProgressParams({

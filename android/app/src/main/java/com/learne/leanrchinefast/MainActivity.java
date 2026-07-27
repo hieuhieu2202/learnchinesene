@@ -1,4 +1,4 @@
-package com.hero.chinesetyping;
+package com.learne.leanrchinefast;
 
 import io.flutter.embedding.android.FlutterActivity;
 

@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-class DatabaseHelper {
+class DatabaseHelperVer1Ne {
   static const _dbName = 'chinese.db';
   static Database? _database;
 
@@ -60,3 +60,6 @@ class DatabaseHelper {
     }
   }
 }
+
+@Deprecated('Use DatabaseHelperVer1Ne')
+typedef DatabaseHelper = DatabaseHelperVer1Ne;

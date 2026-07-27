@@ -53,7 +53,7 @@ class HomeController extends GetxController {
       final today = DateTime.now();
       final wordsToReview = await getWordsToReviewToday(today);
       reviewCount.value = wordsToReview.length;
-      sections.assignAll(await getSections(const NoParams()));
+      sections.assignAll(await getSections(const NoParamsVer1Ne()));
       if (sections.isNotEmpty) {
         currentSectionId.value = sections.first;
       }

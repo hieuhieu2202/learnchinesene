@@ -1,7 +1,7 @@
-abstract class UseCase<Result, Params> {
+abstract class UseCaseVer1Ne<Result, Params> {
   Future<Result> call(Params params);
 }
 
-class NoParams {
-  const NoParams();
+class NoParamsVer1Ne {
+  const NoParamsVer1Ne();
 }

@@ -62,7 +62,7 @@ Nhiệm vụ của bạn:
     };
 
     final response = await client.post(
-      Uri.parse('${AppConfig.geminiEndpoint}?key=$apiKey'),
+      Uri.parse('${AppConfigVer1Ne.geminiEndpoint}?key=$apiKey'),
       headers: {
         'Content-Type': 'application/json',
       },

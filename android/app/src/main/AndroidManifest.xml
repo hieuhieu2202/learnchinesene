@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.hero.chinesetyping">
+    package="com.learne.leanrchinefast">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="com.android.vending.BILLING" />
     <application
         android:label="Hero Chinese Typing"
         android:name="${applicationName}"

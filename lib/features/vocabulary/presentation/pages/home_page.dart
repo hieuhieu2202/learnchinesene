@@ -127,11 +127,44 @@ class _HomeWelcomeCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Xin chào!',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
+        Row(
+          children: [
+            Text(
+              'Xin chào!',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: scheme.primary.withValues(alpha: 0.25),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '🐎',
+                    style: theme.textTheme.bodyMedium?.copyWith(height: 1),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Đón năm mới',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: scheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 6),
         Text(
@@ -186,6 +219,14 @@ class _HomeWelcomeCard extends StatelessWidget {
                   label: const Text('Bắt đầu ôn tập'),
                 ),
               ],
+              const SizedBox(height: 12),
+              FilledButton.tonalIcon(
+                onPressed: () => navigateAfterFrame(() {
+                  Get.toNamed(AppRoutes.speakingPractice);
+                }),
+                icon: const Icon(Icons.mic_rounded),
+                label: const Text('Luyện nói (Speaking Practice)'),
+              ),
             ],
           ),
         ),
@@ -489,6 +530,12 @@ class _SystemHubTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final systemItems = [
+      _NavigationItem(
+        icon: Icons.workspace_premium_outlined,
+        title: 'Nâng cấp tài khoản VIP',
+        subtitle: 'Mở khóa toàn bộ HSK 1-6, trò chuyện AI & luyện gõ không giới hạn.',
+        onTap: () => navigateAfterFrame(() => Get.toNamed(AppRoutes.subscription)),
+      ),
       _NavigationItem(
         icon: Icons.settings_suggest_outlined,
         title: 'Cài đặt hệ thống',
