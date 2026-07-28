@@ -5,7 +5,7 @@ import '../models/speaking_practice_item.dart';
 
 class VocabularyService {
   VocabularyService({DbHelper? database})
-    : _database = database ?? DbHelper.instance;
+      : _database = database ?? DbHelper.instance;
 
   final DbHelper _database;
 

@@ -97,10 +97,8 @@ class HomeController extends GetxController {
       );
     }
 
-    final additionalLevels = aggregates.keys
-        .where((level) => level > 4)
-        .toList()
-      ..sort();
+    final additionalLevels =
+        aggregates.keys.where((level) => level > 4).toList()..sort();
     for (final level in additionalLevels) {
       final data = aggregates[level]!;
       overviewItems.add(

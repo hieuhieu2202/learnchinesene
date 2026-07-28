@@ -54,7 +54,8 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   @override
   Future<List<int>> getWordsToReviewToday(DateTime today) async {
     final db = await _db;
-    final todayStr = DateTime(today.year, today.month, today.day).toIso8601String();
+    final todayStr =
+        DateTime(today.year, today.month, today.day).toIso8601String();
     final result = await db.rawQuery('''
         SELECT word_id FROM progress
         WHERE mastered = 0

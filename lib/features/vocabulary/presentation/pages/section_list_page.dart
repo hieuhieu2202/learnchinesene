@@ -51,7 +51,8 @@ class SectionListPage extends GetView<SectionListController> {
                         Row(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                              icon:
+                                  const Icon(Icons.arrow_back_ios_new_rounded),
                               onPressed: () => Navigator.of(context).maybePop(),
                             ),
                             const SizedBox(width: 8),
@@ -60,7 +61,8 @@ class SectionListPage extends GetView<SectionListController> {
                               children: [
                                 Text(
                                   'HSK $selectedLevel',
-                                  style: theme.textTheme.headlineSmall?.copyWith(
+                                  style:
+                                      theme.textTheme.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -83,8 +85,10 @@ class SectionListPage extends GetView<SectionListController> {
                           totalWords: totalWords,
                           masteredWords: masteredWords,
                           progress: progress,
-                          completedSections: sections.where((s) => s.progress >= 1.0).length,
-                          firstSection: sections.isEmpty ? null : sections.first,
+                          completedSections:
+                              sections.where((s) => s.progress >= 1.0).length,
+                          firstSection:
+                              sections.isEmpty ? null : sections.first,
                         ),
                       ],
                     ),
@@ -96,7 +100,8 @@ class SectionListPage extends GetView<SectionListController> {
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                       child: Row(
                         children: [
-                          Icon(Icons.menu_book_rounded, color: colorScheme.primary),
+                          Icon(Icons.menu_book_rounded,
+                              color: colorScheme.primary),
                           const SizedBox(width: 8),
                           Text(
                             'Chọn unit để học',
@@ -125,7 +130,8 @@ class SectionListPage extends GetView<SectionListController> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final progress = sections[index];
-                          final bottomPadding = index == sections.length - 1 ? 0.0 : 16.0;
+                          final bottomPadding =
+                              index == sections.length - 1 ? 0.0 : 16.0;
                           return Padding(
                             padding: EdgeInsets.only(bottom: bottomPadding),
                             child: _UnitCard(
@@ -198,7 +204,8 @@ class _LevelSummaryCard extends StatelessWidget {
         children: [
           Text(
             'Tổng quan HSK $selectedLevel',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 16),
           ClipRRect(
@@ -267,7 +274,8 @@ class _LevelSummaryCard extends StatelessWidget {
               icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Bắt đầu học ngay'),
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
               ),
             ),
           ),
@@ -349,9 +357,8 @@ class _UnitCard extends StatelessWidget {
     final bgColors = isLocked
         ? [theme.colorScheme.surfaceVariant, theme.colorScheme.surface]
         : [theme.colorScheme.surface, theme.colorScheme.surfaceVariant];
-    final statusColor = isLocked
-        ? theme.colorScheme.error.withAlpha(204)
-        : accent;
+    final statusColor =
+        isLocked ? theme.colorScheme.error.withAlpha(204) : accent;
     final statusText = isLocked
         ? 'Hoàn thành unit trước để mở khóa'
         : '${(progress.progress * 100).toStringAsFixed(0)}% hoàn thành';
@@ -396,7 +403,8 @@ class _UnitCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.background.withAlpha(204),
                         borderRadius: BorderRadius.circular(16),
@@ -412,7 +420,8 @@ class _UnitCard extends StatelessWidget {
                     const Spacer(),
                     if (isLocked)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface.withAlpha(204),
                           borderRadius: BorderRadius.circular(16),
@@ -421,7 +430,8 @@ class _UnitCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.lock_rounded, color: statusColor, size: 16),
+                            Icon(Icons.lock_rounded,
+                                color: statusColor, size: 16),
                             const SizedBox(width: 4),
                             Text(
                               'Đã khóa',
@@ -458,7 +468,9 @@ class _UnitCard extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      isLocked ? Icons.lock_clock_rounded : Icons.auto_graph_rounded,
+                      isLocked
+                          ? Icons.lock_clock_rounded
+                          : Icons.auto_graph_rounded,
                       color: statusColor,
                       size: 20,
                     ),
@@ -472,7 +484,9 @@ class _UnitCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     Icon(
-                      isLocked ? Icons.remove_red_eye_outlined : Icons.arrow_forward_rounded,
+                      isLocked
+                          ? Icons.remove_red_eye_outlined
+                          : Icons.arrow_forward_rounded,
                       color: statusColor,
                     ),
                   ],
@@ -513,7 +527,8 @@ class _EmptyState extends StatelessWidget {
           children: [
             Text(
               'Chưa có bài học trong cấp độ này',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(

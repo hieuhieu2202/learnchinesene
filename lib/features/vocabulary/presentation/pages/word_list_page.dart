@@ -38,6 +38,7 @@ class WordListPage extends GetView<WordListController> {
             );
           });
         }
+
         return Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -87,7 +88,8 @@ class WordListPage extends GetView<WordListController> {
                               onTap: openWord,
                               controller: controller,
                             ),
-                          if (introducedWords.isNotEmpty && reusedWords.isNotEmpty)
+                          if (introducedWords.isNotEmpty &&
+                              reusedWords.isNotEmpty)
                             const SizedBox(height: 24),
                           if (reusedWords.isNotEmpty)
                             _WordCluster(
@@ -193,11 +195,13 @@ class _UnitSummary extends StatelessWidget {
               decoration: BoxDecoration(
                 color: theme.colorScheme.error.withAlpha(26),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: theme.colorScheme.error.withAlpha(153)),
+                border:
+                    Border.all(color: theme.colorScheme.error.withAlpha(153)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.lock_rounded, color: theme.colorScheme.error, size: 18),
+                  Icon(Icons.lock_rounded,
+                      color: theme.colorScheme.error, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -216,7 +220,8 @@ class _UnitSummary extends StatelessWidget {
               final isCompact = constraints.maxWidth < 380;
               final title = Text(
                 'HSK $level • ${controller.sectionTitle}',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
               );
               final practiceButton = onPractice == null
                   ? null
@@ -314,24 +319,22 @@ class _WordCluster extends StatelessWidget {
             Wrap(
               spacing: spacing,
               runSpacing: spacing,
-              children: words
-                  .map(
-                    (word) {
-                      // ⭐ Lấy progress từ Progress entity qua controller
-                      final progress = controller.getWordProgress(word.id);
+              children: words.map(
+                (word) {
+                  // ⭐ Lấy progress từ Progress entity qua controller
+                  final progress = controller.getWordProgress(word.id);
 
-                      return WordListItem(
-                        word: word,
-                        level: level,
-                        onTap: () => onTap(word),
-                        maxWidth: tileWidth,
-                        showTransliteration: false,
-                        showTranslation: false,
-                        progress: progress,
-                      );
-                    },
-                  )
-                  .toList(),
+                  return WordListItem(
+                    word: word,
+                    level: level,
+                    onTap: () => onTap(word),
+                    maxWidth: tileWidth,
+                    showTransliteration: false,
+                    showTranslation: false,
+                    progress: progress,
+                  );
+                },
+              ).toList(),
             ),
           ],
         );
@@ -345,7 +348,8 @@ int _preferredColumnCount(double maxWidth, double spacing) {
     return 4;
   }
   const minTileWidth = 144.0;
-  final available = maxWidth + spacing; // include spacing to avoid division by zero issues
+  final available =
+      maxWidth + spacing; // include spacing to avoid division by zero issues
   final computed = (available / (minTileWidth + spacing)).floor();
   if (computed <= 1) {
     return available >= 2 * (minTileWidth + spacing) ? 2 : 1;

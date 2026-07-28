@@ -57,7 +57,8 @@ class _AiChatPageState extends State<AiChatPage> {
                   itemCount: messages.length + (isLoading ? 1 : 0),
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    final isLoadingIndicator = isLoading && index == messages.length;
+                    final isLoadingIndicator =
+                        isLoading && index == messages.length;
                     if (isLoadingIndicator) {
                       return Align(
                         alignment: Alignment.centerLeft,

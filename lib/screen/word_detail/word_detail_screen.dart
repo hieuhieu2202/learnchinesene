@@ -177,7 +177,8 @@ class WordDetailScreen extends StatelessWidget {
                         );
                       }
                       return Column(
-                        children: controller.examples.asMap().entries.map((entry) {
+                        children:
+                            controller.examples.asMap().entries.map((entry) {
                           final e = entry.value;
                           return Container(
                             margin: const EdgeInsets.only(bottom: 11),

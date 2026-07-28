@@ -94,12 +94,10 @@ class AiChatController extends GetxController {
 
     isLoading.value = true;
     try {
-      final response = await askAI(
-        AskAiParams(
-          prompt: prompt,
-          wordContext: bootWordContext,
-        )
-      );
+      final response = await askAI(AskAiParams(
+        prompt: prompt,
+        wordContext: bootWordContext,
+      ));
       messages.add(response);
     } finally {
       isLoading.value = false;

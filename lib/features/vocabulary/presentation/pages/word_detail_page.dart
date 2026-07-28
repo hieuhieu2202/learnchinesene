@@ -51,9 +51,11 @@ class WordDetailPage extends GetView<WordDetailController> {
                   padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      _WordHero(word: word, level: level, controller: controller),
+                      _WordHero(
+                          word: word, level: level, controller: controller),
                       const SizedBox(height: 24),
-                      _PrimaryActions(word: word, controller: controller, level: level),
+                      _PrimaryActions(
+                          word: word, controller: controller, level: level),
                       const SizedBox(height: 24),
                       _ExamplesSection(controller: controller, level: level),
                     ]),
@@ -100,7 +102,8 @@ class _Header extends StatelessWidget {
 }
 
 class _WordHero extends StatelessWidget {
-  const _WordHero({required this.word, required this.level, required this.controller});
+  const _WordHero(
+      {required this.word, required this.level, required this.controller});
 
   final Word word;
   final int level;
@@ -182,7 +185,7 @@ class _WordHero extends StatelessWidget {
                       ),
                     ),
                     Obx(
-                          () => IconButton(
+                      () => IconButton(
                         icon: Icon(
                           controller.isPlayingAudio.value
                               ? Icons.volume_up_rounded
@@ -210,7 +213,8 @@ class _WordHero extends StatelessWidget {
                 ],
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: accent.withAlpha(31),
                     borderRadius: BorderRadius.circular(16),
@@ -230,7 +234,8 @@ class _WordHero extends StatelessWidget {
 }
 
 class _PrimaryActions extends StatelessWidget {
-  const _PrimaryActions({required this.word, required this.controller, required this.level});
+  const _PrimaryActions(
+      {required this.word, required this.controller, required this.level});
 
   final Word word;
   final WordDetailController controller;
@@ -260,7 +265,8 @@ class _PrimaryActions extends StatelessWidget {
         children: [
           Text(
             'Lựa chọn nhanh',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 16),
           Row(
@@ -282,7 +288,8 @@ class _PrimaryActions extends StatelessWidget {
                   onPressed: () => navigateAfterFrame(() {
                     Get.toNamed(AppRoutes.aiChat, arguments: {
                       'prompt': basePrompt,
-                      'displayText': 'Cho mình thêm gợi ý về từ ${word.word} nhé!',
+                      'displayText':
+                          'Cho mình thêm gợi ý về từ ${word.word} nhé!',
                       'wordContext': word.word,
                     });
                   }),
@@ -343,11 +350,12 @@ class _ExamplesSection extends StatelessWidget {
           children: [
             Text(
               'Câu ví dụ',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             ...examples.map(
-                  (example) => Padding(
+              (example) => Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Container(
                   decoration: BoxDecoration(
@@ -380,7 +388,7 @@ class _ExamplesSection extends StatelessWidget {
                             foregroundColor: accent,
                           ),
                           onPressed: () => navigateAfterFrame(
-                                () => Get.toNamed(
+                            () => Get.toNamed(
                               AppRoutes.aiChat,
                               arguments: {
                                 'prompt': _buildGrammarPrompt(
@@ -389,7 +397,7 @@ class _ExamplesSection extends StatelessWidget {
                                   example.sentenceVi,
                                 ),
                                 'displayText':
-                                'Giải thích ngữ pháp câu "${example.sentenceCn}" giúp mình nhé!',
+                                    'Giải thích ngữ pháp câu "${example.sentenceCn}" giúp mình nhé!',
                                 'wordContext': focusWord?.word ?? '',
                               },
                             ),
@@ -409,7 +417,8 @@ class _ExamplesSection extends StatelessWidget {
     });
   }
 
-  String _buildGrammarPrompt(String word, String sentenceCn, String translation) {
+  String _buildGrammarPrompt(
+      String word, String sentenceCn, String translation) {
     final buffer = StringBuffer(
         'Giải thích chi tiết cấu trúc ngữ pháp của câu "$sentenceCn" (nghĩa: $translation). ')
       ..write('Trình bày bằng tiếng Việt, phân tích từng thành phần trong câu');

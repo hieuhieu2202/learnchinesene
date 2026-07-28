@@ -47,7 +47,8 @@ class WordListScreen extends StatelessWidget {
           );
         }
 
-        final current = words[controller.index.value.clamp(0, words.length - 1)];
+        final current =
+            words[controller.index.value.clamp(0, words.length - 1)];
 
         return Column(
           children: [
@@ -64,8 +65,8 @@ class WordListScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: LinearProgressIndicator(
-                                value: (controller.index.value + 1) /
-                                    words.length,
+                                value:
+                                    (controller.index.value + 1) / words.length,
                                 minHeight: 8,
                                 borderRadius: BorderRadius.circular(8),
                               ),

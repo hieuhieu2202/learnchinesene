@@ -39,7 +39,8 @@ class WordListController extends GetxController {
     try {
       final result = await getWordsBySection(sectionId);
       words.assignAll(result);
-      if (result.isNotEmpty && result.first.groupSubtitle.contains('[LOCKED]')) {
+      if (result.isNotEmpty &&
+          result.first.groupSubtitle.contains('[LOCKED]')) {
         isUnlocked = false;
       }
       // Load progress for all words and cache as fraction.

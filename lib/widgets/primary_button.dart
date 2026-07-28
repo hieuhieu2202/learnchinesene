@@ -13,8 +13,8 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FilledButton.icon(
-    onPressed: onPressed,
-    icon: Icon(icon ?? Icons.arrow_forward_rounded),
-    label: Text(label),
-  );
+        onPressed: onPressed,
+        icon: Icon(icon ?? Icons.arrow_forward_rounded),
+        label: Text(label),
+      );
 }

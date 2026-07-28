@@ -9,6 +9,16 @@ import '../stats/stats_screen.dart';
 import 'controller/home_controller.dart';
 import '../../features/hanzi_writing/screens/hanzi_writing_home_screen.dart';
 import '../../core/responsive/responsive_layout.dart';
+import '../translator/translator_screen.dart';
+import '../conversations/conversations_screen.dart';
+import '../lessons/lessons_screen.dart';
+import '../hsk_exam/hsk_exam_screen.dart';
+import '../history/history_screen.dart';
+import '../dictionary/dictionary_screen.dart';
+import '../flashcards/flashcards_screen.dart';
+import '../hsk_quiz/hsk_quiz_screen.dart';
+import '../../features/system/presentation/pages/profile_page.dart';
+import '../../features/system/presentation/pages/settings_page.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -205,11 +215,238 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: AppColors.red,
                       onTap: () => Get.to(() => const HskScreen()),
                     ),
+                    const SizedBox(height: 26),
+                    const Text(
+                      'Học tập & Tiện ích AI',
+                      style:
+                          TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 12),
+                    _Action(
+                      icon: Icons.g_translate_rounded,
+                      title: 'Dịch thuật & Quét ảnh AI',
+                      subtitle: 'Dịch thuật Trung - Việt và quét chữ từ camera',
+                      color: AppColors.redDark,
+                      onTap: () => Get.to(() => const TranslatorScreen()),
+                    ),
+                    const SizedBox(height: 10),
+                    _Action(
+                      icon: Icons.forum_rounded,
+                      title: 'Hội thoại tình huống AI',
+                      subtitle: 'Luyện giao tiếp qua các chủ đề thông minh',
+                      color: AppColors.orange,
+                      onTap: () => Get.to(() => const ConversationsScreen()),
+                    ),
+                    const SizedBox(height: 10),
+                    _Action(
+                      icon: Icons.school_rounded,
+                      title: 'Bài học chuyên đề AI',
+                      subtitle: 'Tự động biên soạn bài học và ngữ pháp',
+                      color: AppColors.red,
+                      onTap: () => Get.to(() => const LessonsScreen()),
+                    ),
+                    const SizedBox(height: 10),
+                    _Action(
+                      icon: Icons.assignment_turned_in_rounded,
+                      title: 'Thi thử HSK với AI',
+                      subtitle:
+                          'Chấm điểm và nhận xét chi tiết từ giáo viên AI',
+                      color: AppColors.success,
+                      onTap: () => Get.to(() => const HskExamScreen()),
+                    ),
+                    const SizedBox(height: 10),
+                    _Action(
+                      icon: Icons.history_rounded,
+                      title: 'Lịch sử & Phân tích',
+                      subtitle:
+                          'Xem lại các bản dịch, hội thoại và kết quả thi',
+                      color: AppColors.muted,
+                      onTap: () => Get.to(() => const HistoryScreen()),
+                    ),
                   ]),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLearningTab() {
+    return Center(
+      child: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxWidth: ResponsiveHelper.contentMaxWidth(context)),
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            const Text(
+              'Học tập chuyên sâu',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 18),
+            _Action(
+              icon: Icons.menu_book_rounded,
+              title: 'Kho từ vựng HSK',
+              subtitle: 'Xem từ theo cấp độ HSK và bài học',
+              color: AppColors.red,
+              onTap: () => Get.to(() => const HskScreen()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.school_rounded,
+              title: 'Bài học chuyên đề AI',
+              subtitle: 'Tự động biên soạn bài học và ngữ pháp',
+              color: AppColors.redDark,
+              onTap: () => Get.to(() => const LessonsScreen()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.forum_rounded,
+              title: 'Hội thoại tình huống AI',
+              subtitle: 'Luyện giao tiếp qua các chủ đề thông minh',
+              color: AppColors.orange,
+              onTap: () => Get.to(() => const ConversationsScreen()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPracticeTab() {
+    return Center(
+      child: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxWidth: ResponsiveHelper.contentMaxWidth(context)),
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            const Text(
+              'Luyện tập & Thực hành',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 18),
+            _Action(
+              icon: Icons.record_voice_over_rounded,
+              title: 'Luyện phát âm',
+              subtitle: 'Cải thiện phát âm với điểm số tức thì',
+              color: AppColors.orange,
+              onTap: () => Get.to(
+                () => const SpeakingScreen(),
+                arguments: const {'standalone': true},
+              ),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.draw_rounded,
+              title: 'Luyện viết chữ Hán',
+              subtitle: 'Học viết chữ Hán theo thứ tự nét chuẩn',
+              color: AppColors.red,
+              onTap: () => Get.to(() => const HanziWritingHomeScreen()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.style_rounded,
+              title: 'Flashcards ôn tập',
+              subtitle: 'Ghi nhớ từ vựng với hiệu ứng lật thẻ 3D',
+              color: AppColors.success,
+              onTap: () => Get.to(() => const FlashcardsScreen()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.quiz_rounded,
+              title: 'Trắc nghiệm HSK',
+              subtitle: 'Bài tập trắc nghiệm ngẫu nhiên theo cấp độ HSK',
+              color: AppColors.redDark,
+              onTap: () => Get.to(() => const HskQuizScreen()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressTab() {
+    return Center(
+      child: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxWidth: ResponsiveHelper.contentMaxWidth(context)),
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            const Text(
+              'Tiến độ & Đánh giá',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 18),
+            _Action(
+              icon: Icons.insights_rounded,
+              title: 'Thống kê chi tiết',
+              subtitle: 'Theo dõi tiến trình và số liệu học tập của bạn',
+              color: AppColors.orange,
+              onTap: () => Get.to(() => const StatsScreen()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.assignment_turned_in_rounded,
+              title: 'Thi thử HSK với AI',
+              subtitle: 'Chấm điểm và nhận xét chi tiết từ giáo viên AI',
+              color: AppColors.success,
+              onTap: () => Get.to(() => const HskExamScreen()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.history_rounded,
+              title: 'Lịch sử & Phân tích',
+              subtitle: 'Xem lại các bản dịch, hội thoại và kết quả thi',
+              color: AppColors.muted,
+              onTap: () => Get.to(() => const HistoryScreen()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonalTab() {
+    return Center(
+      child: ConstrainedBox(
+        constraints:
+            BoxConstraints(maxWidth: ResponsiveHelper.contentMaxWidth(context)),
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            const Text(
+              'Cá nhân',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 18),
+            _Action(
+              icon: Icons.person_rounded,
+              title: 'Hồ sơ người dùng',
+              subtitle: 'Xem thông tin cá nhân và xếp hạng',
+              color: AppColors.red,
+              onTap: () => Get.to(() => const ProfilePage()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.g_translate_rounded,
+              title: 'Từ điển Việt ↔ Trung',
+              subtitle: 'Tra cứu từ bằng AI, hỗ trợ giọng nói',
+              color: AppColors.orange,
+              onTap: () => Get.to(() => const DictionaryScreen()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.settings_rounded,
+              title: 'Cài đặt hệ thống',
+              subtitle: 'Cấu hình âm thanh, tốc độ đọc, thông báo',
+              color: AppColors.muted,
+              onTap: () => Get.to(() => const SettingsPage()),
+            ),
+          ],
         ),
       ),
     );
@@ -223,7 +460,10 @@ class _HomeScreenState extends State<HomeScreen> {
           index: controller.currentIndex.value,
           children: [
             _buildHomeDashboard(),
-            const HanziWritingHomeScreen(),
+            _buildLearningTab(),
+            _buildPracticeTab(),
+            _buildProgressTab(),
+            _buildPersonalTab(),
           ],
         ),
       );
@@ -236,13 +476,25 @@ class _HomeScreenState extends State<HomeScreen> {
             onDestinationSelected: controller.setIndex,
             destinations: const [
               NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: 'Trang chủ'),
+              NavigationDestination(
                   icon: Icon(Icons.school_outlined),
                   selectedIcon: Icon(Icons.school),
-                  label: 'Học'),
+                  label: 'Học tập'),
               NavigationDestination(
-                  icon: Icon(Icons.draw_outlined),
-                  selectedIcon: Icon(Icons.draw),
-                  label: 'Viết chữ'),
+                  icon: Icon(Icons.fitness_center_outlined),
+                  selectedIcon: Icon(Icons.fitness_center),
+                  label: 'Luyện tập'),
+              NavigationDestination(
+                  icon: Icon(Icons.insights_outlined),
+                  selectedIcon: Icon(Icons.insights),
+                  label: 'Tiến độ'),
+              NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person),
+                  label: 'Cá nhân'),
             ],
           ),
         ),
@@ -255,13 +507,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 labelType: NavigationRailLabelType.all,
                 destinations: const [
                   NavigationRailDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home),
+                      label: Text('Trang chủ')),
+                  NavigationRailDestination(
                       icon: Icon(Icons.school_outlined),
                       selectedIcon: Icon(Icons.school),
-                      label: Text('Học')),
+                      label: Text('Học tập')),
                   NavigationRailDestination(
-                      icon: Icon(Icons.draw_outlined),
-                      selectedIcon: Icon(Icons.draw),
-                      label: Text('Viết chữ')),
+                      icon: Icon(Icons.fitness_center_outlined),
+                      selectedIcon: Icon(Icons.fitness_center),
+                      label: Text('Luyện tập')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.insights_outlined),
+                      selectedIcon: Icon(Icons.insights),
+                      label: Text('Tiến độ')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.person_outline),
+                      selectedIcon: Icon(Icons.person),
+                      label: Text('Cá nhân')),
                 ],
               ),
               const VerticalDivider(thickness: 1, width: 1),
@@ -278,13 +542,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 onDestinationSelected: controller.setIndex,
                 destinations: const [
                   NavigationRailDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home),
+                      label: Text('Trang chủ')),
+                  NavigationRailDestination(
                       icon: Icon(Icons.school_outlined),
                       selectedIcon: Icon(Icons.school),
-                      label: Text('Học')),
+                      label: Text('Học tập')),
                   NavigationRailDestination(
-                      icon: Icon(Icons.draw_outlined),
-                      selectedIcon: Icon(Icons.draw),
-                      label: Text('Viết chữ')),
+                      icon: Icon(Icons.fitness_center_outlined),
+                      selectedIcon: Icon(Icons.fitness_center),
+                      label: Text('Luyện tập')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.insights_outlined),
+                      selectedIcon: Icon(Icons.insights),
+                      label: Text('Tiến độ')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.person_outline),
+                      selectedIcon: Icon(Icons.person),
+                      label: Text('Cá nhân')),
                 ],
               ),
               const VerticalDivider(thickness: 1, width: 1),

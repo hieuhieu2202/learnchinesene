@@ -14,7 +14,7 @@ class WordDetailController extends GetxController {
   Word? word;
   final examples = <ExampleSentence>[].obs;
   final isLoadingExamples = true.obs;
-  
+
   final learned = false.obs;
   final characterId = RxnInt();
 
@@ -43,7 +43,8 @@ class WordDetailController extends GetxController {
       isLoadingExamples.value = false;
     }
 
-    final charId = await DbHelper.instance.getCharacterIdByCharString(word!.chinese);
+    final charId =
+        await DbHelper.instance.getCharacterIdByCharString(word!.chinese);
     characterId.value = charId;
   }
 

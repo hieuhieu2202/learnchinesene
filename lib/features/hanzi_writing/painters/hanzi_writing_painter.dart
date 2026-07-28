@@ -124,13 +124,15 @@ class HanziWritingPainter extends CustomPainter {
               final revV = Offset(-V.dx, -V.dy);
               const angle = math.pi / 6; // 30 degrees
               final wing1 = Offset(
-                revV.dx * math.cos(angle) - revV.dy * math.sin(angle),
-                revV.dx * math.sin(angle) + revV.dy * math.cos(angle),
-              ) * 3.5;
+                    revV.dx * math.cos(angle) - revV.dy * math.sin(angle),
+                    revV.dx * math.sin(angle) + revV.dy * math.cos(angle),
+                  ) *
+                  3.5;
               final wing2 = Offset(
-                revV.dx * math.cos(-angle) - revV.dy * math.sin(-angle),
-                revV.dx * math.sin(-angle) + revV.dy * math.cos(-angle),
-              ) * 3.5;
+                    revV.dx * math.cos(-angle) - revV.dy * math.sin(-angle),
+                    revV.dx * math.sin(-angle) + revV.dy * math.cos(-angle),
+                  ) *
+                  3.5;
 
               canvas.drawLine(arrowEnd, arrowEnd + wing1, arrowPaint);
               canvas.drawLine(arrowEnd, arrowEnd + wing2, arrowPaint);

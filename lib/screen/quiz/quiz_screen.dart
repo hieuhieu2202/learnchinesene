@@ -201,8 +201,8 @@ class QuizScreen extends StatelessWidget {
         (controller.score.value / controller.questions.length * 100).round();
     return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-            maxWidth: ResponsiveHelper.contentMaxWidth(context)),
+        constraints:
+            BoxConstraints(maxWidth: ResponsiveHelper.contentMaxWidth(context)),
         child: ListView(
           padding: EdgeInsets.symmetric(
             horizontal: ResponsiveHelper.horizontalPadding(context),
@@ -236,8 +236,7 @@ class QuizScreen extends StatelessWidget {
                   ),
                   Text(
                     'Đúng ${controller.score.value}/${controller.questions.length} câu',
-                    style:
-                        const TextStyle(color: Colors.white70, fontSize: 16),
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
