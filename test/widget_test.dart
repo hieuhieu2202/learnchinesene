@@ -5,12 +5,12 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:chinese_master/app.dart';
+import 'package:flash_learn_chinese/app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:chinese_master/di.dart';
-import 'package:chinese_master/services/speech_service.dart';
+import 'package:flash_learn_chinese/di.dart';
+import 'package:flash_learn_chinese/services/speech_service.dart';
 
 void main() {
   testWidgets('App renders branded startup experience', (

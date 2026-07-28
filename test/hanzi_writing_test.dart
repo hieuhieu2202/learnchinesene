@@ -2,11 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/sqlite3.dart';
-import 'package:chinese_master/features/hanzi_writing/services/svg_stroke_parser.dart';
-import 'package:chinese_master/features/hanzi_writing/services/stroke_sampler.dart';
-import 'package:chinese_master/features/hanzi_writing/services/stroke_validator.dart';
-import 'package:chinese_master/features/hanzi_writing/models/hanzi_practice_config.dart';
-import 'package:chinese_master/features/hanzi_writing/painters/hanzi_writing_painter.dart';
+import 'package:flash_learn_chinese/features/hanzi_writing/services/svg_stroke_parser.dart';
+import 'package:flash_learn_chinese/features/hanzi_writing/services/stroke_sampler.dart';
+import 'package:flash_learn_chinese/features/hanzi_writing/services/stroke_validator.dart';
+import 'package:flash_learn_chinese/features/hanzi_writing/models/hanzi_practice_config.dart';
+import 'package:flash_learn_chinese/features/hanzi_writing/painters/hanzi_writing_painter.dart';
 
 class MockCanvas extends Fake implements Canvas {
   final List<Paint> paintsUsed = [];

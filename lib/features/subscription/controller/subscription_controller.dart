@@ -23,9 +23,12 @@ class SubscriptionController extends GetxController {
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
 
   int get remainingDays {
-    if (purchaseDate.value == null) return 0;
-    // Assuming 30 days subscription duration
-    final expiryDate = purchaseDate.value!.add(const Duration(days: 30));
+    if (purchaseDate.value == null || activeProductId.value == null) return 0;
+    
+    // Gói cao cấp: 1 năm (365 ngày), Gói tiêu chuẩn: 1 tháng (30 ngày)
+    final durationDays = activeProductId.value == 'premium_package' ? 365 : 30;
+    
+    final expiryDate = purchaseDate.value!.add(Duration(days: durationDays));
     final diff = expiryDate.difference(DateTime.now()).inDays;
     return diff > 0 ? diff : 0;
   }
@@ -122,6 +125,9 @@ class SubscriptionController extends GetxController {
       } else if (purchaseDetails.status == PurchaseStatus.error) {
         errorMessage.value = purchaseDetails.error?.message ?? 'Lỗi thanh toán';
         status.value = SubscriptionStatus.purchaseError;
+      } else if (purchaseDetails.status == PurchaseStatus.canceled) {
+        // Handle when user closes the payment dialog natively
+        status.value = SubscriptionStatus.loadedProducts;
       } else if (purchaseDetails.status == PurchaseStatus.purchased || purchaseDetails.status == PurchaseStatus.restored) {
         activeProductId.value = purchaseDetails.productID;
         final date = _parseDate(purchaseDetails.transactionDate);
