@@ -8,8 +8,8 @@ class ChineseMasterApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GetMaterialApp(
+    debugShowCheckedModeBanner: false,
         title: 'Học tiếng Trung',
-        debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: ThemeMode.system,
