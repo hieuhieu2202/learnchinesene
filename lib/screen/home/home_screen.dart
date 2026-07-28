@@ -19,6 +19,7 @@ import '../flashcards/flashcards_screen.dart';
 import '../hsk_quiz/hsk_quiz_screen.dart';
 import '../../features/system/presentation/pages/profile_page.dart';
 import '../../features/system/presentation/pages/settings_page.dart';
+import '../../features/subscription/page/subscription_page.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -429,6 +430,14 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: 'Xem thông tin cá nhân và xếp hạng',
               color: AppColors.red,
               onTap: () => Get.to(() => const ProfilePage()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.workspace_premium_rounded,
+              title: 'Nâng cấp Premium',
+              subtitle: 'Mở khóa toàn bộ tính năng và bài học HSK',
+              color: AppColors.orange,
+              onTap: () => Get.to(() => const SubscriptionPage()),
             ),
             const SizedBox(height: 12),
             _Action(
