@@ -1,9 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.stallion.chinesemaster">
+    package="com.yourname.flashlearnchinese">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="com.android.vending.BILLING" />
+    
     <application
-        android:label="Chinese Master"
+        android:label="FlashLearn Chinese"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

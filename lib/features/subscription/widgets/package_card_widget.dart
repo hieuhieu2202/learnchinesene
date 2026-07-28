@@ -1,5 +1,4 @@
-import '../../../../core/app_color.dart';
-import '../../../../core/app_text_style.dart';
+import '../../../../core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class PackageCardWidget extends StatelessWidget {
@@ -53,10 +52,10 @@ class PackageCardWidget extends StatelessWidget {
     return BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: isSelected ? AppColors.primary1 : AppColors.border.withValues(alpha: 0.05), width: isSelected ? 2.5 : 1),
+      border: Border.all(color: isSelected ? AppColors.red : Colors.grey.withValues(alpha: 0.2), width: isSelected ? 2.5 : 1),
       boxShadow: [
         if (isSelected)
-          BoxShadow(color: AppColors.primary1.withValues(alpha: 0.15), blurRadius: 24, spreadRadius: 4, offset: const Offset(0, 10))
+          BoxShadow(color: AppColors.red.withValues(alpha: 0.15), blurRadius: 24, spreadRadius: 4, offset: const Offset(0, 10))
         else
           BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, spreadRadius: 0, offset: const Offset(0, 5)),
       ],
@@ -67,7 +66,7 @@ class PackageCardWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isSelected ? AppColors.primary1.withValues(alpha: 0.03) : Colors.transparent,
+        color: isSelected ? AppColors.red.withValues(alpha: 0.03) : Colors.transparent,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
       ),
       child: Row(
@@ -87,12 +86,12 @@ class PackageCardWidget extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isSelected ? [AppColors.linearGradient1, AppColors.linearGradient2] : [Colors.grey.shade100, Colors.grey.shade200],
+          colors: isSelected ? [AppColors.redDark, AppColors.red] : [Colors.grey.shade100, Colors.grey.shade200],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: isSelected ? [BoxShadow(color: AppColors.primary1.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6))] : null,
+        boxShadow: isSelected ? [BoxShadow(color: AppColors.red.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6))] : null,
       ),
       child: Icon(icon, color: isSelected ? Colors.white : Colors.grey.shade600, size: 28),
     );
@@ -104,26 +103,27 @@ class PackageCardWidget extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppTextStyles.font16w600BlackSF.copyWith(
+          style: TextStyle(
+            fontSize: 16,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected ? AppColors.primary1 : AppColors.textPrimary,
+            color: isSelected ? AppColors.red : AppColors.ink,
           ),
         ),
         const SizedBox(height: 4),
-        Text(price, style: AppTextStyles.font20w700BlackSF.copyWith(color: AppColors.textPrimary, letterSpacing: -0.5)),
+        Text(price, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.ink, letterSpacing: -0.5)),
         if (isActive) ...[
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: AppColors.primary5.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.check_circle_rounded, color: AppColors.primary5, size: 14),
+                const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 14),
                 const SizedBox(width: 6),
                 Text(
                   'Đang dùng${remainingDays != null ? ' ($remainingDays ngày)' : ''}',
-                  style: AppTextStyles.font12w600BlackSF.copyWith(color: AppColors.primary5),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success),
                 ),
               ],
             ),
@@ -140,9 +140,9 @@ class PackageCardWidget extends StatelessWidget {
       height: 28,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isSelected ? AppColors.primary1 : Colors.white,
-        border: Border.all(color: isSelected ? AppColors.primary1 : Colors.grey.shade300, width: 2),
-        boxShadow: isSelected ? [BoxShadow(color: AppColors.primary1.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))] : null,
+        color: isSelected ? AppColors.red : Colors.white,
+        border: Border.all(color: isSelected ? AppColors.red : Colors.grey.shade300, width: 2),
+        boxShadow: isSelected ? [BoxShadow(color: AppColors.red.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))] : null,
       ),
       child: isSelected ? const Icon(Icons.check_rounded, color: Colors.white, size: 18) : null,
     );
@@ -172,12 +172,12 @@ class PackageCardWidget extends StatelessWidget {
           Container(
             margin: const EdgeInsets.only(top: 2),
             padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(shape: BoxShape.circle, color: isSelected ? AppColors.primary1.withValues(alpha: 0.1) : Colors.grey.shade100),
-            child: Icon(Icons.check_rounded, color: isSelected ? AppColors.primary1 : Colors.grey.shade400, size: 14),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: isSelected ? AppColors.red.withValues(alpha: 0.1) : Colors.grey.shade100),
+            child: Icon(Icons.check_rounded, color: isSelected ? AppColors.red : Colors.grey.shade400, size: 14),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(feature, style: AppTextStyles.font14w400BlackSF.copyWith(color: isSelected ? Colors.black87 : Colors.black54, height: 1.3)),
+            child: Text(feature, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: isSelected ? Colors.black87 : Colors.black54, height: 1.3)),
           ),
         ],
       ),
@@ -193,12 +193,12 @@ class PackageCardWidget extends StatelessWidget {
           gradient: isActive
               ? null
               : const LinearGradient(
-                  colors: [AppColors.linearGradient1, AppColors.linearGradient2],
+                  colors: [AppColors.redDark, AppColors.orange],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: isActive ? [] : [BoxShadow(color: AppColors.primary1.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 6))],
+          boxShadow: isActive ? [] : [BoxShadow(color: AppColors.red.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 6))],
         ),
         child: ElevatedButton(
           onPressed: isActive ? null : onSubscribeTap,
@@ -211,8 +211,9 @@ class PackageCardWidget extends StatelessWidget {
           ),
           child: Text(
             isActive ? 'Gói đang sử dụng' : 'Đăng ký ngay',
-            style: AppTextStyles.font16w600WhiteSF.copyWith(
+            style: TextStyle(
               fontSize: 16,
+              fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
               color: isActive ? Colors.grey.shade500 : Colors.white,
             ),
@@ -238,7 +239,7 @@ class PackageCardWidget extends StatelessWidget {
           children: [
             const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 14),
             const SizedBox(width: 6),
-            Text('Phổ biến nhất', style: AppTextStyles.font12w600BlackSF.copyWith(color: Colors.white)),
+            const Text('Phổ biến nhất', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
           ],
         ),
       ),

@@ -1,4 +1,5 @@
-import 'package:chinese_master/features/vocabulary/data/models/user_stats_model.dart';
+
+import '../../data/models/user_stats_model.dart';
 
 abstract class UserStatsRepository {
   Future<UserStats> getUserStats();

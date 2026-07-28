@@ -1,5 +1,5 @@
-import 'package:chinese_master/core/usecase/usecase.dart';
 
+import '../../../../core/usecase/usecase.dart';
 import '../entities/ai_message.dart';
 import '../repositories/ai_repository.dart';
 

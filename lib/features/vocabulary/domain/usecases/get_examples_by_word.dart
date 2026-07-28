@@ -1,4 +1,4 @@
-import 'package:chinese_master/core/usecase/usecase.dart';
+import 'package:flash_learn_chinese/core/usecase/usecase.dart';
 
 import '../entities/example_sentence.dart';
 import '../repositories/example_repository.dart';
