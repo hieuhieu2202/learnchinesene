@@ -20,6 +20,8 @@ import '../hsk_quiz/hsk_quiz_screen.dart';
 import '../../features/system/presentation/pages/profile_page.dart';
 import '../../features/system/presentation/pages/settings_page.dart';
 import '../../features/subscription/page/subscription_page.dart';
+import '../../features/subscription/controller/subscription_controller.dart';
+import '../../core/helper/upgrade_dialog_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -30,6 +32,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   HomeController get controller => Get.find<HomeController>();
+
+  void _runIfFeatureUnlocked(String featureKey, String title, String message, List<String> benefits, VoidCallback onUnlocked) {
+    final subController = Get.find<SubscriptionController>();
+    if (subController.isFeatureUnlocked(featureKey)) {
+      onUnlocked();
+    } else {
+      UpgradeDialogHelper.showUpgradeDialog(
+        context: context,
+        title: title,
+        message: message,
+        benefits: benefits,
+      );
+    }
+  }
 
   Widget _buildHomeDashboard() {
     return RefreshIndicator(
@@ -236,7 +252,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'Hội thoại tình huống AI',
                       subtitle: 'Luyện giao tiếp qua các chủ đề thông minh',
                       color: AppColors.orange,
-                      onTap: () => Get.to(() => const ConversationsScreen()),
+                      onTap: () => _runIfFeatureUnlocked(
+                        'ai_chat',
+                        'Mở khóa Hội thoại AI',
+                        'Tính năng trò chuyện tình huống thông minh yêu cầu nâng cấp gói cước Cao Cấp.',
+                        const ['Giao tiếp tình huống không giới hạn', 'Phát âm và sửa lỗi thời gian thực', 'Đàm thoại AI thông minh'],
+                        () => Get.to(() => const ConversationsScreen()),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     _Action(
@@ -244,7 +266,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'Bài học chuyên đề AI',
                       subtitle: 'Tự động biên soạn bài học và ngữ pháp',
                       color: AppColors.red,
-                      onTap: () => Get.to(() => const LessonsScreen()),
+                      onTap: () => _runIfFeatureUnlocked(
+                        'lessons',
+                        'Mở khóa Bài học AI',
+                        'Tính năng biên soạn bài học ngữ pháp AI yêu cầu nâng cấp gói cước Cao Cấp.',
+                        const ['Bài học ngữ pháp chuyên sâu tự động', 'Bài tập thực hành đi kèm phong phú', 'Hỏi đáp bài học trực tiếp'],
+                        () => Get.to(() => const LessonsScreen()),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     _Action(
@@ -253,7 +281,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       subtitle:
                           'Chấm điểm và nhận xét chi tiết từ giáo viên AI',
                       color: AppColors.success,
-                      onTap: () => Get.to(() => const HskExamScreen()),
+                      onTap: () => _runIfFeatureUnlocked(
+                        'hsk_exam',
+                        'Mở khóa Thi thử AI',
+                        'Tính năng làm đề thi thử và chấm điểm AI yêu cầu nâng cấp gói cước Cao Cấp.',
+                        const ['Đề thi thử HSK 1-6 chuẩn cấu trúc', 'Chấm điểm và sửa bài chi tiết bằng AI', 'Xem lại lịch sử thi bất kỳ lúc nào'],
+                        () => Get.to(() => const HskExamScreen()),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     _Action(
@@ -300,7 +334,13 @@ class _HomeScreenState extends State<HomeScreen> {
               title: 'Bài học chuyên đề AI',
               subtitle: 'Tự động biên soạn bài học và ngữ pháp',
               color: AppColors.redDark,
-              onTap: () => Get.to(() => const LessonsScreen()),
+              onTap: () => _runIfFeatureUnlocked(
+                'lessons',
+                'Mở khóa Bài học AI',
+                'Tính năng biên soạn bài học ngữ pháp AI yêu cầu nâng cấp gói cước Cao Cấp.',
+                const ['Bài học ngữ pháp chuyên sâu tự động', 'Bài tập thực hành đi kèm phong phú', 'Hỏi đáp bài học trực tiếp'],
+                () => Get.to(() => const LessonsScreen()),
+              ),
             ),
             const SizedBox(height: 12),
             _Action(
@@ -308,7 +348,13 @@ class _HomeScreenState extends State<HomeScreen> {
               title: 'Hội thoại tình huống AI',
               subtitle: 'Luyện giao tiếp qua các chủ đề thông minh',
               color: AppColors.orange,
-              onTap: () => Get.to(() => const ConversationsScreen()),
+              onTap: () => _runIfFeatureUnlocked(
+                'ai_chat',
+                'Mở khóa Hội thoại AI',
+                'Tính năng trò chuyện tình huống thông minh yêu cầu nâng cấp gói cước Cao Cấp.',
+                const ['Giao tiếp tình huống không giới hạn', 'Phát âm và sửa lỗi thời gian thực', 'Đàm thoại AI thông minh'],
+                () => Get.to(() => const ConversationsScreen()),
+              ),
             ),
           ],
         ),
@@ -395,7 +441,13 @@ class _HomeScreenState extends State<HomeScreen> {
               title: 'Thi thử HSK với AI',
               subtitle: 'Chấm điểm và nhận xét chi tiết từ giáo viên AI',
               color: AppColors.success,
-              onTap: () => Get.to(() => const HskExamScreen()),
+              onTap: () => _runIfFeatureUnlocked(
+                'hsk_exam',
+                'Mở khóa Thi thử AI',
+                'Tính năng làm đề thi thử và chấm điểm AI yêu cầu nâng cấp gói cước Cao Cấp.',
+                const ['Đề thi thử HSK 1-6 chuẩn cấu trúc', 'Chấm điểm và sửa bài chi tiết bằng AI', 'Xem lại lịch sử thi bất kỳ lúc nào'],
+                () => Get.to(() => const HskExamScreen()),
+              ),
             ),
             const SizedBox(height: 12),
             _Action(

@@ -7,6 +7,8 @@ import '../../widgets/empty_state_widget.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../unit/unit_screen.dart';
 import 'controller/hsk_controller.dart';
+import '../../features/subscription/controller/subscription_controller.dart';
+import '../../core/helper/upgrade_dialog_helper.dart';
 
 class HskScreen extends StatelessWidget {
   const HskScreen({super.key});
@@ -91,7 +93,11 @@ class _LevelCard extends StatelessWidget {
   final int index;
 
   @override
-  Widget build(BuildContext context) => FutureBuilder<List<Object>>(
+  Widget build(BuildContext context) {
+    final subController = Get.find<SubscriptionController>();
+    final isUnlocked = subController.isLevelUnlocked(level.order);
+
+    return FutureBuilder<List<Object>>(
         future: Future.wait<Object>([
           DbHelper.instance.getUnitCountForLevel(level.id),
           DbHelper.instance.getLevelProgress(level.id),
@@ -113,10 +119,23 @@ class _LevelCard extends StatelessWidget {
             ),
             child: InkWell(
               borderRadius: BorderRadius.circular(22),
-              onTap: () => Get.to(
-                () => const UnitScreen(),
-                arguments: {'hskLevelId': level.id, 'hskTitle': level.title},
-              ),
+              onTap: () {
+                if (isUnlocked) {
+                  Get.to(
+                    () => const UnitScreen(),
+                    arguments: {'hskLevelId': level.id, 'hskTitle': level.title},
+                  );
+                } else {
+                  UpgradeDialogHelper.showUpgradeDialog(
+                    context: context,
+                    title: 'Mở khóa HSK ${level.order}',
+                    message: 'Tính năng này yêu cầu nâng cấp gói cước để học toàn bộ từ vựng cấp độ HSK ${level.order}.',
+                    benefits: level.order <= 3
+                        ? ['Học toàn bộ từ vựng HSK 1-3', 'Lưu tiến độ trên đám mây']
+                        : ['Mở khóa toàn bộ HSK 1-6', 'Hội thoại AI không giới hạn', 'Thi thử HSK với AI'],
+                  );
+                }
+              },
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Row(
@@ -173,10 +192,10 @@ class _LevelCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Icon(
-                      Icons.arrow_forward_ios_rounded,
+                    Icon(
+                      isUnlocked ? Icons.arrow_forward_ios_rounded : Icons.lock_rounded,
                       size: 16,
-                      color: AppColors.muted,
+                      color: isUnlocked ? AppColors.muted : AppColors.orange,
                     ),
                   ],
                 ),
@@ -185,4 +204,5 @@ class _LevelCard extends StatelessWidget {
           );
         },
       );
+  }
 }

@@ -4,6 +4,9 @@ import 'package:flutter_tts/flutter_tts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/gemini_service.dart';
 import '../../core/responsive/responsive_layout.dart';
+import 'package:get/get.dart';
+import '../../features/subscription/controller/subscription_controller.dart';
+import '../../core/helper/upgrade_dialog_helper.dart';
 
 class HskQuizScreen extends StatefulWidget {
   const HskQuizScreen({super.key});
@@ -199,18 +202,41 @@ class _HskQuizScreenState extends State<HskQuizScreen> {
             children: List.generate(6, (i) {
               final level = i + 1;
               final isSelected = _selectedLevel == level;
+              final subController = Get.find<SubscriptionController>();
+              final isUnlocked = subController.isLevelUnlocked(level);
+
               return ChoiceChip(
                 selected: isSelected,
-                label: Text(
-                  'HSK $level',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'HSK $level',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    if (!isUnlocked) ...[
+                      const SizedBox(width: 4),
+                      const Icon(Icons.lock_rounded, size: 14, color: AppColors.orange),
+                    ],
+                  ],
                 ),
                 onSelected: (selected) {
                   if (selected) {
-                    setState(() {
-                      _selectedLevel = level;
-                    });
+                    if (isUnlocked) {
+                      setState(() {
+                        _selectedLevel = level;
+                      });
+                    } else {
+                      UpgradeDialogHelper.showUpgradeDialog(
+                        context: context,
+                        title: 'Mở khóa Trắc nghiệm HSK $level',
+                        message: 'Bài trắc nghiệm cấp độ HSK $level yêu cầu nâng cấp gói cước để truy cập.',
+                        benefits: level <= 3
+                            ? ['Luyện tập trắc nghiệm HSK 1-3', 'Lưu tiến độ trên đám mây']
+                            : ['Luyện tập trắc nghiệm HSK 1-6', 'Hội thoại AI không giới hạn', 'Thi thử HSK với AI'],
+                      );
+                    }
                   }
                 },
                 selectedColor: AppColors.red.withOpacity(0.2),

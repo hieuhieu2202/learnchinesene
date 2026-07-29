@@ -21,6 +21,21 @@ class SubscriptionController extends GetxController {
   final purchaseDate = Rxn<DateTime>();
 
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
+  
+  bool get isPremium => activeProductId.value == 'premium_package';
+  bool get isStandard => activeProductId.value == 'standard_package' || activeProductId.value == 'premium_package';
+
+  bool isLevelUnlocked(int level) {
+    if (isPremium) return true;
+    if (isStandard) return level <= 3;
+    return level == 1; // Free users get only HSK 1
+  }
+
+  bool isFeatureUnlocked(String featureKey) {
+    if (isPremium) return true;
+    // Premium features (AI Chat, HSK Exam with AI, AI Lessons) require premium
+    return false;
+  }
 
   int get remainingDays {
     if (purchaseDate.value == null || activeProductId.value == null) return 0;
