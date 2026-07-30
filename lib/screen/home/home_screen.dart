@@ -7,12 +7,8 @@ import '../review/review_screen.dart';
 import '../speaking/speaking_screen.dart';
 import '../stats/stats_screen.dart';
 import 'controller/home_controller.dart';
-import '../../features/hanzi_writing/screens/hanzi_writing_home_screen.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../translator/translator_screen.dart';
-import '../conversations/conversations_screen.dart';
-import '../lessons/lessons_screen.dart';
-import '../hsk_exam/hsk_exam_screen.dart';
 import '../history/history_screen.dart';
 import '../dictionary/dictionary_screen.dart';
 import '../flashcards/flashcards_screen.dart';
@@ -20,8 +16,6 @@ import '../hsk_quiz/hsk_quiz_screen.dart';
 import '../../features/system/presentation/pages/profile_page.dart';
 import '../../features/system/presentation/pages/settings_page.dart';
 import '../../features/subscription/page/subscription_page.dart';
-import '../../features/subscription/controller/subscription_controller.dart';
-import '../../core/helper/upgrade_dialog_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -32,20 +26,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   HomeController get controller => Get.find<HomeController>();
-
-  void _runIfFeatureUnlocked(String featureKey, String title, String message, List<String> benefits, VoidCallback onUnlocked) {
-    final subController = Get.find<SubscriptionController>();
-    if (subController.isFeatureUnlocked(featureKey)) {
-      onUnlocked();
-    } else {
-      UpgradeDialogHelper.showUpgradeDialog(
-        context: context,
-        title: title,
-        message: message,
-        benefits: benefits,
-      );
-    }
-  }
 
   Widget _buildHomeDashboard() {
     return RefreshIndicator(
@@ -232,63 +212,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: AppColors.red,
                       onTap: () => Get.to(() => const HskScreen()),
                     ),
-                    const SizedBox(height: 26),
-                    const Text(
-                      'Học tập & Tiện ích AI',
-                      style:
-                          TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
-                    ),
-                    const SizedBox(height: 12),
-                    _Action(
-                      icon: Icons.g_translate_rounded,
-                      title: 'Dịch thuật & Quét ảnh AI',
-                      subtitle: 'Dịch thuật Trung - Việt và quét chữ từ camera',
-                      color: AppColors.redDark,
-                      onTap: () => Get.to(() => const TranslatorScreen()),
-                    ),
-                    const SizedBox(height: 10),
-                    _Action(
-                      icon: Icons.forum_rounded,
-                      title: 'Hội thoại tình huống AI',
-                      subtitle: 'Luyện giao tiếp qua các chủ đề thông minh',
-                      color: AppColors.orange,
-                      onTap: () => _runIfFeatureUnlocked(
-                        'ai_chat',
-                        'Mở khóa Hội thoại AI',
-                        'Tính năng trò chuyện tình huống thông minh yêu cầu nâng cấp gói cước Cao Cấp.',
-                        const ['Giao tiếp tình huống không giới hạn', 'Phát âm và sửa lỗi thời gian thực', 'Đàm thoại AI thông minh'],
-                        () => Get.to(() => const ConversationsScreen()),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    _Action(
-                      icon: Icons.school_rounded,
-                      title: 'Bài học chuyên đề AI',
-                      subtitle: 'Tự động biên soạn bài học và ngữ pháp',
-                      color: AppColors.red,
-                      onTap: () => _runIfFeatureUnlocked(
-                        'lessons',
-                        'Mở khóa Bài học AI',
-                        'Tính năng biên soạn bài học ngữ pháp AI yêu cầu nâng cấp gói cước Cao Cấp.',
-                        const ['Bài học ngữ pháp chuyên sâu tự động', 'Bài tập thực hành đi kèm phong phú', 'Hỏi đáp bài học trực tiếp'],
-                        () => Get.to(() => const LessonsScreen()),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    _Action(
-                      icon: Icons.assignment_turned_in_rounded,
-                      title: 'Thi thử HSK với AI',
-                      subtitle:
-                          'Chấm điểm và nhận xét chi tiết từ giáo viên AI',
-                      color: AppColors.success,
-                      onTap: () => _runIfFeatureUnlocked(
-                        'hsk_exam',
-                        'Mở khóa Thi thử AI',
-                        'Tính năng làm đề thi thử và chấm điểm AI yêu cầu nâng cấp gói cước Cao Cấp.',
-                        const ['Đề thi thử HSK 1-6 chuẩn cấu trúc', 'Chấm điểm và sửa bài chi tiết bằng AI', 'Xem lại lịch sử thi bất kỳ lúc nào'],
-                        () => Get.to(() => const HskExamScreen()),
-                      ),
-                    ),
                     const SizedBox(height: 10),
                     _Action(
                       icon: Icons.history_rounded,
@@ -328,34 +251,8 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.red,
               onTap: () => Get.to(() => const HskScreen()),
             ),
+            // Only HSK vocabulary library remains here
             const SizedBox(height: 12),
-            _Action(
-              icon: Icons.school_rounded,
-              title: 'Bài học chuyên đề AI',
-              subtitle: 'Tự động biên soạn bài học và ngữ pháp',
-              color: AppColors.redDark,
-              onTap: () => _runIfFeatureUnlocked(
-                'lessons',
-                'Mở khóa Bài học AI',
-                'Tính năng biên soạn bài học ngữ pháp AI yêu cầu nâng cấp gói cước Cao Cấp.',
-                const ['Bài học ngữ pháp chuyên sâu tự động', 'Bài tập thực hành đi kèm phong phú', 'Hỏi đáp bài học trực tiếp'],
-                () => Get.to(() => const LessonsScreen()),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _Action(
-              icon: Icons.forum_rounded,
-              title: 'Hội thoại tình huống AI',
-              subtitle: 'Luyện giao tiếp qua các chủ đề thông minh',
-              color: AppColors.orange,
-              onTap: () => _runIfFeatureUnlocked(
-                'ai_chat',
-                'Mở khóa Hội thoại AI',
-                'Tính năng trò chuyện tình huống thông minh yêu cầu nâng cấp gói cước Cao Cấp.',
-                const ['Giao tiếp tình huống không giới hạn', 'Phát âm và sửa lỗi thời gian thực', 'Đàm thoại AI thông minh'],
-                () => Get.to(() => const ConversationsScreen()),
-              ),
-            ),
           ],
         ),
       ),
@@ -384,14 +281,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 () => const SpeakingScreen(),
                 arguments: const {'standalone': true},
               ),
-            ),
-            const SizedBox(height: 12),
-            _Action(
-              icon: Icons.draw_rounded,
-              title: 'Luyện viết chữ Hán',
-              subtitle: 'Học viết chữ Hán theo thứ tự nét chuẩn',
-              color: AppColors.red,
-              onTap: () => Get.to(() => const HanziWritingHomeScreen()),
             ),
             const SizedBox(height: 12),
             _Action(
@@ -434,20 +323,6 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: 'Theo dõi tiến trình và số liệu học tập của bạn',
               color: AppColors.orange,
               onTap: () => Get.to(() => const StatsScreen()),
-            ),
-            const SizedBox(height: 12),
-            _Action(
-              icon: Icons.assignment_turned_in_rounded,
-              title: 'Thi thử HSK với AI',
-              subtitle: 'Chấm điểm và nhận xét chi tiết từ giáo viên AI',
-              color: AppColors.success,
-              onTap: () => _runIfFeatureUnlocked(
-                'hsk_exam',
-                'Mở khóa Thi thử AI',
-                'Tính năng làm đề thi thử và chấm điểm AI yêu cầu nâng cấp gói cước Cao Cấp.',
-                const ['Đề thi thử HSK 1-6 chuẩn cấu trúc', 'Chấm điểm và sửa bài chi tiết bằng AI', 'Xem lại lịch sử thi bất kỳ lúc nào'],
-                () => Get.to(() => const HskExamScreen()),
-              ),
             ),
             const SizedBox(height: 12),
             _Action(

@@ -2,7 +2,7 @@ name: flash_learn_chinese
 description: "An offline-first HSK Chinese learning app."
 publish_to: 'none'
 
-version: 1.0.2+6
+version: 1.0.2+9
 
 environment:
   sdk: ^3.6.2

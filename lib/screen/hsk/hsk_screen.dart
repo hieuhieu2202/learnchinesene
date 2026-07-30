@@ -95,7 +95,6 @@ class _LevelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subController = Get.find<SubscriptionController>();
-    final isUnlocked = subController.isLevelUnlocked(level.order);
 
     return FutureBuilder<List<Object>>(
         future: Future.wait<Object>([
@@ -105,9 +104,11 @@ class _LevelCard extends StatelessWidget {
         builder: (context, snap) {
           final count = snap.hasData ? snap.data![0] as int : 0;
           final progress = snap.hasData ? snap.data![1] as double : 0.0;
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
+          return Obx(() {
+            final isUnlocked = subController.isLevelUnlocked(level.order);
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
               borderRadius: BorderRadius.circular(22),
               boxShadow: const [
                 BoxShadow(
@@ -202,6 +203,7 @@ class _LevelCard extends StatelessWidget {
               ),
             ),
           );
+          });
         },
       );
   }

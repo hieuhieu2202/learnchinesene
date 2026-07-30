@@ -84,7 +84,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       title: 'Gói Cao Cấp',
       price: price,
       icon: Icons.workspace_premium_rounded,
-      features: const ['Mở khóa toàn bộ từ vựng HSK 1-6', 'Hội thoại AI & Thi thử HSK không giới hạn'],
+      features: const ['Mở khóa toàn bộ từ vựng HSK 1-4'],
       isSelected: controller.selectedPackageIndex.value == 1,
       isPopular: true,
       isActive: controller.activeProductId.value == 'premium_package',

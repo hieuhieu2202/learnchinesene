@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../widgets/empty_state_widget.dart';
-import '../../features/hanzi_writing/screens/hanzi_writing_screen.dart';
+
 import 'controller/word_detail_controller.dart';
 
 class WordDetailScreen extends StatelessWidget {
@@ -282,34 +282,14 @@ class WordDetailScreen extends StatelessWidget {
             child: ConstrainedBox(
               constraints: BoxConstraints(
                   maxWidth: ResponsiveHelper.contentMaxWidth(context)),
-              child: Obx(() => Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: () => controller.speak(),
-                          icon: const Icon(Icons.record_voice_over_rounded),
-                          label: const Text('Luyện phát âm'),
-                        ),
-                      ),
-                      if (controller.characterId.value != null) ...[
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Get.to(() => HanziWritingScreen(
-                                  characterId: controller.characterId.value!));
-                            },
-                            icon: const Icon(Icons.draw_rounded),
-                            label: const Text('Luyện viết'),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppColors.red),
-                              foregroundColor: AppColors.red,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  )),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => controller.speak(),
+                  icon: const Icon(Icons.record_voice_over_rounded),
+                  label: const Text('Luyện phát âm'),
+                ),
+              ),
             ),
           ),
         ],

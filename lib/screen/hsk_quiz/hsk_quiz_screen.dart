@@ -203,48 +203,50 @@ class _HskQuizScreenState extends State<HskQuizScreen> {
               final level = i + 1;
               final isSelected = _selectedLevel == level;
               final subController = Get.find<SubscriptionController>();
-              final isUnlocked = subController.isLevelUnlocked(level);
 
-              return ChoiceChip(
-                selected: isSelected,
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'HSK $level',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    if (!isUnlocked) ...[
-                      const SizedBox(width: 4),
-                      const Icon(Icons.lock_rounded, size: 14, color: AppColors.orange),
+              return Obx(() {
+                final isUnlocked = subController.isLevelUnlocked(level);
+                return ChoiceChip(
+                  selected: isSelected,
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'HSK $level',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      if (!isUnlocked) ...[
+                        const SizedBox(width: 4),
+                        const Icon(Icons.lock_rounded, size: 14, color: AppColors.orange),
+                      ],
                     ],
-                  ],
-                ),
-                onSelected: (selected) {
-                  if (selected) {
-                    if (isUnlocked) {
-                      setState(() {
-                        _selectedLevel = level;
-                      });
-                    } else {
-                      UpgradeDialogHelper.showUpgradeDialog(
-                        context: context,
-                        title: 'Mở khóa Trắc nghiệm HSK $level',
-                        message: 'Bài trắc nghiệm cấp độ HSK $level yêu cầu nâng cấp gói cước để truy cập.',
-                        benefits: level <= 3
-                            ? ['Luyện tập trắc nghiệm HSK 1-3', 'Lưu tiến độ trên đám mây']
-                            : ['Luyện tập trắc nghiệm HSK 1-6', 'Hội thoại AI không giới hạn', 'Thi thử HSK với AI'],
-                      );
+                  ),
+                  onSelected: (selected) {
+                    if (selected) {
+                      if (isUnlocked) {
+                        setState(() {
+                          _selectedLevel = level;
+                        });
+                      } else {
+                        UpgradeDialogHelper.showUpgradeDialog(
+                          context: context,
+                          title: 'Mở khóa Trắc nghiệm HSK $level',
+                          message: 'Bài trắc nghiệm cấp độ HSK $level yêu cầu nâng cấp gói cước để truy cập.',
+                          benefits: level <= 3
+                              ? ['Luyện tập trắc nghiệm HSK 1-3', 'Lưu tiến độ trên đám mây']
+                              : ['Luyện tập trắc nghiệm HSK 1-6', 'Hội thoại AI không giới hạn', 'Thi thử HSK với AI'],
+                        );
+                      }
                     }
-                  }
-                },
-                selectedColor: AppColors.red.withOpacity(0.2),
-                checkmarkColor: AppColors.red,
-                labelStyle: TextStyle(
-                  color: isSelected ? AppColors.red : Colors.black87,
-                ),
-              );
+                  },
+                  selectedColor: AppColors.red.withOpacity(0.2),
+                  checkmarkColor: AppColors.red,
+                  labelStyle: TextStyle(
+                    color: isSelected ? AppColors.red : Colors.black87,
+                  ),
+                );
+              });
             }),
           ),
           const SizedBox(height: 32),
