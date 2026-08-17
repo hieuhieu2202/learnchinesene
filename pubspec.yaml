@@ -43,6 +43,7 @@ flutter:
 
   assets:
     - assets/database/chinese_v2_sheet1_only.db
+    - assets/database/app_chinese_ordered.db
     - assets/logo/logo.png
 
   fonts:

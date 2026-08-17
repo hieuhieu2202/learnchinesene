@@ -1,0 +1,3 @@
+SECTIONS: [('52b0a204e5bed4d512cc78ecaca69b4c-0', 1, 'Path Section 0'), ('ac83e42612a6e4f06905dbb010b0f545-1', 2, 'Path Section 1'), ('be54a9598907ce1de01c097d731c740b-2', 3, 'Path Section 2')]
+UNITS: [('sec_1_unit_1', '52b0a204e5bed4d512cc78ecaca69b4c-0', 1, 'Gọi tên món ăn và đồ uống'), ('sec_1_unit_2', '52b0a204e5bed4d512cc78ecaca69b4c-0', 2, 'Nói về quốc tịch'), ('sec_1_unit_3', '52b0a204e5bed4d512cc78ecaca69b4c-0', 3, 'Hỏi nghề nghiệp')]
+LEVELS: [('16cfc9a738b90a44ebf341e0fd08e588', 'sec_1_unit_1', 0, 0), ('a0e9bf54dcbd0d9881bb59aa5e7db1ce', 'sec_1_unit_2', 0, 0), ('e0cc23f4d87077c7c5d7151079c7943a', 'sec_1_unit_3', 0, 0)]

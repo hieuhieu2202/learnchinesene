@@ -22,6 +22,7 @@ import '../../features/system/presentation/pages/settings_page.dart';
 import '../../features/subscription/page/subscription_page.dart';
 import '../../features/subscription/controller/subscription_controller.dart';
 import '../../core/helper/upgrade_dialog_helper.dart';
+import '../duolingo/duo_game_center_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -400,6 +401,14 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: 'Ghi nhớ từ vựng với hiệu ứng lật thẻ 3D',
               color: AppColors.success,
               onTap: () => Get.to(() => const FlashcardsScreen()),
+            ),
+            const SizedBox(height: 12),
+            _Action(
+              icon: Icons.games_rounded,
+              title: 'Lộ Trình Học Tập',
+              subtitle: 'Học tiếng Trung qua các trò chơi tương tác như Duolingo',
+              color: Colors.blue,
+              onTap: () => Get.to(() => const DuoGameCenterScreen()),
             ),
             const SizedBox(height: 12),
             _Action(
