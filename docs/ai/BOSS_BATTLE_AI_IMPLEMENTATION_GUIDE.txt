@@ -1,0 +1,1508 @@
+APP TIẾNG TRUNG
+BOSS BATTLE — AI IMPLEMENTATION GUIDE
+Flutter + GetX + SQLite
+
+==================================================
+0. QUY TẮC BẮT BUỘC TRƯỚC KHI CODE
+==================================================
+
+Đọc AGENTS.md trước khi thực hiện task này nếu file tồn tại.
+
+Đồng thời bắt buộc đọc:
+- các file rules/instructions hiện có trong repository;
+- .agents/skills/getx_architecture/SKILL.md;
+- pubspec.yaml;
+- lib/di.dart;
+- navigation hiện tại;
+- database/service/repository/model hiện tại;
+- theme/design system;
+- audio/TTS;
+- tests hiện tại;
+- cách app đang load SQLite database.
+
+Không được code trước khi inspect repository thật.
+
+Nếu nội dung trong tài liệu này khác với architecture thực tế:
+1. ưu tiên AGENTS.md;
+2. ưu tiên project rules hiện tại;
+3. ưu tiên convention đang được dùng nhất quán;
+4. báo rõ điểm khác biệt;
+5. không rewrite project chỉ để ép nó khớp tài liệu này.
+
+Không được giả định tên table/column/database field nếu chưa inspect schema thật.
+
+==================================================
+1. MỤC TIÊU
+==================================================
+
+Triển khai một production-quality vertical slice cho mini-game:
+
+Boss Battle
+
+thuộc APP Tiếng Trung.
+
+Mục tiêu không phải là làm một màn hình quiz có background đẹp.
+
+Game phải chứng minh được một pipeline hoàn chỉnh:
+
+SQLite / learning database
+→ Existing Database Layer
+→ Repository
+→ Question Generator
+→ BossBattleController (GetX)
+→ Boss Battle UI / Renderer
+→ Game Result
+→ Learning Review Event
+→ FSRS/Scheduler Boundary
+→ Reward/Economy Boundary
+
+Game phải đủ tốt để sau này các game khác có thể reuse kiến trúc chung.
+
+==================================================
+2. TECHNOLOGY CONSTRAINTS
+==================================================
+
+Project sử dụng:
+- Flutter
+- Dart
+- GetX
+- SQLite
+
+GetX là framework chính cho:
+- State Management
+- Dependency Injection
+- Navigation
+
+KHÔNG tự ý thêm:
+- Riverpod
+- BLoC
+- Cubit
+- Provider
+- MobX
+- Redux
+
+chỉ để làm Boss Battle.
+
+Nếu repository đã có thư viện phù hợp, reuse trước khi thêm dependency mới.
+
+Không tự ý thêm Flame / Rive / Spine chỉ vì đây là game.
+
+Chỉ thêm package mới nếu:
+1. Flutter hiện tại không giải quyết hợp lý;
+2. project chưa có giải pháp tương đương;
+3. dependency được maintain;
+4. license phù hợp;
+5. có lợi ích cụ thể;
+6. thay đổi dependency nằm trong scope.
+
+==================================================
+3. GETX ARCHITECTURE
+==================================================
+
+Project rules hiện tại yêu cầu feature theo cấu trúc:
+
+lib/screen/screen/feature_name/
+├── controller/
+│   └── feature_name_controller.dart
+├── view/
+│   └── custom_widget.dart
+└── feature_name_screen.dart
+
+Đối với Boss Battle có thể dùng cấu trúc tương thích:
+
+lib/screen/screen/boss_battle/
+├── controller/
+│   └── boss_battle_controller.dart
+├── view/
+│   ├── boss_battle_background.dart
+│   ├── boss_character.dart
+│   ├── player_character.dart
+│   ├── battle_hud.dart
+│   ├── question_card.dart
+│   ├── answer_button.dart
+│   ├── animated_health_bar.dart
+│   ├── combo_indicator.dart
+│   ├── damage_number.dart
+│   ├── battle_effect_layer.dart
+│   └── result_overlay.dart
+└── boss_battle_screen.dart
+
+Nhưng:
+- không tạo file một cách máy móc;
+- inspect convention thực tế trước;
+- nếu project đang có cấu trúc chi tiết khác thì reuse convention hiện hữu;
+- không tạo file chỉ để tăng số lượng file.
+
+BossBattleController:
+- extends GetxController;
+- sử dụng Rx chỉ khi state cần reactive;
+- dùng .value theo convention GetX;
+- UI dùng Obx cho vùng nhỏ cần rebuild;
+- không tạo giant Obx bao toàn bộ scene;
+- không dùng GetBuilder trừ khi có lý do kỹ thuật rõ ràng.
+
+Ví dụ state phù hợp:
+- phase
+- bossHp
+- playerHp
+- score
+- combo
+- currentQuestion
+- answerState
+- isInputLocked
+
+Nhưng không biến tất cả object thành Rx nếu không cần.
+
+==================================================
+4. DEPENDENCY INJECTION
+==================================================
+
+Inspect lib/di.dart trước.
+
+Global dependency:
+- đăng ký theo convention hiện tại;
+- ưu tiên Get.lazyPut(..., fenix: true) nếu project đang dùng cách đó.
+
+Screen-specific controller:
+- dùng Get.put() theo convention hiện tại nếu đúng ownership;
+- tránh duplicate registration;
+- không tạo nhiều BossBattleController ngoài ý muốn;
+- lifecycle cleanup phải rõ ràng.
+
+Không xóa global controller khi dispose Boss Battle.
+
+==================================================
+5. NAVIGATION
+==================================================
+
+Dùng GetX navigation.
+
+Ví dụ:
+Get.to(() => const BossBattleScreen());
+Get.back();
+
+Nếu app đang dùng GetPage/named routes thì reuse cách hiện tại.
+
+Không tạo navigation system riêng cho game.
+
+==================================================
+6. DATABASE SOURCE OF TRUTH
+==================================================
+
+Không hardcode production vocabulary.
+
+Sử dụng database/repository thật của project.
+
+Database mục tiêu của hệ thống học tiếng Trung là:
+app_chinese_ordered.db
+
+Tuy nhiên repository hiện tại có thể đang dùng tên database khác hoặc version khác.
+
+Bắt buộc inspect code và asset database thực tế trước.
+
+KHÔNG:
+- tạo boss_battle.db;
+- tạo game_questions.db;
+- tạo vocabulary_game.db;
+- duplicate toàn bộ vocabulary vào database riêng.
+
+Nếu database thực tế hiện tại khác app_chinese_ordered.db:
+- báo rõ database thật đang dùng;
+- không tự ý đổi database;
+- không tự copy schema;
+- đề xuất migration/upgrade riêng nếu thật sự cần.
+
+==================================================
+7. INSPECT DATABASE THẬT
+==================================================
+
+Phải inspect schema thật.
+
+Nếu có thể, kiểm tra:
+- sqlite_master;
+- table names;
+- PRAGMA table_info(...);
+- foreign keys;
+- indexes;
+- sample rows;
+- relationships.
+
+Các domain/table được kỳ vọng có thể liên quan:
+- courses
+- sections
+- units
+- levels
+- sessions
+- challenges
+- flashcards
+- characters
+- game_definitions
+- section_games
+
+Nhưng tuyệt đối KHÔNG giả định field chỉ dựa trên tên table.
+
+Nếu một table/field không tồn tại:
+ghi MISSING.
+
+Không bịa column.
+
+==================================================
+8. DATA FLOW
+==================================================
+
+UI không query SQLite trực tiếp.
+
+Không làm:
+
+Widget
+→ raw SQLite query
+
+Phải theo pipeline:
+
+SQLite
+→ Existing DAO / Database Service
+→ Repository
+→ Question Generator
+→ BossBattleController
+→ UI
+
+Nếu project đã có repository abstraction:
+REUSE hoặc EXTEND.
+
+Không tạo một repository song song nếu chức năng tương đương đã tồn tại.
+
+==================================================
+9. QUESTION DOMAIN MODEL
+==================================================
+
+Trước khi tạo model mới, search repository xem đã có model tương đương chưa.
+
+Nếu cần normalized game question model, có thể có các field domain như:
+
+- id
+- sourceId
+- sourceType
+- prompt
+- answers
+- correctAnswer
+- hanzi
+- pinyin
+- meaning
+- audio
+- context
+- difficulty
+- skillType
+
+Đây là domain model, KHÔNG có nghĩa phải tạo các column DB tương ứng.
+
+Phải preserve source identity.
+
+Ví dụ:
+sourceType = challenge
+sourceId = challenge.id
+
+hoặc:
+sourceType = flashcard
+sourceId = flashcard.id
+
+để analytics/review/scheduler truy ngược được item gốc.
+
+==================================================
+10. CHINESE LANGUAGE DOMAIN
+==================================================
+
+Kiến trúc phải sẵn sàng cho:
+- Hanzi
+- Pinyin
+- tone
+- meaning
+- audio/TTS
+- sentence context
+- contextual pronunciation
+- polyphonic characters / 多音字
+- radical
+- component
+- stroke order
+- part of speech
+- HSK/level
+
+Nhưng:
+- chỉ dùng capability thật sự có trong data;
+- nếu thiếu, ghi MISSING;
+- không bịa dữ liệu;
+- không tự suy luận rồi lưu như dữ liệu authoritative.
+
+Đặc biệt:
+không giả định một Hanzi luôn chỉ có một pronunciation duy nhất.
+
+==================================================
+11. QUESTION GENERATOR
+==================================================
+
+Không dùng shuffle() + first như toàn bộ learning algorithm.
+
+Question selection ưu tiên:
+1. FSRS due item nếu hệ thống thật có FSRS/SRS state;
+2. weak item;
+3. item phù hợp level/unit/skill;
+4. item chưa xuất hiện gần đây;
+5. distractor hợp lý;
+6. sau đó mới random trong candidate pool.
+
+Nếu chưa có FSRS thật:
+- không fake FSRS;
+- không tự gắn nhãn một thuật toán đơn giản là FSRS;
+- tạo learning/review boundary để tích hợp scheduler sau.
+
+==================================================
+12. GAME SCORE KHÔNG PHẢI FSRS RATING
+==================================================
+
+Không đồng nhất game score với FSRS rating.
+
+Combo cao không có nghĩa rating = Easy.
+
+Scoring và learning scheduler là hai domain khác nhau.
+
+Game có thể tạo ReviewResult/LearningEvent.
+Scheduler/domain service quyết định update SRS/FSRS.
+
+==================================================
+13. ANTI-REPEAT
+==================================================
+
+Question generator phải tránh spam cùng item liên tiếp nếu candidate pool đủ lớn.
+
+Maintain recent-question history.
+
+Ví dụ:
+recentQuestionIds
+
+hoặc mechanism tương đương.
+
+Phải test được.
+
+==================================================
+14. DISTRACTOR QUALITY
+==================================================
+
+Distractor không random hoàn toàn.
+
+Nếu data hỗ trợ, ưu tiên distractor:
+- cùng level;
+- cùng skill;
+- meaning gần;
+- Hanzi dễ nhầm;
+- Pinyin gần;
+- tone gần;
+- cùng POS;
+- cùng unit/lesson;
+- cùng loại challenge.
+
+Không tạo distractor vô nghĩa chỉ để đủ 4 đáp án.
+
+==================================================
+15. BOSS BATTLE GAMEPLAY FLOW
+==================================================
+
+Flow:
+
+Loading
+→ Intro
+→ Question
+→ Player Answer
+→ Lock Input
+→ Correct/Wrong Resolution
+→ Player Attack hoặc Boss Attack
+→ Damage
+→ HP Update
+→ Score/Combo Update
+→ Next Question
+→ Boss Defeat hoặc Player Defeat
+→ Reward
+→ Result
+
+Có thể thêm Ready/Countdown nếu phù hợp UX hiện tại.
+
+==================================================
+16. EXPLICIT GAME STATE MACHINE
+==================================================
+
+Không quản lý game bằng hàng loạt boolean dễ tạo invalid state.
+
+Ưu tiên enum/state machine rõ ràng.
+
+Ví dụ:
+
+enum BossBattlePhase {
+  loading,
+  intro,
+  question,
+  resolving,
+  playerAttack,
+  bossAttack,
+  transition,
+  won,
+  lost,
+  reward,
+  result,
+}
+
+Tên có thể thay đổi theo project.
+
+Điều quan trọng:
+- transitions rõ ràng;
+- transition chỉ xảy ra một lần;
+- test được;
+- animation callback không tạo duplicate state transitions.
+
+==================================================
+17. RESPONSIBILITY BOUNDARIES
+==================================================
+
+Tách:
+- Rendering
+- Gameplay State
+- Game Rules
+- Question Generation
+- Scoring
+- Learning Review
+- FSRS Scheduler
+- Reward/Economy
+- Audio
+- Database Access
+
+BossBattleController chỉ orchestration/presentation state.
+
+Không nhét vào controller:
+- raw SQL;
+- full FSRS algorithm;
+- economy persistence;
+- audio engine implementation;
+- database migration;
+- particle rendering;
+- asset decoding.
+
+==================================================
+18. SCORING
+==================================================
+
+Scoring phải độc lập với visual layer.
+
+Có thể phụ thuộc:
+- correct answer;
+- response time;
+- combo;
+- difficulty;
+- remaining HP.
+
+Không rải magic numbers khắp UI.
+
+Centralize rule/config hợp lý.
+
+==================================================
+19. COMBO
+==================================================
+
+Correct liên tiếp tăng combo theo rule game.
+
+Wrong reset/decrease combo theo rule đã chọn.
+
+Combo cần visual feedback nhưng không che question/answers.
+
+Ví dụ:
+COMBO x2
+COMBO x5
+COMBO x10
+
+==================================================
+20. CORRECT ANSWER CHOREOGRAPHY
+==================================================
+
+Correct flow:
+
+Player taps answer
+→ Lock input
+→ Answer squash
+→ Correct feedback
+→ Player anticipation
+→ Player attack
+→ Projectile / trail
+→ Boss hit
+→ Hit flash
+→ Damage number
+→ Particles
+→ Boss HP animation
+→ Combo/XP visual feedback
+→ Settle
+→ Next question
+
+Không chuyển câu hỏi trước khi feedback chính kết thúc.
+
+==================================================
+21. WRONG ANSWER CHOREOGRAPHY
+==================================================
+
+Wrong flow:
+
+Player taps wrong answer
+→ Lock input
+→ Wrong feedback
+→ Show concise correction
+→ Boss anticipation
+→ Boss attack
+→ Player hit
+→ Light shake
+→ Player HP decrease
+→ Settle
+→ Next question
+
+Không dùng shake quá mạnh.
+
+==================================================
+22. VISUAL DIRECTION
+==================================================
+
+Target:
+- polished mobile game;
+- 2D / 2.5D cartoon;
+- colorful;
+- friendly;
+- Chinese-inspired;
+- soft depth;
+- clean hierarchy.
+
+Không cần realtime 3D.
+
+Tạo cảm giác chiều sâu bằng:
+- layered background;
+- parallax;
+- soft shadow;
+- gradient;
+- rim light;
+- perspective;
+- scale;
+- squash/stretch;
+- glow;
+- particles;
+- motion trail;
+- foreground layers.
+
+Visual hierarchy ưu tiên:
+1. Question
+2. Answers
+3. Boss / Player
+4. HP
+5. Combo
+6. Score
+7. Decorative effects
+
+Effects không được che nội dung học.
+
+==================================================
+23. CHARACTER / ANIMATION ARCHITECTURE
+==================================================
+
+Game logic không phụ thuộc file PNG cụ thể.
+
+Controller phát game/domain events như:
+- playerAttack
+- bossHit
+- bossAttack
+- playerHit
+- victory
+- defeat
+
+Renderer quyết định animation.
+
+Mục tiêu:
+hôm nay có thể dùng Flutter animation / sprite / PNG,
+sau này thay bằng Rive / Spine / sprite sheet
+mà không rewrite gameplay logic.
+
+==================================================
+24. ASSETS
+==================================================
+
+Nếu production assets chưa có:
+- không nhét placeholder xấu vào architecture rồi coi như xong;
+- tạo asset requirements rõ ràng.
+
+Gợi ý path:
+
+assets/game/boss_battle/background/
+assets/game/boss_battle/player/
+assets/game/boss_battle/boss/
+assets/game/boss_battle/effects/
+assets/game/boss_battle/ui/
+
+Asset requirements có thể gồm:
+- background_far
+- background_mid
+- background_near
+- player_idle
+- player_attack
+- player_hit
+- player_victory
+- boss_idle
+- boss_attack
+- boss_hit
+- boss_defeat
+- projectile
+- impact
+- spark
+- star
+- coin
+- reward burst
+
+Reuse asset system hiện tại nếu đã có.
+
+==================================================
+25. ANIMATION PRINCIPLE
+==================================================
+
+Animation quan trọng nên theo:
+
+Anticipation
+→ Action
+→ Impact
+→ Settle
+
+Có thể dùng:
+- bounce;
+- squash/stretch;
+- floating idle;
+- hit flash;
+- damage number;
+- glow;
+- trail;
+- sparks;
+- confetti;
+- star burst;
+- coin burst;
+- screen shake;
+- parallax.
+
+Không bật mọi effect cùng lúc.
+
+Visual clarity quan trọng hơn số lượng effect.
+
+==================================================
+26. AUDIO
+==================================================
+
+Nếu app đã có AudioService/TTS/SoundManager:
+reuse.
+
+Boss Battle có thể cần:
+- correct SFX;
+- wrong SFX;
+- attack SFX;
+- hit SFX;
+- victory SFX;
+- defeat SFX;
+- reward SFX;
+- Chinese audio/TTS.
+
+Phải cleanup đúng khi:
+- pause;
+- resume;
+- back;
+- restart;
+- dispose.
+
+==================================================
+27. PERFORMANCE
+==================================================
+
+Target architecture:
+60 FPS trên Android tầm trung.
+
+Không tuyên bố 60 FPS nếu chưa profile trên device.
+
+Không:
+- rebuild toàn bộ screen mỗi frame;
+- decode ảnh lớn giữa battle;
+- load asset khi attack bắt đầu;
+- tạo particle không giới hạn;
+- allocate object lớn liên tục trong animation loop;
+- dùng full-screen blur/saveLayer nặng không cần thiết.
+
+Ưu tiên:
+- preload;
+- const widgets;
+- fine-grained Obx;
+- RepaintBoundary khi thực sự có lợi;
+- bounded particles;
+- asset caching;
+- animation controller reuse;
+- proper dispose.
+
+==================================================
+28. QUALITY LEVELS
+==================================================
+
+Kiến trúc effect layer nên cho phép:
+LOW
+MEDIUM
+HIGH
+
+LOW:
+- ít particle;
+- no expensive glow;
+- simple trail;
+- reduced foreground FX.
+
+MEDIUM:
+- normal particles;
+- parallax;
+- standard effects.
+
+HIGH:
+- richer particles;
+- enhanced trails;
+- extra foreground effects.
+
+Không cần xây setting UI lớn nếu app chưa có.
+
+==================================================
+29. PRELOAD
+==================================================
+
+Preload asset quan trọng trước battle:
+- background;
+- player;
+- boss;
+- projectile;
+- impact;
+- audio cần thiết.
+
+Không để lần attack đầu tiên mới load asset lớn.
+
+==================================================
+30. INPUT LOCKING
+==================================================
+
+Sau khi chọn answer:
+lock input ngay.
+
+Không cho:
+- double tap;
+- chọn 2 đáp án;
+- submit answer 2 lần;
+- trigger damage 2 lần;
+- trigger reward 2 lần.
+
+Phải test boundary này.
+
+==================================================
+31. HP / DAMAGE
+==================================================
+
+Player và Boss phải có:
+- maxHp;
+- currentHp.
+
+HP phải clamp:
+0 <= currentHp <= maxHp
+
+Damage calculation phải deterministic và testable.
+
+Animation HP tách khỏi domain HP.
+
+==================================================
+32. WIN / LOSE
+==================================================
+
+Win:
+bossHp <= 0
+
+Lose:
+playerHp <= 0
+
+Victory/defeat transition chỉ chạy một lần.
+
+Không để:
+victory()
+victory()
+reward()
+reward()
+
+do animation callback/double tap.
+
+==================================================
+33. SESSION / RESULT EVENT
+==================================================
+
+Mỗi battle phải có session identity.
+
+Nếu project có sessions table/model:
+inspect và reuse nếu phù hợp.
+
+Session/result cần có khả năng biểu diễn:
+- sessionId
+- gameType
+- questionIds
+- sourceIds
+- answers
+- timestamps
+- score
+- combo
+- result
+- completionState
+- duration
+- idempotencyKey
+
+Chỉ persist field thật sự tồn tại.
+
+Nếu thiếu schema:
+report migration requirement hoặc tạo boundary/interface.
+Không bịa column.
+
+==================================================
+34. ECONOMY / SECURITY
+==================================================
+
+Client không được là authoritative source cho:
+- XP
+- Coins
+- Gems
+- Hearts
+- Energy
+- Streak
+
+Rendering layer chỉ hiển thị reward.
+
+Reward authority phải nằm ngoài rendering layer.
+
+Nếu backend chưa có:
+- tạo boundary/interface phù hợp;
+- local state chỉ là cache/display;
+- không giả vờ local SQLite là anti-cheat server.
+
+==================================================
+35. REWARD IDEMPOTENCY
+==================================================
+
+Completion/reward phải chống:
+- double tap;
+- rebuild;
+- retry;
+- duplicate callback;
+- restart exploit;
+- network retry.
+
+Dùng sessionId/idempotencyKey/completion state hoặc mechanism tương đương.
+
+Một session không được claim reward nhiều lần.
+
+==================================================
+36. GAME RESULT
+==================================================
+
+Không chỉ showDialog("You win").
+
+Phải có GameResult/domain event tương đương.
+
+Conceptual fields:
+- sessionId
+- gameType
+- questionResults
+- correctCount
+- wrongCount
+- score
+- maxCombo
+- duration
+- result
+- completedAt
+
+Reuse model hiện có nếu có.
+
+==================================================
+37. LEARNING REVIEW EVENT
+==================================================
+
+Mỗi question cần tạo được learning evidence.
+
+Conceptual:
+- sourceType
+- sourceId
+- correct
+- responseTime
+- attempts
+- timestamp
+
+UI không update FSRS trực tiếp.
+
+Flow:
+
+Boss Battle
+→ Review Event
+→ Scheduler/Learning Service
+→ FSRS
+
+nếu scheduler tồn tại.
+
+Nếu chưa có FSRS:
+ghi rõ:
+FSRS NOT IMPLEMENTED — boundary prepared only.
+
+==================================================
+38. APP LIFECYCLE
+==================================================
+
+Phải xử lý:
+- pause;
+- resume;
+- background;
+- foreground;
+- back navigation;
+- restart;
+- dispose.
+
+Không để:
+- timer chạy sau dispose;
+- audio tiếp tục phát;
+- AnimationController leak;
+- GetX worker leak;
+- delayed Future update disposed UI;
+- reward callback chạy 2 lần.
+
+==================================================
+39. RESTART
+==================================================
+
+Restart reset đúng:
+- bossHp;
+- playerHp;
+- combo;
+- score;
+- currentQuestion;
+- answer state;
+- phase;
+- timers;
+- animations;
+- recent question history;
+- session.
+
+Không reset global learning data.
+
+Restart phải tạo session mới nếu architecture yêu cầu.
+
+==================================================
+40. RESPONSIVE / ACCESSIBILITY
+==================================================
+
+Không assume một screen size duy nhất.
+
+Hỗ trợ hợp lý:
+- small Android;
+- normal Android;
+- large Android;
+- safe area;
+- text scaling;
+- different aspect ratios.
+
+Chinese text:
+- Hanzi đủ lớn;
+- Pinyin rõ;
+- contrast tốt;
+- reuse font/theme hiện có.
+
+Không dùng màu là feedback duy nhất.
+
+Correct:
+màu + icon + animation.
+
+Wrong:
+màu + icon/text feedback.
+
+==================================================
+41. DESIGN SYSTEM
+==================================================
+
+Inspect theme/design system hiện tại.
+
+Reuse:
+- colors;
+- spacing;
+- radius;
+- shadows;
+- typography;
+- buttons;
+- cards;
+- motion duration.
+
+Nếu cần game-specific tokens:
+có thể đề xuất GameColors/GameMotion/...,
+nhưng không tạo design system cạnh tranh với app theme.
+
+==================================================
+42. SHARED COMPONENTS
+==================================================
+
+Boss Battle là vertical slice đầu tiên.
+
+Sau khi Boss Battle chạy tốt mới extract reusable components.
+
+Có thể gồm:
+- GameQuestionCard
+- GameAnswerButton
+- AnimatedHealthBar
+- ComboIndicator
+- DamageNumber
+- GameResultOverlay
+- GameAudioService
+- GameMotion
+
+Rule:
+Build concrete first.
+Extract proven abstractions second.
+
+Không prematurely generalize.
+
+==================================================
+43. ERROR HANDLING
+==================================================
+
+Không swallow exception.
+
+Không dùng:
+try { ... } catch (_) {}
+
+một cách vô nghĩa.
+
+Handle hợp lý:
+- database error;
+- empty question pool;
+- invalid item;
+- missing asset;
+- audio failure;
+- session failure;
+- reward submission failure.
+
+Game không crash chỉ vì optional effect lỗi.
+
+==================================================
+44. DATABASE CHANGES
+==================================================
+
+Không sửa schema chỉ vì tiện code.
+
+Nếu thiếu capability:
+report:
+
+CURRENT
+MISSING
+WHY NEEDED
+PROPOSED MIGRATION
+BACKWARD COMPATIBILITY
+INDEX
+CONSTRAINT
+
+Chỉ migration khi thật sự cần và nằm trong scope.
+
+==================================================
+45. TESTING
+==================================================
+
+Viết test ít nhất cho:
+- game state transitions;
+- score calculation;
+- combo;
+- correct answer;
+- wrong answer;
+- player damage;
+- boss damage;
+- win condition;
+- lose condition;
+- question anti-repeat;
+- duplicate answer prevention;
+- duplicate completion prevention;
+- duplicate reward boundary;
+- question generator;
+- empty candidate handling.
+
+Question generator test nên chứng minh:
+- không spam cùng question liên tiếp;
+- correct answer luôn có trong answers;
+- không duplicate answer;
+- sourceId được preserve;
+- distractor hợp lệ.
+
+State machine test:
+- transition hợp lệ;
+- invalid transition bị ngăn.
+
+Duplicate submit test:
+double tap không tạo:
+- double damage;
+- double score;
+- double combo;
+- double review event;
+- double reward.
+
+==================================================
+46. VERIFICATION COMMANDS
+==================================================
+
+Sau implementation chạy:
+
+dart format .
+flutter analyze
+flutter test
+
+Nếu project có command riêng, reuse.
+
+Không báo "passed" nếu chưa chạy.
+
+Report chính xác:
+PASS
+FAIL
+NOT RUN
+
+Nếu FAIL:
+ghi:
+- command;
+- error;
+- file;
+- reason;
+- fix attempted;
+- remaining issue.
+
+==================================================
+47. KHÔNG REWRITE NGOÀI SCOPE
+==================================================
+
+Không:
+- rewrite navigation toàn app;
+- đổi GetX sang framework khác;
+- rename hàng trăm file;
+- rewrite database layer;
+- rewrite theme;
+- upgrade toàn bộ dependency;
+- format unrelated files;
+- refactor toàn project.
+
+Ưu tiên thay đổi nhỏ nhất hợp lý.
+
+==================================================
+48. KHÔNG TẠO PARALLEL ARCHITECTURE
+==================================================
+
+Trước khi tạo:
+- GameRepository
+- DatabaseService
+- AudioService
+- RewardService
+- QuestionModel
+- GameTheme
+
+hãy search repository xem có equivalent chưa.
+
+Nếu có:
+REUSE hoặc EXTEND.
+
+==================================================
+49. KHÔNG DỪNG Ở PSEUDOCODE
+==================================================
+
+Nếu repository và environment cho phép implement thật:
+phải implement code thật.
+
+Không chỉ mô tả "you could implement".
+
+==================================================
+50. QUY TRÌNH BẮT BUỘC
+==================================================
+
+PHASE 1 — DISCOVER
+
+Inspect:
+- AGENTS.md nếu có;
+- .agents/skills/getx_architecture/SKILL.md;
+- pubspec.yaml;
+- lib/di.dart;
+- GetX controllers;
+- navigation;
+- SQLite/database code;
+- repositories;
+- models;
+- challenges;
+- flashcards;
+- sessions;
+- game_definitions;
+- section_games;
+- theme;
+- audio/TTS;
+- tests;
+- database asset/schema thực tế.
+
+CHƯA CODE ở phase này.
+
+PHASE 2 — REPORT CURRENT ARCHITECTURE
+
+Báo:
+State management:
+Dependency injection:
+Navigation:
+Database:
+Repository:
+Models:
+Theme:
+Audio:
+Testing:
+Reusable components:
+
+PHASE 3 — DATABASE MAPPING
+
+Báo nguồn thật cho:
+Question source:
+Correct answer source:
+Distractor source:
+Hanzi source:
+Pinyin source:
+Meaning source:
+Audio source:
+Level source:
+Unit source:
+Session source:
+
+Nếu thiếu:
+MISSING
+
+Không bịa.
+
+PHASE 4 — REUSE MAP
+
+Liệt kê:
+FILES TO REUSE
+FILES TO MODIFY
+FILES TO CREATE
+
+PHASE 5 — IMPLEMENTATION PLAN
+
+Plan phải cụ thể và dựa trên repository thật.
+
+Ví dụ:
+1. reuse/extend repository cho game question;
+2. normalize GameQuestion nếu thật sự cần;
+3. implement question generator;
+4. implement scoring;
+5. implement explicit state machine;
+6. implement BossBattleController;
+7. implement battle UI;
+8. implement animation/effects layer;
+9. connect learning review boundary;
+10. connect reward boundary;
+11. add navigation;
+12. add tests;
+13. verify.
+
+PHASE 6 — IMPLEMENT
+
+Implement code thật.
+
+Không hỏi lại những gì có thể xác định từ repository.
+
+Nếu cần assumption:
+chọn phương án ít invasive nhất và ghi rõ.
+
+PHASE 7 — VERIFY
+
+Chạy formatter/analyzer/tests.
+
+Fix lỗi do task này tạo ra.
+
+Phân biệt:
+PRE-EXISTING
+và
+INTRODUCED BY THIS TASK
+
+PHASE 8 — FINAL REPORT
+
+Report theo format:
+
+IMPLEMENTED
+
+ARCHITECTURE
+
+DATA SOURCE
+
+FILES CREATED
+
+FILES MODIFIED
+
+REUSED COMPONENTS
+
+GAMEPLAY
+
+LEARNING INTEGRATION
+
+SECURITY / REWARD
+
+PERFORMANCE
+
+VERIFICATION
+- dart format: PASS / FAIL / NOT RUN
+- flutter analyze: PASS / FAIL / NOT RUN
+- flutter test: PASS / FAIL / NOT RUN
+
+REMAINING ISSUES
+
+==================================================
+51. DEFINITION OF DONE
+==================================================
+
+Task chỉ coi là hoàn thành khi:
+
+[ ] Boss Battle mở được từ navigation phù hợp.
+[ ] Dùng question thật từ database/repository.
+[ ] Không hardcode production vocabulary.
+[ ] Không tạo database thứ hai.
+[ ] GetX đúng convention.
+[ ] Không thêm state-management framework khác.
+[ ] Question generator hoạt động.
+[ ] Anti-repeat hoạt động.
+[ ] Correct flow hoạt động.
+[ ] Wrong flow hoạt động.
+[ ] Boss HP hoạt động.
+[ ] Player HP hoạt động.
+[ ] Combo hoạt động.
+[ ] Score hoạt động.
+[ ] Win hoạt động.
+[ ] Lose hoạt động.
+[ ] Input locking hoạt động.
+[ ] Không double-submit.
+[ ] Restart hoạt động.
+[ ] Back navigation hoạt động.
+[ ] Pause/resume không phá session.
+[ ] Timer/audio/animation được cleanup.
+[ ] Rendering tách khỏi domain logic.
+[ ] Scoring tách khỏi reward.
+[ ] FSRS không bị fake.
+[ ] Reward không nằm trong rendering layer.
+[ ] Duplicate reward boundary được xử lý.
+[ ] Animation feedback rõ ràng.
+[ ] UI responsive.
+[ ] Architecture phù hợp target 60 FPS.
+[ ] Tests quan trọng tồn tại.
+[ ] dart format được chạy.
+[ ] flutter analyze được chạy nếu môi trường cho phép.
+[ ] flutter test được chạy nếu môi trường cho phép.
+
+==================================================
+52. NGUYÊN TẮC CUỐI
+==================================================
+
+Boss Battle không được trở thành:
+
+quiz screen + background image
+
+Trải nghiệm mục tiêu:
+
+Question
+→ Think
+→ Choose
+→ Immediate Feedback
+→ Character Reaction
+→ Attack / Counterattack
+→ Damage
+→ Rewarding Visual Feedback
+→ Learning Correction
+→ Next Challenge
+
+Gameplay phải phục vụ learning.
+
+Không để người chơi thắng bằng:
+- random tapping;
+- double tap;
+- restart exploit;
+- predictable answer position;
+- animation exploit.
+
+Game không sở hữu learning data.
+
+Kiến trúc mục tiêu:
+
+Learning Database
+→ Learning Repository
+→ Question Generator
+→ Boss Battle / Future Games
+→ Game Result
+→ Learning Events
+→ Scheduler/FSRS
+
+GetX Controller là orchestration layer,
+không phải database + scheduler + economy + renderer + audio engine.
+
+==================================================
+53. PROMPT 1 — AUDIT TRƯỚC KHI CODE
+==================================================
+
+Copy prompt này cho coding AI:
+
+Đọc AGENTS.md nếu có, .agents/skills/getx_architecture/SKILL.md, toàn bộ project rules hiện có và file docs/ai/BOSS_BATTLE_AI_IMPLEMENTATION_GUIDE.txt.
+
+Hãy inspect repository Flutter hiện tại và database SQLite thật theo đúng quy trình trong tài liệu.
+
+Ở bước này CHƯA CODE.
+
+Chỉ trả về:
+1. Architecture thực tế bạn tìm thấy.
+2. Database/repository/model hiện tại liên quan tới Boss Battle.
+3. Database file thật project đang dùng.
+4. Nguồn dữ liệu thật sẽ dùng cho question.
+5. Những capability đang MISSING.
+6. Files sẽ reuse.
+7. Files dự kiến modify.
+8. Files dự kiến create.
+9. Implementation plan theo từng bước.
+10. Những điểm trong tài liệu không khớp với repository thực tế.
+
+Không giả định field database.
+Không tạo architecture mới nếu project đã có equivalent.
+Không fake FSRS.
+STOP sau implementation plan.
+
+==================================================
+54. PROMPT 2 — IMPLEMENT SAU KHI DUYỆT PLAN
+==================================================
+
+Sau khi audit đúng, copy prompt này:
+
+Approved.
+
+Bây giờ implement Boss Battle theo:
+- AGENTS.md nếu có;
+- .agents/skills/getx_architecture/SKILL.md;
+- project rules hiện tại;
+- docs/ai/BOSS_BATTLE_AI_IMPLEMENTATION_GUIDE.txt;
+- implementation plan vừa được duyệt.
+
+Dùng database/repository THẬT mà bạn vừa inspect.
+
+Implement code thật, không pseudocode.
+
+Không mở rộng scope.
+Không tạo database thứ hai.
+Không hardcode vocabulary.
+Không thay GetX.
+Không fake FSRS.
+Không đặt authoritative XP/Coins/Gems trong rendering/client UI.
+
+Sau khi code:
+1. chạy dart format;
+2. chạy flutter analyze;
+3. chạy flutter test;
+4. sửa các lỗi do implementation này tạo ra;
+5. report PASS / FAIL / NOT RUN chính xác;
+6. liệt kê toàn bộ files created/modified;
+7. giải thích data flow cuối cùng từ SQLite → Repository → QuestionGenerator → BossBattleController → UI → Review/Reward boundary;
+8. nêu rõ phần nào chưa hoàn thành và vì sao.
+
+Tiếp tục cho tới khi vertical slice hoàn thành hoặc gặp blocker thực sự.
+
+==================================================
+END OF FILE
+==================================================
