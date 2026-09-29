@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import 'controller/boss_battle_controller.dart';
 import 'data/boss_battle_repository.dart';
 import 'view/boss_battle_answer_button.dart';
+import 'view/boss_battle_character_art.dart';
 import 'view/boss_battle_health_bar.dart';
 
 class BossBattleScreen extends StatefulWidget {
@@ -186,7 +187,7 @@ class _BattleStage extends StatelessWidget {
                 left: 22,
                 bottom: 72,
                 child: _BattleCharacter(
-                  emoji: '🐼',
+                  kind: BossBattleCharacterKind.panda,
                   label: 'Học giả',
                   attacking: phase == BossBattlePhase.playerAttack,
                   defeated: phase == BossBattlePhase.lost,
@@ -197,7 +198,7 @@ class _BattleStage extends StatelessWidget {
                 right: 18,
                 top: 112,
                 child: _BattleCharacter(
-                  emoji: '🐉',
+                  kind: BossBattleCharacterKind.dragon,
                   label: 'Boss',
                   attacking: phase == BossBattlePhase.bossAttack,
                   defeated: phase == BossBattlePhase.won ||
@@ -439,7 +440,7 @@ class _QuestionPanel extends StatelessWidget {
 
 class _BattleCharacter extends StatelessWidget {
   const _BattleCharacter({
-    required this.emoji,
+    required this.kind,
     required this.label,
     required this.attacking,
     required this.defeated,
@@ -447,7 +448,7 @@ class _BattleCharacter extends StatelessWidget {
     this.boss = false,
   });
 
-  final String emoji;
+  final BossBattleCharacterKind kind;
   final String label;
   final bool attacking;
   final bool defeated;
@@ -457,40 +458,70 @@ class _BattleCharacter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shift = attacking ? (faceRight ? 14.0 : -14.0) : 0.0;
-    final size = boss ? 92.0 : 78.0;
+    final artSize = boss ? 116.0 : 96.0;
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 280),
-      opacity: defeated ? .38 : 1,
+      opacity: defeated ? .42 : 1,
       child: AnimatedScale(
         duration: const Duration(milliseconds: 180),
-        scale: attacking ? 1.13 : (defeated ? .88 : 1),
+        curve: Curves.easeOutBack,
+        scale: attacking ? 1.14 : (defeated ? .9 : 1),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           transform: Matrix4.translationValues(shift, 0, 0),
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
           decoration: BoxDecoration(
-            color: const Color(0xC8191116),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white24),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xDD2A1A22),
+                Color(0xCC140D13),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0x66FFE2A5), width: 1.4),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x66000000),
-                blurRadius: 18,
+                color: Color(0x77000000),
+                blurRadius: 20,
                 offset: Offset(0, 10),
+              ),
+              BoxShadow(
+                color: Color(0x33FFB74D),
+                blurRadius: 16,
+                spreadRadius: 1,
               ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(emoji, style: TextStyle(fontSize: size)),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
+              BossBattleCharacterArt(
+                kind: kind,
+                size: artSize,
+                defeated: defeated,
+              ),
+              const SizedBox(height: 2),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xA61A1116),
+                  borderRadius: BorderRadius.circular(99),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: .3,
+                  ),
                 ),
               ),
             ],
