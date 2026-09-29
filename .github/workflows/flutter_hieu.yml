@@ -43,24 +43,25 @@ jobs:
       - name: Boss Battle tests
         run: flutter test test/screen/boss_battle
 
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Build optimized release APKs
+        run: flutter build apk --release --split-per-abi
 
-      - name: Report APK size
+      - name: Report release APK sizes
         run: |
-          ls -lh build/app/outputs/flutter-apk/app-debug.apk
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('build/app/outputs/flutter-apk/app-debug.apk')
-          size = p.stat().st_size
-          print(f'APK bytes: {size:,}')
-          print(f'APK MiB: {size / 1024 / 1024:.2f}')
+          files = sorted(Path('build/app/outputs/flutter-apk').glob('app-*-release.apk'))
+          if not files:
+              raise SystemExit('No split release APKs were produced')
+          for p in files:
+              size = p.stat().st_size
+              print(f'{p.name}: {size:,} bytes ({size / 1024 / 1024:.2f} MiB)')
           PY
 
-      - name: Upload debug APK
+      - name: Upload optimized release APKs
         uses: actions/upload-artifact@v4
         with:
-          name: app-hieu-debug
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: app-hieu-release-split
+          path: build/app/outputs/flutter-apk/app-*-release.apk
           if-no-files-found: error
           retention-days: 7
