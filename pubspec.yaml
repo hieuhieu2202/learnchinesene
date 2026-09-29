@@ -30,6 +30,7 @@ dependencies:
   flutter_screenutil: ^5.9.3
   cherry_toast: ^1.13.0
   shared_preferences: ^2.5.5
+  rive: ^0.14.11
 
 dev_dependencies:
   flutter_test:
@@ -45,6 +46,7 @@ flutter:
     - assets/database/chinese_v2_sheet1_only.db
     - assets/database/app_chinese_ordered.db
     - assets/logo/logo.png
+    - assets/animations/boss_battle/
 
   fonts:
     - family: PinyinFont

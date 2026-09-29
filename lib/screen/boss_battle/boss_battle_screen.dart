@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import 'controller/boss_battle_controller.dart';
 import 'data/boss_battle_repository.dart';
+import 'view/boss_battle_animated_character.dart';
 import 'view/boss_battle_answer_button.dart';
 import 'view/boss_battle_character_art.dart';
 import 'view/boss_battle_health_bar.dart';
@@ -190,7 +191,15 @@ class _BattleStage extends StatelessWidget {
                   kind: BossBattleCharacterKind.panda,
                   label: 'Học giả',
                   attacking: phase == BossBattlePhase.playerAttack,
-                  defeated: phase == BossBattlePhase.lost,
+                  hit: phase == BossBattlePhase.bossAttack,
+                  victorious: phase == BossBattlePhase.won ||
+                      phase == BossBattlePhase.reward ||
+                      (phase == BossBattlePhase.result &&
+                          controller.bossHp.value <= 0),
+                  defeated: phase == BossBattlePhase.lost ||
+                      (phase == BossBattlePhase.result &&
+                          controller.playerHp.value <= 0),
+                  lowHealth: controller.playerHp.value <= 30,
                   faceRight: true,
                 ),
               ),
@@ -201,10 +210,15 @@ class _BattleStage extends StatelessWidget {
                   kind: BossBattleCharacterKind.dragon,
                   label: 'Boss',
                   attacking: phase == BossBattlePhase.bossAttack,
+                  hit: phase == BossBattlePhase.playerAttack,
+                  victorious: phase == BossBattlePhase.lost ||
+                      (phase == BossBattlePhase.result &&
+                          controller.playerHp.value <= 0),
                   defeated: phase == BossBattlePhase.won ||
                       phase == BossBattlePhase.reward ||
                       (phase == BossBattlePhase.result &&
                           controller.bossHp.value <= 0),
+                  lowHealth: controller.bossHp.value <= 30,
                   faceRight: false,
                   boss: true,
                 ),
@@ -443,7 +457,10 @@ class _BattleCharacter extends StatelessWidget {
     required this.kind,
     required this.label,
     required this.attacking,
+    required this.hit,
+    required this.victorious,
     required this.defeated,
+    required this.lowHealth,
     required this.faceRight,
     this.boss = false,
   });
@@ -451,7 +468,10 @@ class _BattleCharacter extends StatelessWidget {
   final BossBattleCharacterKind kind;
   final String label;
   final bool attacking;
+  final bool hit;
+  final bool victorious;
   final bool defeated;
+  final bool lowHealth;
   final bool faceRight;
   final bool boss;
 
@@ -459,6 +479,17 @@ class _BattleCharacter extends StatelessWidget {
   Widget build(BuildContext context) {
     final shift = attacking ? (faceRight ? 14.0 : -14.0) : 0.0;
     final artSize = boss ? 116.0 : 96.0;
+    final motion = defeated
+        ? BossBattleCharacterMotion.defeat
+        : victorious
+            ? BossBattleCharacterMotion.victory
+            : attacking
+                ? BossBattleCharacterMotion.attack
+                : hit
+                    ? BossBattleCharacterMotion.hit
+                    : lowHealth
+                        ? BossBattleCharacterMotion.lowHp
+                        : BossBattleCharacterMotion.idle;
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 280),
@@ -498,8 +529,9 @@ class _BattleCharacter extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              BossBattleCharacterArt(
+              BossBattleAnimatedCharacter(
                 kind: kind,
+                motion: motion,
                 size: artSize,
                 defeated: defeated,
               ),
