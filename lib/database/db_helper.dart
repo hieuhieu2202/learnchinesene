@@ -1,10 +1,8 @@
-import 'dart:io';
+import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/services.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/example_sentence.dart';
 import '../models/hsk_level.dart';
@@ -13,359 +11,235 @@ import '../models/unit_model.dart';
 import '../models/word.dart';
 import '../models/speaking_practice_item.dart';
 import '../models/hanzi_character.dart';
-import 'queries.dart';
 
 class DbHelper {
   DbHelper._();
 
   static final DbHelper instance = DbHelper._();
 
-  static const String _dbFileName = 'chinese_v2_sheet1_only.db';
-  static const int _dbVersion = 3;
+  static const _progressPrefix = 'learning_progress_v2_';
+  static const _speakingAttemptsKey = 'learning_speaking_attempts_v2';
+  static const _speakingScoreSumKey = 'learning_speaking_score_sum_v2';
+  static const _hanziProgressPrefix = 'hanzi_progress_v2_';
 
-  Database? _database;
-  final Map<String, Set<String>> _columnsCache = <String, Set<String>>{};
+  SupabaseClient get _client => Supabase.instance.client;
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _init();
-    return _database!;
-  }
-
-  Future<Database> _init() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final dbPath = p.join(dir.path, _dbFileName);
-
-    if (!await File(dbPath).exists()) {
-      await _copyBundledDb(dbPath);
-    }
-
-    return openDatabase(
-      dbPath,
-      version: _dbVersion,
-      onOpen: (db) async {
-        await _runSafeMigrations(db);
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        await _runSafeMigrations(db);
-      },
-    );
-  }
-
-  Future<void> _copyBundledDb(String dbPath) async {
-    final data = await rootBundle.load(
-      'assets/database/chinese_v2_sheet1_only.db',
-    );
-
-    final bytes = data.buffer.asUint8List(
-      data.offsetInBytes,
-      data.lengthInBytes,
-    );
-    await File(dbPath).writeAsBytes(bytes, flush: true);
-  }
-
-  Future<void> _runSafeMigrations(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS ${DbTables.userProgress} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        word_id INTEGER UNIQUE,
-        correct_count INTEGER NOT NULL DEFAULT 0,
-        wrong_count INTEGER NOT NULL DEFAULT 0,
-        level INTEGER NOT NULL DEFAULT 1,
-        mastered INTEGER NOT NULL DEFAULT 0,
-        last_reviewed_at TEXT,
-        updated_at TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS ${DbTables.speakingPractice} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        word_id INTEGER,
-        example_id INTEGER,
-        target_text TEXT,
-        recognized_text TEXT,
-        score REAL,
-        is_correct INTEGER NOT NULL DEFAULT 0,
-        created_at TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS ${DbTables.hanziWritingProgress} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        character_id INTEGER UNIQUE,
-        best_score REAL,
-        last_score REAL,
-        total_attempts INTEGER DEFAULT 0,
-        completed_count INTEGER DEFAULT 0,
-        last_completed_at TEXT,
-        created_at TEXT,
-        updated_at TEXT
-      )
-    ''');
-
-    await _ensureColumn(db, DbTables.userProgress, 'last_reviewed_at', 'TEXT');
-    await _ensureColumn(db, DbTables.userProgress, 'updated_at', 'TEXT');
-    await _ensureColumn(
-      db,
-      DbTables.userProgress,
-      'mastered',
-      'INTEGER NOT NULL DEFAULT 0',
-    );
-    await _ensureColumn(
-      db,
-      DbTables.userProgress,
-      'correct_count',
-      'INTEGER NOT NULL DEFAULT 0',
-    );
-    await _ensureColumn(
-      db,
-      DbTables.userProgress,
-      'wrong_count',
-      'INTEGER NOT NULL DEFAULT 0',
-    );
-    await _ensureColumn(
-      db,
-      DbTables.userProgress,
-      'level',
-      'INTEGER NOT NULL DEFAULT 1',
-    );
-
-    await _ensureColumn(db, DbTables.speakingPractice, 'example_id', 'INTEGER');
-    await _ensureColumn(db, DbTables.speakingPractice, 'target_text', 'TEXT');
-    await _ensureColumn(
-      db,
-      DbTables.speakingPractice,
-      'recognized_text',
-      'TEXT',
-    );
-    await _ensureColumn(db, DbTables.speakingPractice, 'score', 'REAL');
-    await _ensureColumn(
-      db,
-      DbTables.speakingPractice,
-      'is_correct',
-      'INTEGER NOT NULL DEFAULT 0',
-    );
-    await _ensureColumn(db, DbTables.speakingPractice, 'created_at', 'TEXT');
-  }
-
-  Future<void> _ensureColumn(
-    Database db,
-    String table,
-    String column,
-    String typeSql,
-  ) async {
-    final exists = await _columnExists(db, table, column);
-    if (!exists) {
-      await db.execute('ALTER TABLE $table ADD COLUMN $column $typeSql');
-      _columnsCache.remove(table);
-    }
-  }
-
-  Future<bool> tableExists(String tableName) async {
-    final db = await database;
-    final res = await db.rawQuery(
-      "SELECT 1 FROM sqlite_master WHERE type='table' AND name = ? LIMIT 1",
-      <Object?>[tableName],
-    );
-    return res.isNotEmpty;
-  }
-
-  Future<bool> _columnExists(
-    Database db,
-    String tableName,
-    String column,
-  ) async {
-    if (!await _tableExistsWithDb(db, tableName)) {
-      return false;
-    }
-
-    final cols = await db.rawQuery('PRAGMA table_info($tableName)');
-    return cols.any((e) => '${e['name']}' == column);
-  }
-
-  Future<bool> _tableExistsWithDb(Database db, String tableName) async {
-    final res = await db.rawQuery(
-      "SELECT 1 FROM sqlite_master WHERE type='table' AND name = ? LIMIT 1",
-      <Object?>[tableName],
-    );
-    return res.isNotEmpty;
-  }
-
-  Future<Set<String>> getTableColumns(String tableName) async {
-    if (_columnsCache.containsKey(tableName)) {
-      return _columnsCache[tableName]!;
-    }
-
-    final db = await database;
-    if (!await _tableExistsWithDb(db, tableName)) {
-      _columnsCache[tableName] = <String>{};
-      return _columnsCache[tableName]!;
-    }
-
-    final cols = await db.rawQuery('PRAGMA table_info($tableName)');
-    final names = cols.map((e) => '${e['name']}').toSet();
-    _columnsCache[tableName] = names;
-    return names;
+  Future<SupabaseClient> get database async {
+    await _client.from('lexicon_hsk_levels').select('id').limit(1);
+    return _client;
   }
 
   Future<List<HskLevel>> getHskLevels() async {
-    final db = await database;
-    if (await tableExists(DbTables.hskLevels)) {
-      final cols = await getTableColumns(DbTables.hskLevels);
-      final id = cols.contains('id') ? 'id' : cols.first;
-      final titleCol =
-          _first(cols, <String>['title', 'name', 'level_name']) ?? id;
-      final orderCol =
-          _first(cols, <String>['level_order', 'order_index', 'id']) ?? id;
-      final rows = await db.rawQuery(
-        'SELECT $id AS id, $titleCol AS title, $orderCol AS level_order FROM ${DbTables.hskLevels} ORDER BY $orderCol',
-      );
-      return rows.map(HskLevel.fromMap).toList();
-    }
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_hsk_levels')
+          .select('id, name, sort_order')
+          .order('sort_order')
+          .order('id'),
+    );
 
-    // Fallback for databases where levels are encoded in words.section_id.
-    final wordCols = await getTableColumns(DbTables.words);
-    if (wordCols.contains('section_id')) {
-      final title =
-          wordCols.contains('section_title') ? 'section_title' : 'section_id';
-      final rows = await db.rawQuery(
-        'SELECT section_id AS id, MIN($title) AS title, section_id AS level_order FROM ${DbTables.words} GROUP BY section_id ORDER BY section_id',
-      );
-      return rows.map(HskLevel.fromMap).toList();
-    }
-
-    return <HskLevel>[];
+    return rows
+        .map(
+          (row) => HskLevel.fromMap({
+            'id': row['id'],
+            'title': row['name'],
+            'level_order': row['sort_order'] ?? row['id'],
+          }),
+        )
+        .toList();
   }
 
   Future<List<UnitModel>> getUnitsByLevel(int hskLevelId) async {
-    final db = await database;
-    if (await tableExists(DbTables.units)) {
-      final cols = await getTableColumns(DbTables.units);
-      final id = cols.contains('id') ? 'id' : cols.first;
-      final title = _first(cols, <String>['title', 'name', 'unit_title']) ?? id;
-      final order =
-          _first(cols, <String>['unit_order', 'order_index', 'id']) ?? id;
-      final rows = await db.rawQuery(
-        'SELECT $id AS id, $title AS title, $order AS unit_order FROM ${DbTables.units} WHERE hsk_level_id = ? ORDER BY $order',
-        <Object?>[hskLevelId],
-      );
-      return rows.map(UnitModel.fromMap).toList();
-    }
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_units')
+          .select('id, title, sort_order, unit_number')
+          .eq('hsk_level_id', hskLevelId)
+          .order('sort_order')
+          .order('unit_number'),
+    );
 
-    if (await tableExists(DbTables.wordUnits)) {
-      final rows = await db.rawQuery(
-        'SELECT DISTINCT unit_id AS id, "Unit " || unit_id AS title, unit_id AS unit_order FROM ${DbTables.wordUnits} ORDER BY unit_id',
-      );
-      return rows.map(UnitModel.fromMap).toList();
-    }
-
-    final wordsCols = await getTableColumns(DbTables.words);
-    if (wordsCols.contains('section_id')) {
-      final titleExpr = wordsCols.contains('section_title')
-          ? 'MIN(section_title)'
-          : '"Unit " || section_id';
-      final rows = await db.rawQuery(
-        'SELECT section_id AS id, $titleExpr AS title, section_id AS unit_order FROM ${DbTables.words} GROUP BY section_id ORDER BY section_id',
-      );
-      return rows.map(UnitModel.fromMap).toList();
-    }
-
-    return <UnitModel>[];
+    return rows
+        .map(
+          (row) => UnitModel.fromMap({
+            'id': row['id'],
+            'title': row['title'],
+            'unit_order': row['sort_order'] ?? row['unit_number'] ?? row['id'],
+          }),
+        )
+        .toList();
   }
 
   Future<List<Topic>> getTopicsByUnit(int unitId) async {
-    final db = await database;
-    if (!await tableExists(DbTables.topics)) return <Topic>[];
-
-    final cols = await getTableColumns(DbTables.topics);
-    final id = cols.contains('id') ? 'id' : cols.first;
-    final title = _first(cols, <String>['title', 'name', 'topic_title']) ?? id;
-    final order =
-        _first(cols, <String>['topic_order', 'order_index', 'id']) ?? id;
-
-    final rows = await db.rawQuery(
-      'SELECT $id AS id, $title AS title, $order AS topic_order FROM ${DbTables.topics} WHERE unit_id = ? ORDER BY $order',
-      <Object?>[unitId],
+    final sourceRows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_word_sources')
+          .select('topic_id')
+          .eq('unit_id', unitId),
     );
-    return rows.map(Topic.fromMap).toList();
+
+    final topicIds = sourceRows
+        .map((row) => (row['topic_id'] as num?)?.toInt())
+        .whereType<int>()
+        .toSet()
+        .toList();
+
+    if (topicIds.isEmpty) return <Topic>[];
+
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_topics')
+          .select('id, name_vi, name_en')
+          .inFilter('id', topicIds)
+          .order('id'),
+    );
+
+    return rows
+        .map(
+          (row) => Topic.fromMap({
+            'id': row['id'],
+            'title': '${row['name_vi'] ?? row['name_en'] ?? 'Chủ đề'}',
+            'topic_order': row['id'],
+          }),
+        )
+        .toList();
   }
 
   Future<List<Word>> getWordsByUnit(int unitId) async {
-    final db = await database;
-    final select = await _wordSelect('w');
+    final linkRows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_word_units')
+          .select('word_id')
+          .eq('unit_id', unitId)
+          .order('word_id'),
+    );
 
-    if (await tableExists(DbTables.wordUnits)) {
-      final rows = await db.rawQuery(
-        'SELECT $select FROM ${DbTables.words} w JOIN ${DbTables.wordUnits} wu ON wu.word_id = w.id WHERE wu.unit_id = ? ORDER BY w.id',
-        <Object?>[unitId],
-      );
-      return rows.map(Word.fromMap).toList();
-    }
+    final wordIds = linkRows
+        .map((row) => (row['word_id'] as num?)?.toInt())
+        .whereType<int>()
+        .toList();
 
-    final wordsCols = await getTableColumns(DbTables.words);
-    if (wordsCols.contains('section_id')) {
-      final rows = await db.rawQuery(
-        'SELECT $select FROM ${DbTables.words} w WHERE w.section_id = ? ORDER BY w.id',
-        <Object?>[unitId],
-      );
-      return rows.map(Word.fromMap).toList();
-    }
+    if (wordIds.isEmpty) return <Word>[];
 
-    return <Word>[];
+    final unitRows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_units')
+          .select('title, hsk_level_id')
+          .eq('id', unitId)
+          .limit(1),
+    );
+
+    final unitTitle =
+        unitRows.isEmpty ? '' : '${unitRows.first['title'] ?? ''}';
+    final hskLevelId = unitRows.isEmpty
+        ? 0
+        : (unitRows.first['hsk_level_id'] as num?)?.toInt() ?? 0;
+
+    final levelTitle = await _levelTitle(hskLevelId);
+    final words = await _fetchWordsByIds(wordIds);
+
+    return words
+        .map(
+          (row) => Word.fromMap(
+            _mapCloudWord(
+              row,
+              sectionTitle: levelTitle,
+              groupSubtitle: unitTitle,
+            ),
+          ),
+        )
+        .toList();
   }
 
   Future<List<Word>> getWordsByIds(List<int> ids) async {
-    if (ids.isEmpty) return <Word>[];
-    final db = await database;
-    final select = await _wordSelect('w');
-    final placeholders = List.filled(ids.length, '?').join(',');
-    final rows = await db.rawQuery(
-      'SELECT $select FROM ${DbTables.words} w WHERE w.id IN ($placeholders)',
-      ids.cast<Object?>(),
-    );
-    return rows.map(Word.fromMap).toList();
+    final rows = await _fetchWordsByIds(ids);
+    final levelNames = <int, String>{};
+
+    for (final row in rows) {
+      final level = (row['hsk_level_id'] as num?)?.toInt() ?? 0;
+      levelNames[level] ??= await _levelTitle(level);
+    }
+
+    return rows
+        .map(
+          (row) => Word.fromMap(
+            _mapCloudWord(
+              row,
+              sectionTitle:
+                  levelNames[(row['hsk_level_id'] as num?)?.toInt() ?? 0] ?? '',
+            ),
+          ),
+        )
+        .toList();
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchWordsByIds(List<int> ids) async {
+    if (ids.isEmpty) return <Map<String, dynamic>>[];
+
+    final out = <Map<String, dynamic>>[];
+    for (var i = 0; i < ids.length; i += 200) {
+      final chunk = ids.sublist(i, min(i + 200, ids.length));
+      out.addAll(
+        List<Map<String, dynamic>>.from(
+          await _client
+              .from('lexicon_words')
+              .select(
+                'id, word, pinyin, meaning_vi, meaning_en, tts_url, hsk_level_id, main_character_id',
+              )
+              .inFilter('id', chunk)
+              .order('id'),
+        ),
+      );
+    }
+    return out;
   }
 
   Future<List<ExampleSentence>> getExamplesByWord(int wordId) async {
-    final db = await database;
-    if (!await tableExists(DbTables.examples)) return <ExampleSentence>[];
-
-    final cols = await getTableColumns(DbTables.examples);
-    final id = cols.contains('id') ? 'id' : cols.first;
-    final chinese =
-        _pickCol(cols, <String>['sentence_cn', 'chinese_text', 'sentence']) ??
-            id;
-    final pinyin = _pickCol(cols, <String>['sentence_pinyin', 'pinyin']);
-    final vi = _pickCol(cols, <String>[
-      'sentence_vi',
-      'meaning_vi',
-      'translation',
-    ]);
-    final order = _pickCol(cols, <String>['order_index', 'id']) ?? id;
-
-    final rows = await db.rawQuery(
-      'SELECT $id AS id, word_id, ${pinyin != null ? '$pinyin AS pinyin,' : 'NULL AS pinyin,'} $chinese AS chinese, ${vi != null ? '$vi AS vietnamese,' : 'NULL AS vietnamese,'} $order AS order_index FROM ${DbTables.examples} WHERE word_id = ? ORDER BY $order',
-      <Object?>[wordId],
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_examples')
+          .select(
+            'id, word_id, example_order, sentence_cn, sentence_pinyin, sentence_vi',
+          )
+          .eq('word_id', wordId)
+          .order('example_order')
+          .order('id'),
     );
 
-    return rows.map(ExampleSentence.fromMap).toList();
+    return rows
+        .map(
+          (row) => ExampleSentence.fromMap({
+            'id': row['id'],
+            'word_id': row['word_id'],
+            'chinese': row['sentence_cn'],
+            'pinyin': row['sentence_pinyin'],
+            'vietnamese': row['sentence_vi'],
+            'order_index': row['example_order'] ?? row['id'],
+          }),
+        )
+        .toList();
   }
 
   Future<List<Word>> getReviewWords() async {
-    final db = await database;
-    final select = await _wordSelect('w');
+    final prefs = await SharedPreferences.getInstance();
+    final ids = <int>[];
 
-    final rows = await db.rawQuery('''
-      SELECT $select, up.correct_count, up.wrong_count
-      FROM ${DbTables.words} w
-      JOIN ${DbTables.userProgress} up ON up.word_id = w.id
-      WHERE up.wrong_count > 0 AND IFNULL(up.mastered, 0) = 0
-      ORDER BY up.wrong_count DESC
-    ''');
+    for (final key in prefs.getKeys()) {
+      if (!key.startsWith(_progressPrefix)) continue;
+      final raw = prefs.getString(key);
+      if (raw == null) continue;
 
-    return rows.map(Word.fromMap).toList();
+      try {
+        final data = Map<String, dynamic>.from(jsonDecode(raw) as Map);
+        final wrong = (data['wrong_count'] as num?)?.toInt() ?? 0;
+        final mastered = data['mastered'] == true;
+        if (wrong > 0 && !mastered) {
+          ids.add(int.parse(key.substring(_progressPrefix.length)));
+        }
+      } catch (_) {}
+    }
+
+    return getWordsByIds(ids);
   }
 
   Future<void> upsertProgress({
@@ -373,210 +247,217 @@ class DbHelper {
     required bool isCorrect,
     int level = 1,
   }) async {
-    final db = await database;
-    final existing = await db.query(
-      DbTables.userProgress,
-      where: 'word_id = ?',
-      whereArgs: <Object?>[wordId],
-      limit: 1,
-    );
+    final prefs = await SharedPreferences.getInstance();
+    final key = '$_progressPrefix$wordId';
+    final existing = _decodeMap(prefs.getString(key));
 
-    final now = DateTime.now().toIso8601String();
+    final correct = (existing['correct_count'] as num?)?.toInt() ?? 0;
+    final wrong = (existing['wrong_count'] as num?)?.toInt() ?? 0;
+    final nextCorrect = correct + (isCorrect ? 1 : 0);
+    final nextWrong = wrong + (isCorrect ? 0 : 1);
 
-    if (existing.isEmpty) {
-      await db.insert(DbTables.userProgress, <String, Object?>{
+    await prefs.setString(
+      key,
+      jsonEncode({
         'word_id': wordId,
-        'correct_count': isCorrect ? 1 : 0,
-        'wrong_count': isCorrect ? 0 : 1,
+        'correct_count': nextCorrect,
+        'wrong_count': nextWrong,
         'level': level,
-        'mastered': isCorrect ? 1 : 0,
-        'last_reviewed_at': now,
-        'updated_at': now,
-      });
-      return;
-    }
-
-    final row = existing.first;
-    final correctCount =
-        (row['correct_count'] as int? ?? 0) + (isCorrect ? 1 : 0);
-    final wrongCount = (row['wrong_count'] as int? ?? 0) + (isCorrect ? 0 : 1);
-    final mastered = correctCount >= 3 ? 1 : 0;
-
-    await db.update(
-      DbTables.userProgress,
-      <String, Object?>{
-        'correct_count': correctCount,
-        'wrong_count': wrongCount,
-        'mastered': mastered,
-        'level': level,
-        'last_reviewed_at': now,
-        'updated_at': now,
-      },
-      where: 'word_id = ?',
-      whereArgs: <Object?>[wordId],
+        'mastered': nextCorrect >= 3,
+        'last_practice': DateTime.now().toIso8601String(),
+      }),
     );
   }
 
   Future<void> markLearned(int wordId) async {
-    final db = await database;
-    final now = DateTime.now().toIso8601String();
+    final prefs = await SharedPreferences.getInstance();
+    final key = '$_progressPrefix$wordId';
+    final existing = _decodeMap(prefs.getString(key));
 
-    await db.rawInsert(
-      '''
-      INSERT INTO ${DbTables.userProgress}
-        (word_id, correct_count, wrong_count, level, mastered, last_reviewed_at, updated_at)
-      VALUES (?, 1, 0, 1, 1, ?, ?)
-      ON CONFLICT(word_id) DO UPDATE SET mastered = 1,
-        correct_count = MAX(correct_count, 1),
-        last_reviewed_at = excluded.last_reviewed_at,
-        updated_at = excluded.updated_at
-    ''',
-      <Object?>[wordId, now, now],
+    await prefs.setString(
+      key,
+      jsonEncode({
+        'word_id': wordId,
+        'correct_count':
+            max(1, (existing['correct_count'] as num?)?.toInt() ?? 0),
+        'wrong_count': (existing['wrong_count'] as num?)?.toInt() ?? 0,
+        'level': (existing['level'] as num?)?.toInt() ?? 1,
+        'mastered': true,
+        'last_practice': DateTime.now().toIso8601String(),
+      }),
     );
   }
 
   Future<Map<String, num>> getStats() async {
-    final db = await database;
-    final progress = (await db.rawQuery('''
-      SELECT COUNT(*) AS learned,
-        SUM(CASE WHEN IFNULL(mastered, 0) = 1 THEN 1 ELSE 0 END) AS mastered,
-        SUM(IFNULL(correct_count, 0)) AS correct,
-        SUM(IFNULL(wrong_count, 0)) AS wrong
-      FROM ${DbTables.userProgress}
-    ''')).first;
-    final speaking = (await db.rawQuery(
-      'SELECT COUNT(*) AS attempts, AVG(score) AS average FROM ${DbTables.speakingPractice}',
-    ))
-        .first;
-    return <String, num>{
-      'learned': (progress['learned'] as num?) ?? 0,
-      'mastered': (progress['mastered'] as num?) ?? 0,
-      'correct': (progress['correct'] as num?) ?? 0,
-      'wrong': (progress['wrong'] as num?) ?? 0,
-      'speakingAttempts': (speaking['attempts'] as num?) ?? 0,
-      'speakingAverage': (speaking['average'] as num?) ?? 0,
+    final prefs = await SharedPreferences.getInstance();
+    var learned = 0;
+    var mastered = 0;
+    var correct = 0;
+    var wrong = 0;
+
+    for (final key in prefs.getKeys()) {
+      if (!key.startsWith(_progressPrefix)) continue;
+      final data = _decodeMap(prefs.getString(key));
+      learned += 1;
+      if (data['mastered'] == true) mastered += 1;
+      correct += (data['correct_count'] as num?)?.toInt() ?? 0;
+      wrong += (data['wrong_count'] as num?)?.toInt() ?? 0;
+    }
+
+    final attempts = prefs.getInt(_speakingAttemptsKey) ?? 0;
+    final scoreSum = prefs.getDouble(_speakingScoreSumKey) ?? 0;
+
+    return {
+      'learned': learned,
+      'mastered': mastered,
+      'correct': correct,
+      'wrong': wrong,
+      'speakingAttempts': attempts,
+      'speakingAverage': attempts == 0 ? 0 : scoreSum / attempts,
     };
   }
 
   Future<Map<String, int>> getUnitMetrics(int unitId) async {
-    final db = await database;
-    final row = (await db.rawQuery(
-      '''
-      SELECT COUNT(DISTINCT wu.word_id) AS words,
-        COUNT(DISTINCT CASE WHEN up.word_id IS NOT NULL THEN wu.word_id END) AS learned,
-        COUNT(DISTINCT e.id) AS examples
-      FROM ${DbTables.wordUnits} wu
-      LEFT JOIN ${DbTables.userProgress} up ON up.word_id = wu.word_id
-      LEFT JOIN ${DbTables.examples} e ON e.word_id = wu.word_id
-      WHERE wu.unit_id = ?
-    ''',
-      <Object?>[unitId],
-    ))
-        .first;
-    return row.map(
-      (key, value) => MapEntry(key, (value as num?)?.toInt() ?? 0),
+    final links = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_word_units')
+          .select('word_id')
+          .eq('unit_id', unitId),
     );
+    final wordIds = links
+        .map((row) => (row['word_id'] as num?)?.toInt())
+        .whereType<int>()
+        .toSet();
+
+    final examples = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_examples')
+          .select('id')
+          .eq('unit_id', unitId),
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    var learned = 0;
+    for (final id in wordIds) {
+      if (prefs.containsKey('$_progressPrefix$id')) learned++;
+    }
+
+    return {
+      'words': wordIds.length,
+      'learned': learned,
+      'examples': examples.length,
+    };
   }
 
   Future<int> getUnitCountForLevel(int levelId) async {
-    final db = await database;
-    final rows = await db.rawQuery(
-      'SELECT COUNT(*) AS count FROM ${DbTables.units} WHERE hsk_level_id = ?',
-      <Object?>[levelId],
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_units')
+          .select('id')
+          .eq('hsk_level_id', levelId),
     );
-    return (rows.first['count'] as num?)?.toInt() ?? 0;
+    return rows.length;
   }
 
   Future<double> getLevelProgress(int levelId) async {
-    final db = await database;
-    final rows = await db.rawQuery(
-      '''
-      SELECT COUNT(DISTINCT wu.word_id) AS total,
-        COUNT(DISTINCT CASE WHEN up.word_id IS NOT NULL THEN wu.word_id END) AS learned
-      FROM ${DbTables.units} u
-      JOIN ${DbTables.wordUnits} wu ON wu.unit_id = u.id
-      LEFT JOIN ${DbTables.userProgress} up ON up.word_id = wu.word_id
-      WHERE u.hsk_level_id = ?
-    ''',
-      <Object?>[levelId],
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_words')
+          .select('id')
+          .eq('hsk_level_id', levelId)
+          .order('id')
+          .range(0, 999),
     );
-    final total = (rows.first['total'] as num?)?.toInt() ?? 0;
-    final learned = (rows.first['learned'] as num?)?.toInt() ?? 0;
-    return total == 0 ? 0 : learned / total;
+    if (rows.isEmpty) return 0;
+
+    final prefs = await SharedPreferences.getInstance();
+    final learned = rows.where((row) {
+      final id = (row['id'] as num?)?.toInt();
+      return id != null && prefs.containsKey('$_progressPrefix$id');
+    }).length;
+
+    return learned / rows.length;
   }
 
   Future<SpeakingPracticeItem?> getSpeakingItemByWordId(int wordId) async {
-    final db = await database;
-    final select = await _wordSelect('w');
-    final rows = await db.rawQuery(
-      'SELECT $select FROM ${DbTables.words} w WHERE w.id = ? LIMIT 1',
-      <Object?>[wordId],
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_words')
+          .select('id, word, pinyin, meaning_vi, tts_url')
+          .eq('id', wordId)
+          .limit(1),
     );
     if (rows.isEmpty) return null;
-    return SpeakingPracticeItem.fromMap(rows.first);
+    final row = rows.first;
+    return SpeakingPracticeItem.fromMap({
+      'word_id': row['id'],
+      'word': row['word'],
+      'pinyin': row['pinyin'],
+      'meaning_vi': row['meaning_vi'],
+      'tts_url': row['tts_url'],
+    });
   }
 
   Future<SpeakingPracticeItem?> getSpeakingItemByExampleId(
-      int exampleId) async {
-    final db = await database;
-    final wordsCols = await getTableColumns(DbTables.words);
-    final ttsUrl = _pickCol(wordsCols, ['tts_url']) ?? 'NULL';
-
-    final cols = await getTableColumns(DbTables.examples);
-    final chinese =
-        _pickCol(cols, <String>['sentence_cn', 'chinese_text', 'sentence']) ??
-            'NULL';
-    final pinyin =
-        _pickCol(cols, <String>['sentence_pinyin', 'pinyin']) ?? 'NULL';
-    final vi =
-        _pickCol(cols, <String>['sentence_vi', 'meaning_vi', 'translation']) ??
-            'NULL';
-
-    final rows = await db.rawQuery(
-      '''
-      SELECT 
-        e.id AS example_id,
-        e.word_id,
-        e.$chinese AS sentence_cn,
-        e.$pinyin AS sentence_pinyin,
-        e.$vi AS sentence_vi,
-        w.$ttsUrl AS tts_url
-      FROM ${DbTables.examples} e
-      LEFT JOIN ${DbTables.words} w ON w.id = e.word_id
-      WHERE e.id = ? LIMIT 1
-      ''',
-      <Object?>[exampleId],
+    int exampleId,
+  ) async {
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_examples')
+          .select('id, word_id, sentence_cn, sentence_pinyin, sentence_vi')
+          .eq('id', exampleId)
+          .limit(1),
     );
     if (rows.isEmpty) return null;
-    return SpeakingPracticeItem.fromMap(rows.first);
+
+    final row = rows.first;
+    final wordId = (row['word_id'] as num?)?.toInt();
+    final word = wordId == null ? null : await getSpeakingItemByWordId(wordId);
+
+    return SpeakingPracticeItem.fromMap({
+      'example_id': row['id'],
+      'word_id': row['word_id'],
+      'sentence_cn': row['sentence_cn'],
+      'sentence_pinyin': row['sentence_pinyin'],
+      'sentence_vi': row['sentence_vi'],
+      'tts_url': word?.audioUrl,
+    });
   }
 
   Future<List<SpeakingPracticeItem>> getSpeakingItemsByUnitId(
-      int unitId) async {
+    int unitId,
+  ) async {
     final words = await getWordsByUnit(unitId);
     return words
-        .map((w) => SpeakingPracticeItem(
-              wordId: w.id,
-              targetText: w.chinese,
-              pinyin: w.pinyin,
-              meaning: w.vietnamese,
-              audioUrl: w.ttsUrl,
-            ))
+        .map(
+          (word) => SpeakingPracticeItem(
+            wordId: word.id,
+            targetText: word.chinese,
+            pinyin: word.pinyin,
+            meaning: word.vietnamese,
+            audioUrl: word.ttsUrl,
+          ),
+        )
         .toList();
   }
 
-  Future<List<SpeakingPracticeItem>> getRandomSpeakingItems(
-      {int limit = 20}) async {
-    final db = await database;
-    final select = await _wordSelect('w');
-    final chineseCol = _pickCol(await getTableColumns(DbTables.words),
-            ['word', 'chinese', 'hanzi']) ??
-        'id';
-    final rows = await db.rawQuery(
-      'SELECT $select FROM ${DbTables.words} w WHERE w.$chineseCol IS NOT NULL AND TRIM(w.$chineseCol) != "" ORDER BY RANDOM() LIMIT ?',
-      <Object?>[limit],
+  Future<List<SpeakingPracticeItem>> getRandomSpeakingItems({
+    int limit = 20,
+  }) async {
+    final rows = List<Map<String, dynamic>>.from(
+      await _client.rpc('random_lexicon_words', params: {'p_limit': limit}),
     );
-    return rows.map((r) => SpeakingPracticeItem.fromMap(r)).toList();
+    return rows
+        .map(
+          (row) => SpeakingPracticeItem.fromMap({
+            'word_id': row['id'],
+            'word': row['word'],
+            'pinyin': row['pinyin'],
+            'meaning_vi': row['meaning_vi'],
+            'tts_url': row['tts_url'],
+          }),
+        )
+        .toList();
   }
 
   Future<void> saveSpeakingPractice({
@@ -587,145 +468,135 @@ class DbHelper {
     required double score,
     required bool isCorrect,
   }) async {
-    final db = await database;
-    await db.insert(DbTables.speakingPractice, <String, Object?>{
-      'word_id': wordId,
-      'example_id': exampleId,
-      'target_text': targetText,
-      'recognized_text': recognizedText,
-      'score': score,
-      'is_correct': isCorrect ? 1 : 0,
-      'created_at': DateTime.now().toIso8601String(),
-    });
+    final prefs = await SharedPreferences.getInstance();
+    final attempts = prefs.getInt(_speakingAttemptsKey) ?? 0;
+    final scoreSum = prefs.getDouble(_speakingScoreSumKey) ?? 0;
+    await prefs.setInt(_speakingAttemptsKey, attempts + 1);
+    await prefs.setDouble(_speakingScoreSumKey, scoreSum + score);
   }
-
-  Future<String> _wordSelect(String alias) async {
-    final cols = await getTableColumns(DbTables.words);
-
-    String pick(List<String> candidates, String outAlias) {
-      final c = _pickCol(cols, candidates);
-      if (c == null) return 'NULL AS $outAlias';
-      return '$alias.$c AS $outAlias';
-    }
-
-    return <String>[
-      '$alias.id AS id',
-      pick(<String>['word', 'chinese', 'hanzi'], 'chinese'),
-      pick(<String>['transliteration', 'pinyin'], 'pinyin'),
-      pick(<String>[
-        'translation',
-        'meaning_vi',
-        'vietnamese_meaning',
-      ], 'vietnamese'),
-      pick(<String>['english_translation', 'meaning_en'], 'english'),
-      pick(<String>['tts_url'], 'tts_url'),
-      pick(<String>['section_id', 'hsk_level_id'], 'hsk_level_id'),
-      pick(<String>['section_title'], 'section_title'),
-      pick(<String>['group_subtitle'], 'group_subtitle'),
-    ].join(', ');
-  }
-
-  static String? _pickCol(Set<String> cols, List<String> candidates) {
-    for (final c in candidates) {
-      if (cols.contains(c)) return c;
-    }
-    return null;
-  }
-
-  static String? _first(Set<String> cols, List<String> candidates) =>
-      _pickCol(cols, candidates);
 
   Future<List<HanziCharacter>> getCharactersForWriting({
     String? keyword,
     int? hskLevel,
   }) async {
-    final db = await database;
-    String whereClause = '';
-    List<Object?> whereArgs = [];
+    final characters = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_characters')
+          .select(
+            'id, character, stroke_count, stroke_width, stroke_height, stroke_paths',
+          )
+          .order('id')
+          .range(0, 999),
+    );
+    final words = await _fetchWordCatalog();
 
-    if (keyword != null && keyword.trim().isNotEmpty) {
-      final kw = '%${keyword.trim()}%';
-      whereClause +=
-          '(c.character LIKE ? OR w1.pinyin LIKE ? OR w2.pinyin LIKE ? OR w1.meaning_vi LIKE ? OR w2.meaning_vi LIKE ?)';
-      whereArgs.addAll([kw, kw, kw, kw, kw]);
+    final byCharacter = <String, Map<String, dynamic>>{};
+    final byMain = <int, Map<String, dynamic>>{};
+    for (final word in words) {
+      final text = '${word['word'] ?? ''}';
+      if (text.isNotEmpty) byCharacter.putIfAbsent(text, () => word);
+      final main = (word['main_character_id'] as num?)?.toInt();
+      if (main != null) byMain.putIfAbsent(main, () => word);
     }
 
-    if (hskLevel != null) {
-      if (whereClause.isNotEmpty) whereClause += ' AND ';
-      whereClause += '(w1.hsk_level_id = ? OR w2.hsk_level_id = ?)';
-      whereArgs.addAll([hskLevel, hskLevel]);
+    final filter = keyword?.trim().toLowerCase();
+    final result = <HanziCharacter>[];
+
+    for (final char in characters) {
+      final id = (char['id'] as num?)?.toInt();
+      if (id == null) continue;
+      final character = '${char['character'] ?? ''}';
+      final word = byCharacter[character] ?? byMain[id];
+      final pinyin = '${word?['pinyin'] ?? ''}';
+      final meaning = '${word?['meaning_vi'] ?? ''}';
+      final level = (word?['hsk_level_id'] as num?)?.toInt();
+
+      if (hskLevel != null && level != hskLevel) continue;
+      if (filter != null &&
+          filter.isNotEmpty &&
+          !('$character $pinyin $meaning'.toLowerCase().contains(filter))) {
+        continue;
+      }
+
+      result.add(
+        HanziCharacter.fromMap({
+          'id': id,
+          'character': character,
+          'stroke_count': char['stroke_count'],
+          'stroke_width': char['stroke_width'],
+          'stroke_height': char['stroke_height'],
+          'stroke_paths': char['stroke_paths'] ?? '',
+          'pinyin': pinyin,
+          'meaning': meaning,
+          'hsk_level_id': level,
+        }),
+      );
     }
 
-    final query = '''
-      SELECT c.id, c.character, c.stroke_count, c.stroke_width, c.stroke_height,
-             COALESCE(w1.pinyin, w2.pinyin) as pinyin,
-             COALESCE(w1.meaning_vi, w2.meaning_vi) as meaning,
-             COALESCE(w1.hsk_level_id, w2.hsk_level_id) as hsk_level_id,
-             '' as stroke_paths
-      FROM characters c
-      LEFT JOIN words w1 ON w1.word = c.character
-      LEFT JOIN words w2 ON w2.id = (
-          SELECT id FROM words 
-          WHERE main_character_id = c.id 
-          LIMIT 1
-      )
-      ${whereClause.isNotEmpty ? 'WHERE $whereClause' : ''}
-      GROUP BY c.id
-      ORDER BY c.id
-    ''';
-
-    final rows = await db.rawQuery(query, whereArgs);
-    return rows.map(HanziCharacter.fromMap).toList();
+    return result;
   }
 
   Future<HanziCharacter?> getCharacterForWritingById(int characterId) async {
-    final db = await database;
-    final rows = await db.rawQuery('''
-      SELECT c.id, c.character, c.stroke_count, c.stroke_width, c.stroke_height, c.stroke_paths,
-             COALESCE(w1.pinyin, w2.pinyin) as pinyin,
-             COALESCE(w1.meaning_vi, w2.meaning_vi) as meaning,
-             COALESCE(w1.hsk_level_id, w2.hsk_level_id) as hsk_level_id
-      FROM characters c
-      LEFT JOIN words w1 ON w1.word = c.character
-      LEFT JOIN words w2 ON w2.id = (
-          SELECT id FROM words 
-          WHERE main_character_id = c.id 
-          LIMIT 1
-      )
-      WHERE c.id = ?
-      GROUP BY c.id
-      LIMIT 1
-    ''', [characterId]);
-
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_characters')
+          .select(
+            'id, character, stroke_count, stroke_width, stroke_height, stroke_paths',
+          )
+          .eq('id', characterId)
+          .limit(1),
+    );
     if (rows.isEmpty) return null;
-    return HanziCharacter.fromMap(rows.first);
+
+    final char = rows.first;
+    final character = '${char['character'] ?? ''}';
+    var words = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_words')
+          .select('pinyin, meaning_vi, hsk_level_id')
+          .eq('word', character)
+          .limit(1),
+    );
+    if (words.isEmpty) {
+      words = List<Map<String, dynamic>>.from(
+        await _client
+            .from('lexicon_words')
+            .select('pinyin, meaning_vi, hsk_level_id')
+            .eq('main_character_id', characterId)
+            .limit(1),
+      );
+    }
+    final word = words.isEmpty ? null : words.first;
+
+    return HanziCharacter.fromMap({
+      'id': char['id'],
+      'character': character,
+      'stroke_count': char['stroke_count'],
+      'stroke_width': char['stroke_width'],
+      'stroke_height': char['stroke_height'],
+      'stroke_paths': char['stroke_paths'] ?? '',
+      'pinyin': word?['pinyin'],
+      'meaning': word?['meaning_vi'],
+      'hsk_level_id': word?['hsk_level_id'],
+    });
   }
 
   Future<int?> getCharacterIdByCharString(String charStr) async {
     if (charStr.isEmpty) return null;
-    final db = await database;
-    // Try exact match first
-    var rows = await db.query(
-      'characters',
-      columns: ['id'],
-      where: 'character = ? AND stroke_count > 0',
-      whereArgs: [charStr],
-      limit: 1,
-    );
-    if (rows.isNotEmpty) return rows.first['id'] as int?;
 
-    // Fallback to first character of multi-char words
-    final firstChar = charStr.substring(0, 1);
-    rows = await db.query(
-      'characters',
-      columns: ['id'],
-      where: 'character = ? AND stroke_count > 0',
-      whereArgs: [firstChar],
-      limit: 1,
-    );
-    if (rows.isNotEmpty) return rows.first['id'] as int?;
+    Future<int?> lookup(String value) async {
+      final rows = List<Map<String, dynamic>>.from(
+        await _client
+            .from('lexicon_characters')
+            .select('id')
+            .eq('character', value)
+            .gt('stroke_count', 0)
+            .limit(1),
+      );
+      return rows.isEmpty ? null : (rows.first['id'] as num?)?.toInt();
+    }
 
-    return null;
+    return await lookup(charStr) ?? await lookup(charStr.substring(0, 1));
   }
 
   Future<void> saveHanziWritingProgress({
@@ -733,49 +604,86 @@ class DbHelper {
     required double score,
     required int attempts,
   }) async {
-    final db = await database;
-    final now = DateTime.now().toIso8601String();
+    final prefs = await SharedPreferences.getInstance();
+    final key = '$_hanziProgressPrefix$characterId';
+    final existing = _decodeMap(prefs.getString(key));
+    final currentBest = (existing['best_score'] as num?)?.toDouble() ?? 0;
+    final totalAttempts =
+        (existing['total_attempts'] as num?)?.toInt() ?? 0;
+    final completedCount =
+        (existing['completed_count'] as num?)?.toInt() ?? 0;
 
-    final List<Map<String, Object?>> existing = await db.query(
-      DbTables.hanziWritingProgress,
-      where: 'character_id = ?',
-      whereArgs: [characterId],
-      limit: 1,
-    );
-
-    if (existing.isEmpty) {
-      await db.insert(DbTables.hanziWritingProgress, {
+    await prefs.setString(
+      key,
+      jsonEncode({
         'character_id': characterId,
-        'best_score': score,
+        'best_score': max(currentBest, score),
         'last_score': score,
-        'total_attempts': attempts,
-        'completed_count': 1,
-        'last_completed_at': now,
-        'created_at': now,
-        'updated_at': now,
-      });
-    } else {
-      final row = existing.first;
-      final currentBest = (row['best_score'] as num?)?.toDouble() ?? 0.0;
-      final newBest = max(currentBest, score);
-      final totalAttempts =
-          ((row['total_attempts'] as num?)?.toInt() ?? 0) + attempts;
-      final completedCount =
-          ((row['completed_count'] as num?)?.toInt() ?? 0) + 1;
+        'total_attempts': totalAttempts + attempts,
+        'completed_count': completedCount + 1,
+        'last_completed_at': DateTime.now().toIso8601String(),
+      }),
+    );
+  }
 
-      await db.update(
-        DbTables.hanziWritingProgress,
-        {
-          'best_score': newBest,
-          'last_score': score,
-          'total_attempts': totalAttempts,
-          'completed_count': completedCount,
-          'last_completed_at': now,
-          'updated_at': now,
-        },
-        where: 'character_id = ?',
-        whereArgs: [characterId],
+  Future<List<Map<String, dynamic>>> _fetchWordCatalog() async {
+    final out = <Map<String, dynamic>>[];
+    var from = 0;
+
+    while (true) {
+      final page = List<Map<String, dynamic>>.from(
+        await _client
+            .from('lexicon_words')
+            .select(
+              'id, word, pinyin, meaning_vi, hsk_level_id, main_character_id',
+            )
+            .order('id')
+            .range(from, from + 999),
       );
+      out.addAll(page);
+      if (page.length < 1000) break;
+      from += 1000;
+    }
+
+    return out;
+  }
+
+  Future<String> _levelTitle(int levelId) async {
+    if (levelId <= 0) return '';
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_hsk_levels')
+          .select('name')
+          .eq('id', levelId)
+          .limit(1),
+    );
+    return rows.isEmpty ? '' : '${rows.first['name'] ?? ''}';
+  }
+
+  static Map<String, dynamic> _mapCloudWord(
+    Map<String, dynamic> row, {
+    String sectionTitle = '',
+    String groupSubtitle = '',
+  }) {
+    return {
+      'id': row['id'],
+      'chinese': row['word'],
+      'pinyin': row['pinyin'],
+      'vietnamese': row['meaning_vi'],
+      'english': row['meaning_en'],
+      'tts_url': row['tts_url'],
+      'hsk_level_id': row['hsk_level_id'],
+      'section_title': sectionTitle,
+      'group_subtitle': groupSubtitle,
+    };
+  }
+
+  static Map<String, dynamic> _decodeMap(String? raw) {
+    if (raw == null || raw.isEmpty) return {};
+    try {
+      return Map<String, dynamic>.from(jsonDecode(raw) as Map);
+    } catch (_) {
+      return {};
     }
   }
 }
