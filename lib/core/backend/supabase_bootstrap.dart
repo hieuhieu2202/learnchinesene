@@ -13,7 +13,7 @@ abstract final class SupabaseBootstrap {
 
     await Supabase.initialize(
       url: SupabaseConfig.url,
-      anonKey: SupabaseConfig.publishableKey,
+      publishableKey: SupabaseConfig.publishableKey,
     );
   }
 }
