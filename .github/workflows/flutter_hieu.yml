@@ -46,6 +46,17 @@ jobs:
       - name: Build debug APK
         run: flutter build apk --debug
 
+      - name: Report APK size
+        run: |
+          ls -lh build/app/outputs/flutter-apk/app-debug.apk
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('build/app/outputs/flutter-apk/app-debug.apk')
+          size = p.stat().st_size
+          print(f'APK bytes: {size:,}')
+          print(f'APK MiB: {size / 1024 / 1024:.2f}')
+          PY
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
