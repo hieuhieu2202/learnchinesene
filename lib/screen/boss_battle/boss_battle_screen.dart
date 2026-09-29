@@ -41,50 +41,280 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF140D13),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                Expanded(
-                  flex: 56,
-                  child: _BattleStage(controller: controller),
+    return Obx(() {
+      final phase = controller.phase.value;
+
+      if (phase == BossBattlePhase.loading) {
+        return const Scaffold(
+          backgroundColor: Color(0xFF171018),
+          body: SafeArea(
+            child: _StatusOverlay(
+              icon: Icons.hourglass_top_rounded,
+              title: 'Đang triệu hồi Rồng Lửa',
+              message: 'Đang tải câu hỏi trực tiếp từ Supabase...',
+              showProgress: true,
+            ),
+          ),
+        );
+      }
+
+      if (phase == BossBattlePhase.intro) {
+        return Scaffold(
+          backgroundColor: const Color(0xFF171018),
+          body: SafeArea(
+            child: _BossIntroScreen(controller: controller),
+          ),
+        );
+      }
+
+      return Scaffold(
+        backgroundColor: const Color(0xFF140D13),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Expanded(
+                    flex: 59,
+                    child: _BattleStage(controller: controller),
+                  ),
+                  Expanded(
+                    flex: 41,
+                    child: _QuestionPanel(controller: controller),
+                  ),
+                ],
+              ),
+              if (phase == BossBattlePhase.error)
+                _ErrorOverlay(controller: controller),
+              if (phase == BossBattlePhase.result)
+                _ResultOverlay(controller: controller),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+}
+
+class _BossIntroScreen extends StatelessWidget {
+  const _BossIntroScreen({required this.controller});
+
+  final BossBattleController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const CustomPaint(painter: _BattleBackdropPainter()),
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0x22000000),
+                Color(0x33130C13),
+                Color(0xEB130C13),
+              ],
+              stops: [0, .48, 1],
+            ),
+          ),
+        ),
+        Positioned(
+          top: 12,
+          left: 14,
+          child: _RoundIconButton(
+            icon: Icons.arrow_back_rounded,
+            onTap: () => Get.back<void>(),
+          ),
+        ),
+        Positioned(
+          left: 18,
+          right: 18,
+          top: 36,
+          child: Column(
+            children: [
+              const Text(
+                'BOSS BATTLE',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 39,
+                  height: 1,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1.2,
+                  shadows: [
+                    Shadow(
+                      color: Color(0xAA7C1A18),
+                      blurRadius: 14,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  flex: 44,
-                  child: _QuestionPanel(controller: controller),
+              ),
+              const SizedBox(height: 9),
+              Text(
+                'Đánh bại Boss bằng kiến thức tiếng Trung!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: .88),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: 120,
+          left: 12,
+          right: 12,
+          height: 300,
+          child: Stack(
+            children: [
+              Align(
+                alignment: const Alignment(-.88, .75),
+                child: BossBattleAnimatedCharacter(
+                  kind: BossBattleCharacterKind.panda,
+                  motion: BossBattleCharacterMotion.ready,
+                  size: 150,
+                ),
+              ),
+              Align(
+                alignment: const Alignment(.88, -.15),
+                child: BossBattleAnimatedCharacter(
+                  kind: BossBattleCharacterKind.dragon,
+                  motion: BossBattleCharacterMotion.idle,
+                  size: 205,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          left: 18,
+          right: 18,
+          bottom: 22,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(18, 17, 18, 16),
+            decoration: BoxDecoration(
+              color: const Color(0xE8291B25),
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(
+                color: const Color(0x66FFD988),
+                width: 1.2,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x99000000),
+                  blurRadius: 26,
+                  offset: Offset(0, 12),
                 ),
               ],
             ),
-            Obx(() {
-              switch (controller.phase.value) {
-                case BossBattlePhase.loading:
-                  return const _StatusOverlay(
-                    icon: Icons.hourglass_top_rounded,
-                    title: 'Đang chuẩn bị chiến trường',
-                    message:
-                        'Đang lấy câu hỏi thật từ Supabase. Thường chỉ mất một vài giây.',
-                    showProgress: true,
-                  );
-                case BossBattlePhase.intro:
-                  return const _StatusOverlay(
-                    icon: Icons.local_fire_department_rounded,
-                    title: 'Boss xuất hiện!',
-                    message: 'Trả lời đúng để tung đòn và hạ Rồng Hỏa.',
-                  );
-                case BossBattlePhase.error:
-                  return _ErrorOverlay(controller: controller);
-                case BossBattlePhase.result:
-                  return _ResultOverlay(controller: controller);
-                default:
-                  return const SizedBox.shrink();
-              }
-            }),
-          ],
+            child: Column(
+              children: [
+                const _IntroFeature(
+                  icon: Icons.psychology_alt_rounded,
+                  title: 'Học từ vựng qua trận chiến',
+                  subtitle: 'Câu hỏi thật lấy từ kho dữ liệu Supabase',
+                ),
+                const SizedBox(height: 11),
+                const _IntroFeature(
+                  icon: Icons.local_fire_department_rounded,
+                  title: 'Càng đúng càng mạnh',
+                  subtitle: 'Combo cao giúp đòn đánh gây nhiều sát thương hơn',
+                ),
+                const SizedBox(height: 11),
+                const _IntroFeature(
+                  icon: Icons.auto_awesome_rounded,
+                  title: 'Phản hồi chiến đấu tức thì',
+                  subtitle: 'Đúng thì bạn tấn công, sai thì Boss phản công',
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFA726),
+                      foregroundColor: const Color(0xFF4D2400),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(17),
+                        side: const BorderSide(
+                          color: Color(0xFFFFD46A),
+                          width: 1.5,
+                        ),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    onPressed: controller.beginBattle,
+                    child: const Text('Bắt đầu chơi'),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
+    );
+  }
+}
+
+class _IntroFeature extends StatelessWidget {
+  const _IntroFeature({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: const Color(0x33FFCD67),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: const Color(0xFFFFD166), size: 21),
+        ),
+        const SizedBox(width: 11),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: .68),
+                  fontSize: 11,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1112,45 +1342,69 @@ class _ResultOverlay extends StatelessWidget {
     final won = controller.bossHp.value < controller.playerHp.value;
 
     return ColoredBox(
-      color: const Color(0xCC0B070A),
+      color: const Color(0xD911080E),
       child: Center(
         child: Container(
-          margin: const EdgeInsets.all(24),
+          margin: const EdgeInsets.all(22),
           constraints: const BoxConstraints(maxWidth: 430),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF7EA),
-            borderRadius: BorderRadius.circular(28),
+            gradient: won
+                ? const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFFFF1B7), Color(0xFFFFF9EA)],
+                  )
+                : const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF3A151D), Color(0xFF1C1117)],
+                  ),
+            borderRadius: BorderRadius.circular(29),
             border: Border.all(
-              color: won ? const Color(0xFFE8B64E) : const Color(0xFFCF6D6D),
+              color: won ? const Color(0xFFFFC84B) : const Color(0xFFB64A55),
               width: 2,
             ),
             boxShadow: const [
-              BoxShadow(color: Color(0x66000000), blurRadius: 28),
+              BoxShadow(
+                color: Color(0x99000000),
+                blurRadius: 36,
+                offset: Offset(0, 16),
+              ),
             ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(won ? '🏆' : '🔥', style: const TextStyle(fontSize: 62)),
+              Icon(
+                won ? Icons.emoji_events_rounded : Icons.heart_broken_rounded,
+                color: won ? const Color(0xFFFFB300) : const Color(0xFFFF7A7A),
+                size: 65,
+              ),
               const SizedBox(height: 8),
               Text(
-                won ? 'Chiến thắng!' : 'Thử lại nhé!',
-                style: const TextStyle(
-                  color: AppColors.ink,
-                  fontSize: 27,
+                won ? 'Chiến thắng!' : 'Thất bại!',
+                style: TextStyle(
+                  color: won ? AppColors.redDark : Colors.white,
+                  fontSize: 31,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 7),
               Text(
                 won
-                    ? 'Bạn đã đánh bại Rồng Hỏa bằng kiến thức tiếng Trung.'
-                    : 'Ôn lại vài từ khó rồi quay lại phục thù boss.',
+                    ? 'Rồng Lửa đã bị đánh bại. Kiến thức của bạn mạnh hơn!'
+                    : 'Đừng bỏ cuộc! Luyện thêm rồi quay lại phục thù nhé.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.muted, height: 1.45),
+                style: TextStyle(
+                  color: won
+                      ? AppColors.muted
+                      : Colors.white.withValues(alpha: .72),
+                  height: 1.4,
+                  fontSize: 13,
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               Row(
                 children: [
                   Expanded(
@@ -1169,38 +1423,43 @@ class _ResultOverlay extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _ResultStat(
-                      label: 'Max combo',
+                      label: 'Combo',
                       value: 'x${controller.maxCombo.value}',
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
-              const Text(
-                'Điểm trận hiện chỉ là feedback gameplay. XP/Coins chưa được tự cộng ở client.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.muted,
-                  fontSize: 11,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 19),
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor:
+                            won ? AppColors.ink : const Color(0xFFFFD7D7),
+                        side: BorderSide(
+                          color: won
+                              ? const Color(0xFFD8C9B8)
+                              : const Color(0xFF6F3A43),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
                       onPressed: () => Get.back<void>(),
-                      icon: const Icon(Icons.grid_view_rounded),
-                      label: const Text('Kho game'),
+                      child: const Text('Về Game Hub'),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: FilledButton.icon(
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: won
+                            ? const Color(0xFF29C76F)
+                            : const Color(0xFFFFA12B),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
                       onPressed: controller.startBattle,
-                      icon: const Icon(Icons.replay_rounded),
-                      label: const Text('Chơi lại'),
+                      child: Text(won ? 'Tiếp tục' : 'Thử lại'),
                     ),
                   ),
                 ],

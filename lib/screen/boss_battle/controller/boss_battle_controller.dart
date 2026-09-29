@@ -138,10 +138,7 @@ class BossBattleController extends GetxController {
 
       questions.assignAll(built);
       phase.value = BossBattlePhase.intro;
-      if (!await _wait(resolveDelay, token)) return;
-
-      phase.value = BossBattlePhase.question;
-      isInputLocked.value = false;
+      isInputLocked.value = true;
     } catch (_) {
       if (token != _flowToken) return;
       errorMessage.value =
@@ -149,6 +146,14 @@ class BossBattleController extends GetxController {
       phase.value = BossBattlePhase.error;
       isInputLocked.value = true;
     }
+  }
+
+  void beginBattle() {
+    if (phase.value != BossBattlePhase.intro || questions.isEmpty) return;
+    selectedAnswer.value = null;
+    lastAnswerCorrect.value = null;
+    phase.value = BossBattlePhase.question;
+    isInputLocked.value = false;
   }
 
   Future<void> answer(String answer) async {
