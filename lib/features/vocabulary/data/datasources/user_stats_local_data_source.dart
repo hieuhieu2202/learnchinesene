@@ -4,7 +4,8 @@ import '../models/user_stats_model.dart';
 
 /// Compatibility name kept for the existing repository layer.
 ///
-/// User statistics are persisted only in Supabase.
+/// User statistics are persisted in Supabase only for authenticated users.
+/// Guest mode returns zero/default statistics and never blocks app startup.
 abstract class UserStatsLocalDataSource {
   Future<UserStats> getUserStats();
   Future<void> updateUserStats(UserStats stats);
@@ -18,23 +19,29 @@ abstract class UserStatsLocalDataSource {
 class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
   SupabaseClient get _client => Supabase.instance.client;
 
-  String get _userId {
-    final id = _client.auth.currentUser?.id;
-    if (id == null) {
-      throw StateError('Supabase authentication is required.');
-    }
-    return id;
-  }
+  String? get _userId => _client.auth.currentUser?.id;
+
+  UserStats _guestStats() => UserStats(
+        id: 1,
+        totalExp: 0,
+        currentStreak: 0,
+        lastStudyDate: DateTime.now().subtract(const Duration(days: 1)),
+        totalWordsMastered: 0,
+        totalFavorites: 0,
+      );
 
   @override
   Future<UserStats> getUserStats() async {
+    final userId = _userId;
+    if (userId == null) return _guestStats();
+
     final rows = List<Map<String, dynamic>>.from(
       await _client
           .from('app_user_stats')
           .select(
             'total_exp, current_streak, last_study_date, total_words_mastered, total_favorites',
           )
-          .eq('user_id', _userId)
+          .eq('user_id', userId)
           .limit(1),
     );
 
@@ -42,23 +49,19 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
       return UserStats.fromMap({...rows.first, 'id': 1});
     }
 
-    final stats = UserStats(
-      id: 1,
-      totalExp: 0,
-      currentStreak: 0,
-      lastStudyDate: DateTime.now().subtract(const Duration(days: 1)),
-      totalWordsMastered: 0,
-      totalFavorites: 0,
-    );
-    await updateUserStats(stats);
-    return stats;
+    final userStats = _guestStats();
+    await updateUserStats(userStats);
+    return userStats;
   }
 
   @override
   Future<void> updateUserStats(UserStats stats) async {
+    final userId = _userId;
+    if (userId == null) return;
+
     await _client.from('app_user_stats').upsert(
       {
-        'user_id': _userId,
+        'user_id': userId,
         'total_exp': stats.totalExp,
         'current_streak': stats.currentStreak,
         'last_study_date': stats.lastStudyDate.toUtc().toIso8601String(),
@@ -72,36 +75,38 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
 
   @override
   Future<void> addExp(int exp) async {
-    final stats = await getUserStats();
+    if (_userId == null) return;
+    final userStats = await getUserStats();
     await updateUserStats(
-      stats.copyWith(totalExp: stats.totalExp + exp.clamp(0, 1000000)),
+      userStats.copyWith(totalExp: userStats.totalExp + exp.clamp(0, 1000000)),
     );
   }
 
   @override
   Future<void> updateStreak() async {
-    final stats = await getUserStats();
+    if (_userId == null) return;
+    final userStats = await getUserStats();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final last = DateTime(
-      stats.lastStudyDate.year,
-      stats.lastStudyDate.month,
-      stats.lastStudyDate.day,
+      userStats.lastStudyDate.year,
+      userStats.lastStudyDate.month,
+      userStats.lastStudyDate.day,
     );
     final diff = today.difference(last).inDays;
 
     if (diff == 0) {
-      if (stats.currentStreak == 0) {
+      if (userStats.currentStreak == 0) {
         await updateUserStats(
-          stats.copyWith(currentStreak: 1, lastStudyDate: now),
+          userStats.copyWith(currentStreak: 1, lastStudyDate: now),
         );
       }
       return;
     }
 
     await updateUserStats(
-      stats.copyWith(
-        currentStreak: diff == 1 ? stats.currentStreak + 1 : 1,
+      userStats.copyWith(
+        currentStreak: diff == 1 ? userStats.currentStreak + 1 : 1,
         lastStudyDate: now,
       ),
     );
@@ -109,29 +114,32 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
 
   @override
   Future<void> resetStreakIfNeeded() async {
-    final stats = await getUserStats();
+    if (_userId == null) return;
+    final userStats = await getUserStats();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final last = DateTime(
-      stats.lastStudyDate.year,
-      stats.lastStudyDate.month,
-      stats.lastStudyDate.day,
+      userStats.lastStudyDate.year,
+      userStats.lastStudyDate.month,
+      userStats.lastStudyDate.day,
     );
 
-    if (today.difference(last).inDays > 1 && stats.currentStreak > 0) {
-      await updateUserStats(stats.copyWith(currentStreak: 0));
+    if (today.difference(last).inDays > 1 && userStats.currentStreak > 0) {
+      await updateUserStats(userStats.copyWith(currentStreak: 0));
     }
   }
 
   @override
   Future<void> updateWordsMastered(int count) async {
-    final stats = await getUserStats();
-    await updateUserStats(stats.copyWith(totalWordsMastered: count));
+    if (_userId == null) return;
+    final userStats = await getUserStats();
+    await updateUserStats(userStats.copyWith(totalWordsMastered: count));
   }
 
   @override
   Future<void> updateFavorites(int count) async {
-    final stats = await getUserStats();
-    await updateUserStats(stats.copyWith(totalFavorites: count));
+    if (_userId == null) return;
+    final userStats = await getUserStats();
+    await updateUserStats(userStats.copyWith(totalFavorites: count));
   }
 }

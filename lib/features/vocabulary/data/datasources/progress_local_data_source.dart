@@ -5,7 +5,7 @@ import '../models/progress_model.dart';
 /// Compatibility name kept to avoid a broad presentation-layer rewrite.
 ///
 /// Despite the historical "Local" name, this data source is cloud-only and
-/// stores learning progress in Supabase.
+/// stores learning progress in Supabase when an authenticated user exists.
 abstract class ProgressLocalDataSource {
   Future<ProgressModel?> getProgressForWord(int wordId);
   Future<Map<int, ProgressModel>> getProgressForSection(int sectionId);
@@ -16,23 +16,20 @@ abstract class ProgressLocalDataSource {
 class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   SupabaseClient get _client => Supabase.instance.client;
 
-  String get _userId {
-    final id = _client.auth.currentUser?.id;
-    if (id == null) {
-      throw StateError('Supabase authentication is required.');
-    }
-    return id;
-  }
+  String? get _userId => _client.auth.currentUser?.id;
 
   @override
   Future<ProgressModel?> getProgressForWord(int wordId) async {
+    final userId = _userId;
+    if (userId == null) return null;
+
     final rows = List<Map<String, dynamic>>.from(
       await _client
           .from('lexicon_user_progress')
           .select(
             'word_id, correct_count, wrong_count, level, mastered, last_review_at',
           )
-          .eq('user_id', _userId)
+          .eq('user_id', userId)
           .eq('word_id', wordId)
           .limit(1),
     );
@@ -42,6 +39,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
 
   @override
   Future<Map<int, ProgressModel>> getProgressForSection(int sectionId) async {
+    final userId = _userId;
+    if (userId == null) return <int, ProgressModel>{};
+
     final wordIds = await _wordIdsForSection(sectionId);
     if (wordIds.isEmpty) return <int, ProgressModel>{};
 
@@ -55,13 +55,13 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
             .select(
               'word_id, correct_count, wrong_count, level, mastered, last_review_at',
             )
-            .eq('user_id', _userId)
+            .eq('user_id', userId)
             .inFilter('word_id', chunk),
       );
 
       for (final row in rows) {
-        final progress = ProgressModel.fromMap(row);
-        result[progress.wordId] = progress;
+        final item = ProgressModel.fromMap(row);
+        result[item.wordId] = item;
       }
     }
     return result;
@@ -69,9 +69,12 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
 
   @override
   Future<void> upsertProgress(ProgressModel progress) async {
+    final userId = _userId;
+    if (userId == null) return;
+
     await _client.from('lexicon_user_progress').upsert(
       {
-        'user_id': _userId,
+        'user_id': userId,
         'word_id': progress.wordId,
         'correct_count': progress.correctCount,
         'wrong_count': progress.wrongCount,
@@ -92,11 +95,14 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
 
   @override
   Future<List<int>> getWordsToReviewToday(DateTime today) async {
+    final userId = _userId;
+    if (userId == null) return <int>[];
+
     final rows = List<Map<String, dynamic>>.from(
       await _client
           .from('lexicon_user_progress')
           .select('word_id, mastered, next_review_at, last_review_at')
-          .eq('user_id', _userId)
+          .eq('user_id', userId)
           .eq('mastered', false)
           .order('next_review_at')
           .order('last_review_at'),

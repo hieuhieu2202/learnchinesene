@@ -214,7 +214,8 @@ class DbHelper {
   }
 
   Future<List<Word>> getReviewWords() async {
-    final userId = _requireUserId();
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return <Word>[];
     final rows = List<Map<String, dynamic>>.from(
       await _client
           .from('lexicon_user_progress')
@@ -243,7 +244,7 @@ class DbHelper {
     required bool isCorrect,
     int level = 1,
   }) async {
-    _requireUserId();
+    if (_client.auth.currentUser == null) return;
     await _client.rpc(
       'record_word_progress',
       params: {
@@ -255,7 +256,7 @@ class DbHelper {
   }
 
   Future<void> markLearned(int wordId) async {
-    _requireUserId();
+    if (_client.auth.currentUser == null) return;
     await _client.rpc(
       'mark_word_learned',
       params: {'p_word_id': wordId},
@@ -263,7 +264,16 @@ class DbHelper {
   }
 
   Future<Map<String, num>> getStats() async {
-    _requireUserId();
+    if (_client.auth.currentUser == null) {
+      return {
+        'learned': 0,
+        'mastered': 0,
+        'correct': 0,
+        'wrong': 0,
+        'speakingAttempts': 0,
+        'speakingAverage': 0,
+      };
+    }
     final rows = List<Map<String, dynamic>>.from(
       await _client.rpc('learning_stats'),
     );
@@ -280,7 +290,25 @@ class DbHelper {
   }
 
   Future<Map<String, int>> getUnitMetrics(int unitId) async {
-    _requireUserId();
+    if (_client.auth.currentUser == null) {
+      final wordRows = List<Map<String, dynamic>>.from(
+        await _client
+            .from('lexicon_word_units')
+            .select('word_id')
+            .eq('unit_id', unitId),
+      );
+      final exampleRows = List<Map<String, dynamic>>.from(
+        await _client
+            .from('lexicon_examples')
+            .select('id')
+            .eq('unit_id', unitId),
+      );
+      return {
+        'words': wordRows.length,
+        'learned': 0,
+        'examples': exampleRows.length,
+      };
+    }
     final rows = List<Map<String, dynamic>>.from(
       await _client.rpc(
         'unit_learning_metrics',
@@ -307,7 +335,7 @@ class DbHelper {
   }
 
   Future<double> getLevelProgress(int levelId) async {
-    _requireUserId();
+    if (_client.auth.currentUser == null) return 0;
     final value = await _client.rpc(
       'level_learning_progress',
       params: {'p_level_id': levelId},
@@ -404,7 +432,8 @@ class DbHelper {
     required double score,
     required bool isCorrect,
   }) async {
-    final userId = _requireUserId();
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return;
     await _client.from('lexicon_speaking_practice').insert({
       'user_id': userId,
       'word_id': wordId,
@@ -545,7 +574,7 @@ class DbHelper {
     required double score,
     required int attempts,
   }) async {
-    _requireUserId();
+    if (_client.auth.currentUser == null) return;
     await _client.rpc(
       'record_hanzi_progress',
       params: {
@@ -607,14 +636,5 @@ class DbHelper {
       'group_subtitle': groupSubtitle,
     };
   }
-
-
-  String _requireUserId() {
-    final id = _client.auth.currentUser?.id;
-    if (id == null) {
-      throw StateError('Supabase authentication is required.');
-    }
-    return id;
-  }
-
 }
+
