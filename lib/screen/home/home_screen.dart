@@ -23,6 +23,7 @@ import '../../features/subscription/page/subscription_page.dart';
 import '../../features/subscription/controller/subscription_controller.dart';
 import '../../core/helper/upgrade_dialog_helper.dart';
 import '../duolingo/duo_game_center_screen.dart';
+import '../game_hub/game_hub_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
@@ -424,6 +425,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildGamesTab() {
+    return const GameHubScreen();
+  }
+
   Widget _buildProgressTab() {
     return Center(
       child: ConstrainedBox(
@@ -532,6 +537,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildHomeDashboard(),
             _buildLearningTab(),
             _buildPracticeTab(),
+            _buildGamesTab(),
             _buildProgressTab(),
             _buildPersonalTab(),
           ],
@@ -544,6 +550,7 @@ class _HomeScreenState extends State<HomeScreen> {
           bottomNavigationBar: NavigationBar(
             selectedIndex: controller.currentIndex.value,
             onDestinationSelected: controller.setIndex,
+            labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
             destinations: const [
               NavigationDestination(
                   icon: Icon(Icons.home_outlined),
@@ -557,6 +564,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.fitness_center_outlined),
                   selectedIcon: Icon(Icons.fitness_center),
                   label: 'Luyện tập'),
+              NavigationDestination(
+                  icon: Icon(Icons.sports_esports_outlined),
+                  selectedIcon: Icon(Icons.sports_esports_rounded),
+                  label: 'Trò chơi'),
               NavigationDestination(
                   icon: Icon(Icons.insights_outlined),
                   selectedIcon: Icon(Icons.insights),
@@ -588,6 +599,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icon(Icons.fitness_center_outlined),
                       selectedIcon: Icon(Icons.fitness_center),
                       label: Text('Luyện tập')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.sports_esports_outlined),
+                      selectedIcon: Icon(Icons.sports_esports_rounded),
+                      label: Text('Trò chơi')),
                   NavigationRailDestination(
                       icon: Icon(Icons.insights_outlined),
                       selectedIcon: Icon(Icons.insights),
@@ -623,6 +638,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icon(Icons.fitness_center_outlined),
                       selectedIcon: Icon(Icons.fitness_center),
                       label: Text('Luyện tập')),
+                  NavigationRailDestination(
+                      icon: Icon(Icons.sports_esports_outlined),
+                      selectedIcon: Icon(Icons.sports_esports_rounded),
+                      label: Text('Trò chơi')),
                   NavigationRailDestination(
                       icon: Icon(Icons.insights_outlined),
                       selectedIcon: Icon(Icons.insights),
