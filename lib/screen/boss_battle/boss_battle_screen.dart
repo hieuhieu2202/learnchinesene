@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
+import 'animation/boss_battle_rive_contract.dart';
 import 'controller/boss_battle_controller.dart';
 import 'data/boss_battle_repository.dart';
 import 'view/boss_battle_animated_character.dart';
