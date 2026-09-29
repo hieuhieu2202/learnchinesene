@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 
 import '../../domain/entities/example_sentence.dart';
@@ -23,16 +24,28 @@ class WordDetailController extends GetxController {
   final isPlayingAudio = false.obs;
 
   final AudioPlayer _player = AudioPlayer();
+  final FlutterTts _tts = FlutterTts();
 
   @override
   void onInit() {
     super.onInit();
+    _configureTts();
     loadWord();
+  }
+
+  Future<void> _configureTts() async {
+    try {
+      await _tts.setLanguage('zh-CN');
+      await _tts.setSpeechRate(0.42);
+      await _tts.setPitch(1.0);
+      await _tts.setVolume(1.0);
+    } catch (_) {}
   }
 
   @override
   void onClose() {
     _player.dispose();
+    _tts.stop();
     super.onClose();
   }
 
@@ -48,17 +61,29 @@ class WordDetailController extends GetxController {
 
   Future<void> playPronunciation() async {
     final current = word.value;
-    if (current == null || current.ttsUrl.isEmpty) {
-      Get.snackbar('Không có audio', 'Từ này chưa có tệp phát âm.');
-      return;
-    }
+    if (current == null || current.word.trim().isEmpty) return;
 
+    isPlayingAudio.value = true;
     try {
-      isPlayingAudio.value = true;
       await _player.stop();
-      await _player.play(UrlSource(current.ttsUrl));
+
+      if (current.ttsUrl.trim().isNotEmpty) {
+        try {
+          await _player.play(UrlSource(current.ttsUrl));
+          return;
+        } catch (_) {
+          // Fall back to system Chinese TTS when the remote audio is missing
+          // or temporarily unavailable.
+        }
+      }
+
+      await _tts.stop();
+      await _tts.speak(current.word);
     } catch (_) {
-      Get.snackbar('Không phát được audio', 'Vui lòng thử lại sau.');
+      Get.snackbar(
+        'Không phát được âm thanh',
+        'Thiết bị chưa có giọng đọc tiếng Trung hoặc mạng đang lỗi.',
+      );
     } finally {
       isPlayingAudio.value = false;
     }

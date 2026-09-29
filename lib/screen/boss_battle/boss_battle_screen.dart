@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -22,6 +23,7 @@ class BossBattleScreen extends StatefulWidget {
 class _BossBattleScreenState extends State<BossBattleScreen> {
   late final String _controllerTag;
   late final BossBattleController controller;
+  final FlutterTts _tts = FlutterTts();
 
   @override
   void initState() {
@@ -31,10 +33,36 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
       BossBattleController(source: BossBattleRepository()),
       tag: _controllerTag,
     );
+    _configureTts();
+  }
+
+  Future<void> _configureTts() async {
+    try {
+      await _tts.setLanguage('zh-CN');
+      await _tts.setSpeechRate(0.42);
+      await _tts.setPitch(1.0);
+      await _tts.setVolume(1.0);
+    } catch (_) {}
+  }
+
+  Future<void> _speakCurrentPrompt() async {
+    final text = controller.currentQuestion?.prompt.trim() ?? '';
+    if (text.isEmpty) return;
+    try {
+      await _tts.stop();
+      await _tts.speak(text);
+    } catch (_) {
+      Get.snackbar(
+        'Không phát được âm thanh',
+        'Thiết bị chưa có giọng đọc tiếng Trung.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   @override
   void dispose() {
+    _tts.stop();
     Get.delete<BossBattleController>(tag: _controllerTag, force: true);
     super.dispose();
   }
@@ -73,7 +101,10 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              _GameplayScene(controller: controller),
+              _GameplayScene(
+                controller: controller,
+                onSpeakPrompt: _speakCurrentPrompt,
+              ),
               if (phase == BossBattlePhase.error)
                 _ErrorOverlay(controller: controller),
               if (phase == BossBattlePhase.result)
@@ -181,6 +212,7 @@ class _BossIntro extends StatelessWidget {
                 alignment: const Alignment(.78, -.2),
                 child: BossBattleAnimatedCharacter(
                   kind: BossBattleCharacterKind.dragon,
+                  flipX: true,
                   motion: BossBattleCharacterMotion.idle,
                   size: 218,
                 ),
@@ -309,9 +341,13 @@ class _IntroLine extends StatelessWidget {
 }
 
 class _GameplayScene extends StatelessWidget {
-  const _GameplayScene({required this.controller});
+  const _GameplayScene({
+    required this.controller,
+    required this.onSpeakPrompt,
+  });
 
   final BossBattleController controller;
+  final VoidCallback onSpeakPrompt;
 
   @override
   Widget build(BuildContext context) {
@@ -460,11 +496,33 @@ class _GameplayScene extends StatelessWidget {
                     defeated: controller.playerHp.value <= 0,
                   ),
                 ),
-                _ProjectileFx(
+                _BattleAttackFx(
                   phase: phase,
                   index: controller.currentIndex.value,
                   duration: controller.attackDelay,
                 ),
+                if (phase == BossBattlePhase.playerAttack)
+                  const Positioned(
+                    left: 26,
+                    right: 26,
+                    bottom: 178,
+                    child: _CombatFeedbackBanner(
+                      text: 'Chính xác!',
+                      color: Color(0xFF21C96B),
+                      icon: Icons.check_circle_rounded,
+                    ),
+                  ),
+                if (phase == BossBattlePhase.bossAttack)
+                  const Positioned(
+                    left: 26,
+                    right: 26,
+                    bottom: 178,
+                    child: _CombatFeedbackBanner(
+                      text: 'Sai rồi!',
+                      color: Color(0xFFE94E4E),
+                      icon: Icons.warning_rounded,
+                    ),
+                  ),
                 if (phase == BossBattlePhase.playerAttack &&
                     controller.lastBossDamage.value > 0)
                   Positioned(
@@ -489,7 +547,10 @@ class _GameplayScene extends StatelessWidget {
                   left: 14,
                   right: 14,
                   bottom: compact ? 90 : 104,
-                  child: _QuestionOverlay(controller: controller),
+                  child: _QuestionOverlay(
+                    controller: controller,
+                    onSpeakPrompt: onSpeakPrompt,
+                  ),
                 ),
                 Positioned(
                   left: 14,
@@ -586,9 +647,13 @@ class _GameplayScene extends StatelessWidget {
 }
 
 class _QuestionOverlay extends StatelessWidget {
-  const _QuestionOverlay({required this.controller});
+  const _QuestionOverlay({
+    required this.controller,
+    required this.onSpeakPrompt,
+  });
 
   final BossBattleController controller;
+  final VoidCallback onSpeakPrompt;
 
   @override
   Widget build(BuildContext context) {
@@ -599,69 +664,83 @@ class _QuestionOverlay extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 11),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFDF7EE),
+        Material(
+          color: const Color(0xFFFDF7EE),
+          borderRadius: BorderRadius.circular(19),
+          elevation: 10,
+          shadowColor: const Color(0x66000000),
+          child: InkWell(
             borderRadius: BorderRadius.circular(19),
-            border: Border.all(
-              color: const Color(0xFFFFD6A1),
-              width: 1.2,
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x66000000),
-                blurRadius: 20,
-                offset: Offset(0, 9),
+            onTap: onSpeakPrompt,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(19),
+                border: Border.all(
+                  color: const Color(0xFFFFD6A1),
+                  width: 1.2,
+                ),
               ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
                 children: [
-                  const Icon(
-                    Icons.volume_up_rounded,
-                    color: Color(0xFF3B9AD9),
-                    size: 18,
-                  ),
-                  const SizedBox(width: 7),
-                  Flexible(
-                    child: Text(
-                      question.prompt,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: AppColors.ink,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE2F1FF),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF7BB9EA),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.volume_up_rounded,
+                          color: Color(0xFF318FD2),
+                          size: 20,
+                        ),
                       ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          question.prompt,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.ink,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    result == null
+                        ? (canAnswer
+                            ? 'Chạm vào từ để nghe • Chọn đáp án đúng'
+                            : controller.phaseHint)
+                        : controller.feedbackText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: result == true
+                          ? AppColors.success
+                          : result == false
+                              ? AppColors.error
+                              : AppColors.muted,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 3),
-              Text(
-                result == null
-                    ? (canAnswer
-                        ? 'Hãy chọn đáp án đúng'
-                        : controller.phaseHint)
-                    : controller.feedbackText,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: result == true
-                      ? AppColors.success
-                      : result == false
-                          ? AppColors.error
-                          : AppColors.muted,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
         const SizedBox(height: 10),
@@ -709,8 +788,8 @@ class _QuestionOverlay extends StatelessWidget {
   }
 }
 
-class _ProjectileFx extends StatelessWidget {
-  const _ProjectileFx({
+class _BattleAttackFx extends StatelessWidget {
+  const _BattleAttackFx({
     required this.phase,
     required this.index,
     required this.duration,
@@ -730,69 +809,205 @@ class _ProjectileFx extends StatelessWidget {
       child: IgnorePointer(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final from = playerAttack
-                ? Offset(
-                    constraints.maxWidth * .28,
-                    constraints.maxHeight * .33,
-                  )
-                : Offset(
-                    constraints.maxWidth * .77,
-                    constraints.maxHeight * .23,
-                  );
-            final to = playerAttack
-                ? Offset(
-                    constraints.maxWidth * .73,
-                    constraints.maxHeight * .23,
-                  )
-                : Offset(
-                    constraints.maxWidth * .28,
-                    constraints.maxHeight * .33,
-                  );
-            final color = playerAttack
-                ? const Color(0xFFFFC43D)
-                : const Color(0xFFFF4C2C);
-
             return TweenAnimationBuilder<double>(
               key: ValueKey('${phase.name}_$index'),
               tween: Tween(begin: 0, end: 1),
               duration: duration,
               curve: Curves.easeInOutCubic,
               builder: (context, value, _) {
-                final x = from.dx + (to.dx - from.dx) * value;
-                final y = from.dy + (to.dy - from.dy) * value;
-                final size = 22 + math.sin(value * math.pi) * 20;
-                return Stack(
-                  children: [
-                    Positioned(
-                      left: x - size / 2,
-                      top: y - size / 2,
-                      child: Container(
-                        width: size,
-                        height: size,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              Colors.white,
-                              color,
-                              color.withValues(alpha: .2),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: color.withValues(alpha: .95),
-                              blurRadius: 30,
-                              spreadRadius: 10,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                return CustomPaint(
+                  painter: _BattleAttackPainter(
+                    progress: value,
+                    playerAttack: playerAttack,
+                  ),
+                  size: Size.infinite,
                 );
               },
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _BattleAttackPainter extends CustomPainter {
+  const _BattleAttackPainter({
+    required this.progress,
+    required this.playerAttack,
+  });
+
+  final double progress;
+  final bool playerAttack;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (playerAttack) {
+      _paintArrow(canvas, size);
+    } else {
+      _paintDragonFire(canvas, size);
+    }
+  }
+
+  void _paintArrow(Canvas canvas, Size size) {
+    final start = Offset(size.width * .26, size.height * .34);
+    final end = Offset(size.width * .73, size.height * .23);
+    final p = Curves.easeOutCubic.transform(progress);
+    final current = Offset.lerp(start, end, p)!;
+    final direction = (end - start);
+    final angle = math.atan2(direction.dy, direction.dx);
+
+    final trailPaint = Paint()
+      ..color = const Color(0x88FFE8A1)
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+
+    final trailStart = Offset.lerp(start, end, (p - .2).clamp(0.0, 1.0))!;
+    canvas.drawLine(trailStart, current, trailPaint);
+
+    canvas.save();
+    canvas.translate(current.dx, current.dy);
+    canvas.rotate(angle);
+
+    final shaft = Paint()
+      ..color = const Color(0xFF5B321E)
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(const Offset(-28, 0), const Offset(10, 0), shaft);
+
+    final gold = Paint()..color = const Color(0xFFFFD45A);
+    final tip = Path()
+      ..moveTo(17, 0)
+      ..lineTo(6, -7)
+      ..lineTo(6, 7)
+      ..close();
+    canvas.drawPath(tip, gold);
+
+    final feather = Paint()..color = const Color(0xFFFF6D57);
+    final upper = Path()
+      ..moveTo(-27, 0)
+      ..lineTo(-17, -7)
+      ..lineTo(-13, 0)
+      ..close();
+    final lower = Path()
+      ..moveTo(-27, 0)
+      ..lineTo(-17, 7)
+      ..lineTo(-13, 0)
+      ..close();
+    canvas.drawPath(upper, feather);
+    canvas.drawPath(lower, feather);
+    canvas.restore();
+
+    if (progress > .72) {
+      final impact = (progress - .72) / .28;
+      final glow = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            Color.fromRGBO(255, 244, 163, (1 - impact).clamp(0, 1)),
+            Color.fromRGBO(255, 157, 47, (.7 - impact * .7).clamp(0, 1)),
+            const Color(0x00FF7A21),
+          ],
+        ).createShader(
+          Rect.fromCircle(center: end, radius: 54 * impact + 12),
+        );
+      canvas.drawCircle(end, 54 * impact + 12, glow);
+    }
+  }
+
+  void _paintDragonFire(Canvas canvas, Size size) {
+    final start = Offset(size.width * .76, size.height * .24);
+    final end = Offset(size.width * .27, size.height * .35);
+    final p = Curves.easeInOutCubic.transform(progress);
+    final head = Offset.lerp(start, end, p)!;
+
+    for (var i = 0; i < 12; i++) {
+      final t = i / 11;
+      final localProgress = (p - t * .22).clamp(0.0, 1.0);
+      if (localProgress <= 0) continue;
+
+      final center = Offset.lerp(start, end, localProgress)!;
+      final wobble = math.sin((t + progress) * math.pi * 5) * 9;
+      final normal = Offset(-(end.dy - start.dy), end.dx - start.dx);
+      final length = normal.distance == 0 ? 1 : normal.distance;
+      final shifted = center + normal / length * wobble;
+      final radius = 7 + (1 - t) * 9 + math.sin(progress * math.pi) * 3;
+
+      final fire = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFFFFFFF),
+            const Color(0xFFFFE05A),
+            const Color(0xFFFF7A22),
+            const Color(0x00E7341E),
+          ],
+        ).createShader(
+          Rect.fromCircle(center: shifted, radius: radius * 2.6),
+        );
+      canvas.drawCircle(shifted, radius * 2.2, fire);
+    }
+
+    final core = Paint()
+      ..color = const Color(0xFFFFF2A4)
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(start, head, core);
+  }
+
+  @override
+  bool shouldRepaint(covariant _BattleAttackPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.playerAttack != playerAttack;
+  }
+}
+
+class _CombatFeedbackBanner extends StatelessWidget {
+  const _CombatFeedbackBanner({
+    required this.text,
+    required this.color,
+    required this.icon,
+  });
+
+  final String text;
+  final Color color;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: .88, end: 1),
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutBack,
+      builder: (context, value, child) => Transform.scale(
+        scale: value,
+        child: child,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .93),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: .42),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 21),
+            const SizedBox(width: 7),
+            Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
         ),
       ),
     );
