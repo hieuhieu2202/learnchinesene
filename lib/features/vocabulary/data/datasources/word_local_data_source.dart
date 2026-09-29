@@ -1,6 +1,5 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../../core/db/database_helper.dart';
 import '../models/word_model.dart';
 
 abstract class WordLocalDataSource {
@@ -11,57 +10,83 @@ abstract class WordLocalDataSource {
 }
 
 class WordLocalDataSourceImpl implements WordLocalDataSource {
-  Future<Database> get _db async => DatabaseHelperVer1Ne.database;
+  SupabaseClient get _client => Supabase.instance.client;
 
   @override
   Future<List<int>> getSections() async {
-    final db = await _db;
-    final result = await db.rawQuery(
-      'SELECT DISTINCT section_id FROM words ORDER BY section_id ASC',
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_hsk_levels')
+          .select('id')
+          .order('sort_order')
+          .order('id'),
     );
-    return result.map((e) => e['section_id'] as int).toList();
-  }
-
-  @override
-  Future<String> getSectionTitle(int sectionId) async {
-    final db = await _db;
-    final result = await db.query(
-      'words',
-      columns: ['section_title'],
-      where: 'section_id = ?',
-      whereArgs: [sectionId],
-      limit: 1,
-    );
-    if (result.isEmpty) return '';
-    return result.first['section_title'] as String? ?? '';
-  }
-
-  @override
-  Future<List<WordModel>> getWordsBySection(int sectionId) async {
-    final db = await _db;
-    final result = await db.query(
-      'words',
-      where: 'section_id = ?',
-      whereArgs: [sectionId],
-      orderBy: 'id ASC',
-    );
-    return result
-        .map((row) => WordModel.fromMap(Map<String, Object?>.from(row)))
+    return rows
+        .map((row) => (row['id'] as num?)?.toInt())
+        .whereType<int>()
         .toList();
   }
 
   @override
-  Future<WordModel?> getWordById(int wordId) async {
-    final db = await _db;
-    final result = await db.query(
-      'words',
-      where: 'id = ?',
-      whereArgs: [wordId],
-      limit: 1,
+  Future<String> getSectionTitle(int sectionId) async {
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_hsk_levels')
+          .select('name')
+          .eq('id', sectionId)
+          .limit(1),
     );
-    if (result.isEmpty) {
-      return null;
+    return rows.isEmpty ? '' : (rows.first['name'] ?? '').toString();
+  }
+
+  @override
+  Future<List<WordModel>> getWordsBySection(int sectionId) async {
+    final title = await getSectionTitle(sectionId);
+    final rows = <Map<String, dynamic>>[];
+    var from = 0;
+
+    while (true) {
+      final page = List<Map<String, dynamic>>.from(
+        await _client
+            .from('lexicon_words')
+            .select('id, word, pinyin, meaning_vi, tts_url, hsk_level_id')
+            .eq('hsk_level_id', sectionId)
+            .order('id')
+            .range(from, from + 999),
+      );
+      rows.addAll(page);
+      if (page.length < 1000) break;
+      from += 1000;
     }
-    return WordModel.fromMap(Map<String, Object?>.from(result.first));
+
+    return rows.map((row) => _fromCloud(row, title)).toList();
+  }
+
+  @override
+  Future<WordModel?> getWordById(int wordId) async {
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_words')
+          .select('id, word, pinyin, meaning_vi, tts_url, hsk_level_id')
+          .eq('id', wordId)
+          .limit(1),
+    );
+    if (rows.isEmpty) return null;
+    final sectionId = (rows.first['hsk_level_id'] as num?)?.toInt() ?? 0;
+    final title = await getSectionTitle(sectionId);
+    return _fromCloud(rows.first, title);
+  }
+
+  WordModel _fromCloud(Map<String, dynamic> row, String title) {
+    return WordModel.fromMap({
+      'id': (row['id'] as num?)?.toInt() ?? 0,
+      'section_id': (row['hsk_level_id'] as num?)?.toInt() ?? 0,
+      'section_title': title,
+      'group_subtitle': '',
+      'word': row['word']?.toString() ?? '',
+      'translation': row['meaning_vi']?.toString() ?? '',
+      'transliteration': row['pinyin']?.toString() ?? '',
+      'tts_url': row['tts_url']?.toString() ?? '',
+    });
   }
 }
