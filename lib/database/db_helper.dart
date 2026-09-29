@@ -252,28 +252,6 @@ class DbHelper {
         'p_level': level,
       },
     );
-  }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = '$_progressPrefix$wordId';
-    final existing = _decodeMap(prefs.getString(key));
-
-    final correct = (existing['correct_count'] as num?)?.toInt() ?? 0;
-    final wrong = (existing['wrong_count'] as num?)?.toInt() ?? 0;
-    final nextCorrect = correct + (isCorrect ? 1 : 0);
-    final nextWrong = wrong + (isCorrect ? 0 : 1);
-
-    await prefs.setString(
-      key,
-      jsonEncode({
-        'word_id': wordId,
-        'correct_count': nextCorrect,
-        'wrong_count': nextWrong,
-        'level': level,
-        'mastered': nextCorrect >= 3,
-        'last_practice': DateTime.now().toIso8601String(),
-      }),
-    );
-  }
 
   Future<void> markLearned(int wordId) async {
     _requireUserId();
@@ -435,13 +413,6 @@ class DbHelper {
       'accuracy_score': score,
       'pronunciation_score': score,
     });
-  }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final attempts = prefs.getInt(_speakingAttemptsKey) ?? 0;
-    final scoreSum = prefs.getDouble(_speakingScoreSumKey) ?? 0;
-    await prefs.setInt(_speakingAttemptsKey, attempts + 1);
-    await prefs.setDouble(_speakingScoreSumKey, scoreSum + score);
-  }
 
   Future<List<HanziCharacter>> getCharactersForWriting({
     String? keyword,
@@ -581,28 +552,6 @@ class DbHelper {
         'p_attempts': attempts,
       },
     );
-  }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = '$_hanziProgressPrefix$characterId';
-    final existing = _decodeMap(prefs.getString(key));
-    final currentBest = (existing['best_score'] as num?)?.toDouble() ?? 0;
-    final totalAttempts =
-        (existing['total_attempts'] as num?)?.toInt() ?? 0;
-    final completedCount =
-        (existing['completed_count'] as num?)?.toInt() ?? 0;
-
-    await prefs.setString(
-      key,
-      jsonEncode({
-        'character_id': characterId,
-        'best_score': max(currentBest, score),
-        'last_score': score,
-        'total_attempts': totalAttempts + attempts,
-        'completed_count': completedCount + 1,
-        'last_completed_at': DateTime.now().toIso8601String(),
-      }),
-    );
-  }
 
   Future<List<Map<String, dynamic>>> _fetchWordCatalog() async {
     final out = <Map<String, dynamic>>[];
@@ -656,14 +605,7 @@ class DbHelper {
     };
   }
 
-  static Map<String, dynamic> _decodeMap(String? raw) {
-    if (raw == null || raw.isEmpty) return {};
-    try {
-      return Map<String, dynamic>.from(jsonDecode(raw) as Map);
-    } catch (_) {
-      return {};
-    }
-  }
+
   String _requireUserId() {
     final id = _client.auth.currentUser?.id;
     if (id == null) {
