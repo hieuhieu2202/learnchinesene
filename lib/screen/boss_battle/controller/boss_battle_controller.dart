@@ -73,10 +73,10 @@ class BossBattleController extends GetxController {
       questions.isEmpty ? 0 : min(currentIndex.value + 1, questions.length);
 
   double get bossHealthFraction =>
-      (bossHp.value / maxBossHp).clamp(0.0, 1.0);
+      (bossHp.value / maxBossHp).clamp(0.0, 1.0).toDouble();
 
   double get playerHealthFraction =>
-      (playerHp.value / maxPlayerHp).clamp(0.0, 1.0);
+      (playerHp.value / maxPlayerHp).clamp(0.0, 1.0).toDouble();
 
   bool get battleFinished =>
       phase.value == BossBattlePhase.result ||
