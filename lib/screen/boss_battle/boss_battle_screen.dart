@@ -139,7 +139,7 @@ class _BattleStage extends StatelessWidget {
                   children: [
                     _RoundIconButton(
                       icon: Icons.arrow_back_rounded,
-                      onTap: Get.back,
+                      onTap: () => Get.back<void>(),
                     ),
                     const SizedBox(width: 10),
                     const Expanded(
@@ -804,7 +804,7 @@ class _ErrorOverlay extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: Get.back,
+                      onPressed: () => Get.back<void>(),
                       child: const Text('Quay lại'),
                     ),
                   ),
@@ -913,7 +913,7 @@ class _ResultOverlay extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: Get.back,
+                      onPressed: () => Get.back<void>(),
                       icon: const Icon(Icons.grid_view_rounded),
                       label: const Text('Kho game'),
                     ),
