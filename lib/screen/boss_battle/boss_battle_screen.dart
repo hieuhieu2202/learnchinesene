@@ -1017,65 +1017,174 @@ class _BattleBackdropPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Color(0xFF63C7F2),
-          Color(0xFFA8E0EA),
-          Color(0xFFF4C6B0),
+          Color(0xFF4DB8E6),
+          Color(0xFF9EDCE6),
+          Color(0xFFF7C7B0),
         ],
+        stops: [0, .52, 1],
       ).createShader(Offset.zero & size);
     canvas.drawRect(Offset.zero & size, skyPaint);
 
-    final farMountain = Paint()..color = const Color(0xFF73959B);
-    final nearMountain = Paint()..color = const Color(0xFF466F66);
+    final sunPaint = Paint()
+      ..shader = const RadialGradient(
+        colors: [
+          Color(0xFFFFF0B0),
+          Color(0x99FFD56A),
+          Color(0x00FFD56A),
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(size.width * .79, size.height * .16),
+          radius: size.width * .18,
+        ),
+      );
+    canvas.drawCircle(
+      Offset(size.width * .79, size.height * .16),
+      size.width * .18,
+      sunPaint,
+    );
 
+    _paintCloud(
+      canvas,
+      Offset(size.width * .18, size.height * .20),
+      size.width * .16,
+      const Color(0xB3FFFFFF),
+    );
+    _paintCloud(
+      canvas,
+      Offset(size.width * .63, size.height * .29),
+      size.width * .13,
+      const Color(0x8FFFFFFF),
+    );
+
+    final farMountain = Paint()..color = const Color(0xFF789CA3);
     final farPath = Path()
-      ..moveTo(0, size.height * .58)
-      ..lineTo(size.width * .14, size.height * .25)
-      ..lineTo(size.width * .27, size.height * .52)
-      ..lineTo(size.width * .43, size.height * .20)
-      ..lineTo(size.width * .58, size.height * .55)
-      ..lineTo(size.width * .76, size.height * .24)
+      ..moveTo(0, size.height * .60)
+      ..lineTo(size.width * .12, size.height * .27)
+      ..lineTo(size.width * .25, size.height * .53)
+      ..lineTo(size.width * .41, size.height * .20)
+      ..lineTo(size.width * .56, size.height * .55)
+      ..lineTo(size.width * .76, size.height * .25)
       ..lineTo(size.width, size.height * .58)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
     canvas.drawPath(farPath, farMountain);
 
+    final mistPaint = Paint()..color = const Color(0x52FFFFFF);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * .51, size.height * .56),
+        width: size.width * .95,
+        height: size.height * .16,
+      ),
+      mistPaint,
+    );
+
+    final nearMountain = Paint()..color = const Color(0xFF436D61);
     final nearPath = Path()
-      ..moveTo(0, size.height * .72)
-      ..lineTo(size.width * .18, size.height * .47)
-      ..lineTo(size.width * .34, size.height * .69)
-      ..lineTo(size.width * .50, size.height * .43)
-      ..lineTo(size.width * .64, size.height * .70)
-      ..lineTo(size.width * .82, size.height * .48)
-      ..lineTo(size.width, size.height * .68)
+      ..moveTo(0, size.height * .75)
+      ..lineTo(size.width * .18, size.height * .48)
+      ..lineTo(size.width * .33, size.height * .70)
+      ..lineTo(size.width * .50, size.height * .44)
+      ..lineTo(size.width * .65, size.height * .71)
+      ..lineTo(size.width * .83, size.height * .48)
+      ..lineTo(size.width, size.height * .69)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
     canvas.drawPath(nearPath, nearMountain);
 
-    final templePaint = Paint()..color = const Color(0xFF8C322B);
-    final roofPaint = Paint()..color = const Color(0xFF2F3438);
+    final templePaint = Paint()..color = const Color(0xFF9B3E34);
+    final roofPaint = Paint()..color = const Color(0xFF2B3237);
+    final roofEdge = Paint()
+      ..color = const Color(0xFFE4B953)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
 
-    for (final x in <double>[.15, .48, .80]) {
+    for (final x in <double>[.14, .48, .82]) {
       final cx = size.width * x;
       final baseY = size.height * (.50 + ((x * 10).round().isEven ? .03 : 0));
-      canvas.drawRect(
-        Rect.fromCenter(
-          center: Offset(cx, baseY),
-          width: size.width * .08,
-          height: size.height * .11,
-        ),
+      final templeRect = Rect.fromCenter(
+        center: Offset(cx, baseY),
+        width: size.width * .08,
+        height: size.height * .11,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(templeRect, const Radius.circular(3)),
         templePaint,
       );
+
       final roof = Path()
-        ..moveTo(cx - size.width * .055, baseY - size.height * .065)
-        ..lineTo(cx, baseY - size.height * .11)
-        ..lineTo(cx + size.width * .055, baseY - size.height * .065)
+        ..moveTo(cx - size.width * .058, baseY - size.height * .061)
+        ..quadraticBezierTo(
+          cx - size.width * .020,
+          baseY - size.height * .105,
+          cx,
+          baseY - size.height * .108,
+        )
+        ..quadraticBezierTo(
+          cx + size.width * .020,
+          baseY - size.height * .105,
+          cx + size.width * .058,
+          baseY - size.height * .061,
+        )
+        ..quadraticBezierTo(
+          cx,
+          baseY - size.height * .074,
+          cx - size.width * .058,
+          baseY - size.height * .061,
+        )
         ..close();
       canvas.drawPath(roof, roofPaint);
+      canvas.drawPath(roof, roofEdge);
     }
 
-    final blossom = Paint()..color = const Color(0xFFFFA9C7);
+    final arenaShadow = Paint()..color = const Color(0x55000000);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * .50, size.height * .82),
+        width: size.width * .78,
+        height: size.height * .12,
+      ),
+      arenaShadow,
+    );
+
+    final arenaPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFFE4C48F),
+          Color(0xFFB77D4C),
+        ],
+      ).createShader(
+        Rect.fromLTWH(
+          size.width * .08,
+          size.height * .73,
+          size.width * .84,
+          size.height * .17,
+        ),
+      );
+    final arenaRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        size.width * .08,
+        size.height * .74,
+        size.width * .84,
+        size.height * .13,
+      ),
+      const Radius.circular(22),
+    );
+    canvas.drawRRect(arenaRect, arenaPaint);
+
+    final arenaLine = Paint()
+      ..color = const Color(0x99FFE7B1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawRRect(arenaRect, arenaLine);
+
+    final blossom = Paint()..color = const Color(0xFFFFA8C5);
+    final blossomDark = Paint()..color = const Color(0xFFE66E9A);
     final points = <Offset>[
       Offset(size.width * .08, size.height * .18),
       Offset(size.width * .18, size.height * .34),
@@ -1084,10 +1193,98 @@ class _BattleBackdropPainter extends CustomPainter {
       Offset(size.width * .71, size.height * .31),
       Offset(size.width * .90, size.height * .20),
       Offset(size.width * .84, size.height * .46),
+      Offset(size.width * .13, size.height * .58),
+      Offset(size.width * .90, size.height * .60),
     ];
-    for (final point in points) {
-      canvas.drawCircle(point, 3.5, blossom);
+    for (var i = 0; i < points.length; i++) {
+      final point = points[i];
+      canvas.drawCircle(point, i.isEven ? 3.8 : 3.0, blossom);
+      canvas.drawCircle(point.translate(2.2, -1.7), 1.4, blossomDark);
     }
+
+    _paintLantern(
+      canvas,
+      Offset(size.width * .055, size.height * .43),
+      size.width * .035,
+    );
+    _paintLantern(
+      canvas,
+      Offset(size.width * .945, size.height * .39),
+      size.width * .035,
+    );
+  }
+
+  void _paintCloud(
+    Canvas canvas,
+    Offset center,
+    double width,
+    Color color,
+  ) {
+    final paint = Paint()..color = color;
+    final h = width * .32;
+    canvas.drawOval(
+      Rect.fromCenter(center: center, width: width, height: h),
+      paint,
+    );
+    canvas.drawCircle(
+      center.translate(-width * .22, -h * .20),
+      h * .42,
+      paint,
+    );
+    canvas.drawCircle(
+      center.translate(width * .02, -h * .32),
+      h * .55,
+      paint,
+    );
+    canvas.drawCircle(
+      center.translate(width * .25, -h * .14),
+      h * .38,
+      paint,
+    );
+  }
+
+  void _paintLantern(Canvas canvas, Offset center, double radius) {
+    final glow = Paint()
+      ..shader = RadialGradient(
+        colors: const [
+          Color(0x99FFD56C),
+          Color(0x33FF8F3A),
+          Color(0x00FF8F3A),
+        ],
+      ).createShader(
+        Rect.fromCircle(center: center, radius: radius * 2.5),
+      );
+    canvas.drawCircle(center, radius * 2.5, glow);
+
+    final red = Paint()..color = const Color(0xFFE04E3D);
+    final gold = Paint()..color = const Color(0xFFF4C867);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: center,
+          width: radius * 1.55,
+          height: radius * 2.05,
+        ),
+        Radius.circular(radius * .35),
+      ),
+      red,
+    );
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: center.translate(0, -radius * 1.08),
+        width: radius * 1.18,
+        height: radius * .18,
+      ),
+      gold,
+    );
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: center.translate(0, radius * 1.08),
+        width: radius * 1.18,
+        height: radius * .18,
+      ),
+      gold,
+    );
   }
 
   @override
