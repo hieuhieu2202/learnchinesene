@@ -1,0 +1,254 @@
+import 'dart:math';
+
+import 'package:get/get.dart';
+
+import '../data/boss_battle_repository.dart';
+import '../domain/boss_battle_question_generator.dart';
+import '../domain/boss_battle_rules.dart';
+import '../model/boss_battle_question.dart';
+
+enum BossBattlePhase {
+  loading,
+  intro,
+  question,
+  resolving,
+  playerAttack,
+  bossAttack,
+  transition,
+  won,
+  lost,
+  reward,
+  result,
+  error,
+}
+
+class BossBattleController extends GetxController {
+  BossBattleController({
+    required BossBattleQuestionSource source,
+    BossBattleQuestionGenerator? generator,
+    BossBattleRules? rules,
+    this.resolveDelay = const Duration(milliseconds: 220),
+    this.attackDelay = const Duration(milliseconds: 560),
+    this.transitionDelay = const Duration(milliseconds: 460),
+  })  : _source = source,
+        _generator = generator ?? BossBattleQuestionGenerator(),
+        _rules = rules ?? const BossBattleRules();
+
+  static const int maxBossHp = 100;
+  static const int maxPlayerHp = 100;
+
+  final BossBattleQuestionSource _source;
+  final BossBattleQuestionGenerator _generator;
+  final BossBattleRules _rules;
+
+  final Duration resolveDelay;
+  final Duration attackDelay;
+  final Duration transitionDelay;
+
+  final phase = BossBattlePhase.loading.obs;
+  final questions = <BossBattleQuestion>[].obs;
+  final currentIndex = 0.obs;
+  final bossHp = maxBossHp.obs;
+  final playerHp = maxPlayerHp.obs;
+  final combo = 0.obs;
+  final maxCombo = 0.obs;
+  final score = 0.obs;
+  final correctCount = 0.obs;
+  final wrongCount = 0.obs;
+  final isInputLocked = true.obs;
+  final selectedAnswer = RxnString();
+  final lastAnswerCorrect = RxnBool();
+  final errorMessage = ''.obs;
+  final sessionId = ''.obs;
+
+  int _flowToken = 0;
+
+  BossBattleQuestion? get currentQuestion {
+    final index = currentIndex.value;
+    if (index < 0 || index >= questions.length) return null;
+    return questions[index];
+  }
+
+  int get questionNumber =>
+      questions.isEmpty ? 0 : min(currentIndex.value + 1, questions.length);
+
+  double get bossHealthFraction =>
+      (bossHp.value / maxBossHp).clamp(0.0, 1.0);
+
+  double get playerHealthFraction =>
+      (playerHp.value / maxPlayerHp).clamp(0.0, 1.0);
+
+  bool get battleFinished =>
+      phase.value == BossBattlePhase.result ||
+      phase.value == BossBattlePhase.won ||
+      phase.value == BossBattlePhase.lost;
+
+  String get feedbackText {
+    final result = lastAnswerCorrect.value;
+    final question = currentQuestion;
+    if (result == null || question == null) return '';
+    if (result) return 'Chính xác! Tung đòn!';
+    return 'Đáp án đúng: ${question.correctAnswer}';
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    startBattle();
+  }
+
+  Future<void> startBattle() async {
+    final token = ++_flowToken;
+    _resetState();
+    sessionId.value = 'boss_${DateTime.now().microsecondsSinceEpoch}';
+    phase.value = BossBattlePhase.loading;
+
+    try {
+      final seeds = await _source.loadQuestionSeeds(limit: 48);
+      if (token != _flowToken) return;
+
+      final built = _generator.build(seeds, count: 16);
+      if (built.isEmpty) {
+        throw StateError('No usable select challenges found.');
+      }
+
+      questions.assignAll(built);
+      phase.value = BossBattlePhase.intro;
+      if (!await _wait(resolveDelay, token)) return;
+
+      isInputLocked.value = false;
+      phase.value = BossBattlePhase.question;
+    } catch (_) {
+      if (token != _flowToken) return;
+      errorMessage.value =
+          'Không thể tải câu hỏi Boss Battle từ dữ liệu hiện tại.';
+      phase.value = BossBattlePhase.error;
+      isInputLocked.value = true;
+    }
+  }
+
+  Future<void> answer(String answer) async {
+    if (phase.value != BossBattlePhase.question || isInputLocked.value) return;
+
+    final question = currentQuestion;
+    if (question == null) return;
+
+    final token = _flowToken;
+    final isCorrect = answer == question.correctAnswer;
+
+    isInputLocked.value = true;
+    selectedAnswer.value = answer;
+    lastAnswerCorrect.value = isCorrect;
+    phase.value = BossBattlePhase.resolving;
+
+    if (!await _wait(resolveDelay, token)) return;
+
+    if (isCorrect) {
+      correctCount.value += 1;
+      combo.value += 1;
+      maxCombo.value = max(maxCombo.value, combo.value);
+      score.value += _rules.scoreForCorrect(combo.value);
+      phase.value = BossBattlePhase.playerAttack;
+
+      if (!await _wait(attackDelay, token)) return;
+
+      bossHp.value = max(
+        0,
+        bossHp.value - _rules.damageToBoss(combo.value),
+      );
+
+      if (bossHp.value <= 0) {
+        await _finish(won: true, token: token);
+        return;
+      }
+    } else {
+      wrongCount.value += 1;
+      combo.value = 0;
+      phase.value = BossBattlePhase.bossAttack;
+
+      if (!await _wait(attackDelay, token)) return;
+
+      playerHp.value = max(
+        0,
+        playerHp.value - _rules.damageToPlayer(),
+      );
+
+      if (playerHp.value <= 0) {
+        await _finish(won: false, token: token);
+        return;
+      }
+    }
+
+    phase.value = BossBattlePhase.transition;
+    if (!await _wait(transitionDelay, token)) return;
+    await _advanceQuestion(token);
+  }
+
+  Future<void> _advanceQuestion(int token) async {
+    if (token != _flowToken) return;
+
+    final nextIndex = currentIndex.value + 1;
+    if (nextIndex >= questions.length) {
+      await _finish(
+        won: bossHp.value < playerHp.value,
+        token: token,
+      );
+      return;
+    }
+
+    currentIndex.value = nextIndex;
+    selectedAnswer.value = null;
+    lastAnswerCorrect.value = null;
+    isInputLocked.value = false;
+    phase.value = BossBattlePhase.question;
+  }
+
+  Future<void> _finish({
+    required bool won,
+    required int token,
+  }) async {
+    if (token != _flowToken) return;
+
+    isInputLocked.value = true;
+    phase.value = won ? BossBattlePhase.won : BossBattlePhase.lost;
+
+    if (!await _wait(attackDelay, token)) return;
+
+    if (won) {
+      phase.value = BossBattlePhase.reward;
+      if (!await _wait(transitionDelay, token)) return;
+    }
+
+    phase.value = BossBattlePhase.result;
+  }
+
+  Future<bool> _wait(Duration duration, int token) async {
+    if (duration > Duration.zero) {
+      await Future<void>.delayed(duration);
+    }
+    return token == _flowToken;
+  }
+
+  void _resetState() {
+    questions.clear();
+    currentIndex.value = 0;
+    bossHp.value = maxBossHp;
+    playerHp.value = maxPlayerHp;
+    combo.value = 0;
+    maxCombo.value = 0;
+    score.value = 0;
+    correctCount.value = 0;
+    wrongCount.value = 0;
+    isInputLocked.value = true;
+    selectedAnswer.value = null;
+    lastAnswerCorrect.value = null;
+    errorMessage.value = '';
+  }
+
+  @override
+  void onClose() {
+    _flowToken += 1;
+    _source.close();
+    super.onClose();
+  }
+}
