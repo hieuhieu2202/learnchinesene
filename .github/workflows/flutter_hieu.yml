@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Cloud-only data guard
+        run: python3 tool/verify_cloud_only.py
+
       - name: Format game code
         run: >-
           dart format
