@@ -3,9 +3,13 @@ import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../model/boss_battle_question.dart';
+import '../model/boss_battle_stage.dart';
 
 abstract class BossBattleQuestionSource {
-  Future<List<BossBattleQuestion>> loadQuestionSeeds({int limit = 36});
+  Future<List<BossBattleQuestion>> loadQuestionSeeds({
+    int limit = 36,
+    int? stageId,
+  });
 
   Future<void> close();
 }
@@ -16,17 +20,35 @@ class BossBattleRepository implements BossBattleQuestionSource {
 
   final SupabaseClient _client;
 
+  Future<List<BossBattleStage>> loadStages() async {
+    final rows = List<Map<String, dynamic>>.from(
+      await _client.rpc('boss_stage_catalog'),
+    );
+    return rows
+        .map(BossBattleStage.fromMap)
+        .where((stage) => stage.id > 0 && stage.questionCount > 0)
+        .toList(growable: false);
+  }
+
   @override
   Future<List<BossBattleQuestion>> loadQuestionSeeds({
     int limit = 36,
+    int? stageId,
   }) async {
-    final rows = List<Map<String, dynamic>>.from(
-      await _client.rpc(
-        'random_boss_questions',
-        params: {'p_limit': limit},
-      ),
-    );
+    final response = stageId == null
+        ? await _client.rpc(
+            'random_boss_questions',
+            params: {'p_limit': limit},
+          )
+        : await _client.rpc(
+            'boss_stage_questions',
+            params: {
+              'p_stage_id': stageId,
+              'p_limit': limit.clamp(4, 16),
+            },
+          );
 
+    final rows = List<Map<String, dynamic>>.from(response);
     final questions = <BossBattleQuestion>[];
 
     for (final row in rows) {

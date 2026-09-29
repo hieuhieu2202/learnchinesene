@@ -10,7 +10,10 @@ class _FakeQuestionSource implements BossBattleQuestionSource {
   final List<BossBattleQuestion> questions;
 
   @override
-  Future<List<BossBattleQuestion>> loadQuestionSeeds({int limit = 36}) async {
+  Future<List<BossBattleQuestion>> loadQuestionSeeds({
+    int limit = 36,
+    int? stageId,
+  }) async {
     return questions.take(limit).toList();
   }
 
@@ -46,6 +49,7 @@ void main() {
     addTearDown(controller.onClose);
 
     await controller.startBattle();
+    controller.beginBattle();
     final correct = controller.currentQuestion!.correctAnswer;
     await controller.answer(correct);
 
@@ -62,6 +66,7 @@ void main() {
     addTearDown(controller.onClose);
 
     await controller.startBattle();
+    controller.beginBattle();
     final question = controller.currentQuestion!;
     final wrong = question.answers.firstWhere(
       (answer) => answer != question.correctAnswer,
@@ -80,6 +85,7 @@ void main() {
     addTearDown(controller.onClose);
 
     await controller.startBattle();
+    controller.beginBattle();
     final correct = controller.currentQuestion!.correctAnswer;
 
     await Future.wait<void>([
@@ -95,6 +101,7 @@ void main() {
     addTearDown(controller.onClose);
 
     await controller.startBattle();
+    controller.beginBattle();
 
     var guard = 0;
     while (controller.phase.value != BossBattlePhase.result && guard < 10) {

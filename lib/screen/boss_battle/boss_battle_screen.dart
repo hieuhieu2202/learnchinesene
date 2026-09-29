@@ -8,13 +8,20 @@ import '../../core/theme/app_colors.dart';
 import 'animation/boss_battle_rive_contract.dart';
 import 'controller/boss_battle_controller.dart';
 import 'data/boss_battle_repository.dart';
+import 'model/boss_battle_stage.dart';
 import 'view/boss_battle_animated_character.dart';
 import 'view/boss_battle_answer_button.dart';
+import 'view/boss_battle_cartoon_attack_fx.dart';
 import 'view/boss_battle_character_art.dart';
 import 'view/boss_battle_health_bar.dart';
 
 class BossBattleScreen extends StatefulWidget {
-  const BossBattleScreen({super.key});
+  const BossBattleScreen({
+    super.key,
+    this.stage,
+  });
+
+  final BossBattleStage? stage;
 
   @override
   State<BossBattleScreen> createState() => _BossBattleScreenState();
@@ -30,7 +37,10 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
     super.initState();
     _controllerTag = 'boss_battle_${identityHashCode(this)}';
     controller = Get.put(
-      BossBattleController(source: BossBattleRepository()),
+      BossBattleController(
+        source: BossBattleRepository(),
+        stage: widget.stage,
+      ),
       tag: _controllerTag,
     );
     _configureTts();
@@ -181,7 +191,9 @@ class _BossIntro extends StatelessWidget {
               ),
               const SizedBox(height: 9),
               Text(
-                'Đánh bại Boss bằng kiến thức tiếng Trung!',
+                controller.stage == null
+                    ? 'Đánh bại Boss bằng kiến thức tiếng Trung!'
+                    : '${controller.stageLabel} • ${controller.stage!.title}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: .88),
@@ -442,9 +454,9 @@ class _GameplayScene extends StatelessWidget {
                                 color: const Color(0x88FFD16B),
                               ),
                             ),
-                            child: const Text(
-                              'Lv.3',
-                              style: TextStyle(
+                            child: Text(
+                              'Lv.${controller.bossLevel}',
+                              style: const TextStyle(
                                 color: Color(0xFFFFD974),
                                 fontSize: 10,
                                 fontWeight: FontWeight.w900,
@@ -452,9 +464,9 @@ class _GameplayScene extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 7),
-                          const Text(
-                            'Rồng Lửa',
-                            style: TextStyle(
+                          Text(
+                            controller.bossName,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
                               fontWeight: FontWeight.w900,
@@ -469,7 +481,7 @@ class _GameplayScene extends StatelessWidget {
                       BossBattleHealthBar(
                         label: '',
                         current: controller.bossHp.value,
-                        max: BossBattleController.maxBossHp,
+                        max: controller.bossHpMax,
                         color: const Color(0xFFF23538),
                         icon: Icons.local_fire_department_rounded,
                       ),
@@ -481,6 +493,7 @@ class _GameplayScene extends StatelessWidget {
                   right: -4,
                   child: BossBattleAnimatedCharacter(
                     kind: BossBattleCharacterKind.dragon,
+                    flipX: true,
                     motion: _dragonMotion(controller),
                     size: compact ? 160 : 190,
                     defeated: controller.bossHp.value <= 0,
@@ -496,7 +509,7 @@ class _GameplayScene extends StatelessWidget {
                     defeated: controller.playerHp.value <= 0,
                   ),
                 ),
-                _BattleAttackFx(
+                BossBattleCartoonAttackFx(
                   phase: phase,
                   index: controller.currentIndex.value,
                   duration: controller.attackDelay,
@@ -587,7 +600,7 @@ class _GameplayScene extends StatelessWidget {
                         child: BossBattleHealthBar(
                           label: '',
                           current: controller.playerHp.value,
-                          max: BossBattleController.maxPlayerHp,
+                          max: controller.playerHpMax,
                           color: const Color(0xFF42D83D),
                           icon: Icons.favorite_rounded,
                         ),

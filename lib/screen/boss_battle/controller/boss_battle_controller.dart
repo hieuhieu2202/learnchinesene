@@ -6,6 +6,7 @@ import '../data/boss_battle_repository.dart';
 import '../domain/boss_battle_question_generator.dart';
 import '../domain/boss_battle_rules.dart';
 import '../model/boss_battle_question.dart';
+import '../model/boss_battle_stage.dart';
 
 enum BossBattlePhase {
   loading,
@@ -27,6 +28,7 @@ class BossBattleController extends GetxController {
     required BossBattleQuestionSource source,
     BossBattleQuestionGenerator? generator,
     BossBattleRules? rules,
+    this.stage,
     this.resolveDelay = const Duration(milliseconds: 220),
     this.attackDelay = const Duration(milliseconds: 560),
     this.transitionDelay = const Duration(milliseconds: 460),
@@ -40,6 +42,7 @@ class BossBattleController extends GetxController {
   final BossBattleQuestionSource _source;
   final BossBattleQuestionGenerator _generator;
   final BossBattleRules _rules;
+  final BossBattleStage? stage;
 
   final Duration resolveDelay;
   final Duration attackDelay;
@@ -74,11 +77,21 @@ class BossBattleController extends GetxController {
   int get questionNumber =>
       questions.isEmpty ? 0 : min(currentIndex.value + 1, questions.length);
 
+  int get bossHpMax => stage?.bossHp ?? maxBossHp;
+
+  int get playerHpMax => stage?.playerHp ?? maxPlayerHp;
+
+  String get bossName => stage?.bossName ?? 'Rồng Lửa';
+
+  int get bossLevel => stage?.difficulty ?? 3;
+
+  String get stageLabel => stage?.label ?? 'Đấu tự do';
+
   double get bossHealthFraction =>
-      (bossHp.value / maxBossHp).clamp(0.0, 1.0).toDouble();
+      (bossHp.value / bossHpMax).clamp(0.0, 1.0).toDouble();
 
   double get playerHealthFraction =>
-      (playerHp.value / maxPlayerHp).clamp(0.0, 1.0).toDouble();
+      (playerHp.value / playerHpMax).clamp(0.0, 1.0).toDouble();
 
   bool get battleFinished =>
       phase.value == BossBattlePhase.result ||
@@ -128,10 +141,19 @@ class BossBattleController extends GetxController {
     phase.value = BossBattlePhase.loading;
 
     try {
-      final seeds = await _source.loadQuestionSeeds(limit: 48);
+      final requested = stage == null
+          ? 16
+          : min(16, max(4, stage!.questionCount));
+      final seeds = await _source.loadQuestionSeeds(
+        limit: stage == null ? 48 : requested,
+        stageId: stage?.id,
+      );
       if (token != _flowToken) return;
 
-      final built = _generator.build(seeds, count: 16);
+      final built = _generator.build(
+        seeds,
+        count: min(requested, seeds.length),
+      );
       if (built.isEmpty) {
         throw StateError('No usable select challenges found.');
       }
@@ -195,7 +217,10 @@ class BossBattleController extends GetxController {
     } else {
       wrongCount.value += 1;
       combo.value = 0;
-      lastPlayerDamage.value = _rules.damageToPlayer();
+      lastPlayerDamage.value = min(
+        34,
+        _rules.damageToPlayer() + max(0, bossLevel - 1) * 2,
+      );
       lastBossDamage.value = 0;
       phase.value = BossBattlePhase.bossAttack;
 
@@ -265,8 +290,8 @@ class BossBattleController extends GetxController {
   void _resetState() {
     questions.clear();
     currentIndex.value = 0;
-    bossHp.value = maxBossHp;
-    playerHp.value = maxPlayerHp;
+    bossHp.value = bossHpMax;
+    playerHp.value = playerHpMax;
     combo.value = 0;
     maxCombo.value = 0;
     score.value = 0;

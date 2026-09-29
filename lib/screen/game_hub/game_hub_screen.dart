@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../../core/responsive/responsive_layout.dart';
 import '../../core/theme/app_colors.dart';
-import '../boss_battle/boss_battle_screen.dart';
+import '../boss_battle/boss_stage_map_screen.dart';
 import '../boss_battle/view/boss_battle_character_art.dart';
 
 class GameHubScreen extends StatelessWidget {
@@ -162,7 +162,7 @@ class _GameCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(19),
         onTap: game.playable
-            ? () => Get.to(() => const BossBattleScreen())
+            ? () => Get.to(() => const BossBattleStageMapScreen())
             : () => _planned(context),
         child: Container(
           height: featured ? 116 : 92,
