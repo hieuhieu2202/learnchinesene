@@ -175,11 +175,16 @@ class GameHubScreen extends StatelessWidget {
                 else
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-                    sliver: SliverList.separated(
-                      itemCount: _games.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) =>
-                          _GameCard(game: _games[index]),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          if (index.isOdd) {
+                            return const SizedBox(height: 12);
+                          }
+                          return _GameCard(game: _games[index ~/ 2]);
+                        },
+                        childCount: _games.isEmpty ? 0 : _games.length * 2 - 1,
+                      ),
                     ),
                   ),
               ],
