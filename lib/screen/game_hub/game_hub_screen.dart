@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
+import '../boss_battle/boss_battle_screen.dart';
 
 class GameHubScreen extends StatelessWidget {
   const GameHubScreen({super.key});
@@ -13,8 +14,9 @@ class GameHubScreen extends StatelessWidget {
       subtitle: 'Trả lời đúng để tung đòn, phá giáp và hạ boss.',
       icon: Icons.local_fire_department_rounded,
       accent: Color(0xFFE05A3F),
-      status: 'Ưu tiên phát triển',
-      statusColor: Color(0xFFE05A3F),
+      status: 'Chơi ngay',
+      statusColor: AppColors.success,
+      playable: true,
       skills: ['Từ vựng', 'Pinyin', 'Ngữ nghĩa'],
     ),
     _GamePreview(
@@ -355,7 +357,9 @@ class _GameCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(22),
       child: InkWell(
         borderRadius: BorderRadius.circular(22),
-        onTap: () => _showPlannedGameInfo(context, game),
+        onTap: game.playable
+            ? () => Get.to(() => const BossBattleScreen())
+            : () => _showPlannedGameInfo(context, game),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -560,6 +564,7 @@ class _GamePreview {
     required this.status,
     required this.statusColor,
     required this.skills,
+    this.playable = false,
   });
 
   final String title;
@@ -569,4 +574,5 @@ class _GamePreview {
   final String status;
   final Color statusColor;
   final List<String> skills;
+  final bool playable;
 }
