@@ -15,5 +15,18 @@ abstract final class SupabaseBootstrap {
       url: SupabaseConfig.url,
       publishableKey: SupabaseConfig.publishableKey,
     );
+
+    final client = Supabase.instance.client;
+    if (client.auth.currentSession != null) return;
+
+    try {
+      await client.auth.signInAnonymously();
+    } on AuthException catch (error) {
+      throw StateError(
+        'Ứng dụng cần kết nối Supabase để hoạt động. '
+        'Anonymous Auth phải được bật trong Supabase. '
+        'Chi tiết: ${error.message}',
+      );
+    }
   }
 }

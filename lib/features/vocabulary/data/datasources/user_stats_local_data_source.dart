@@ -1,9 +1,10 @@
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/user_stats_model.dart';
 
+/// Compatibility name kept for the existing repository layer.
+///
+/// User statistics are persisted only in Supabase.
 abstract class UserStatsLocalDataSource {
   Future<UserStats> getUserStats();
   Future<void> updateUserStats(UserStats stats);
@@ -15,16 +16,30 @@ abstract class UserStatsLocalDataSource {
 }
 
 class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
-  static const _key = 'user_stats_v2';
+  SupabaseClient get _client => Supabase.instance.client;
+
+  String get _userId {
+    final id = _client.auth.currentUser?.id;
+    if (id == null) {
+      throw StateError('Supabase authentication is required.');
+    }
+    return id;
+  }
 
   @override
   Future<UserStats> getUserStats() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
-    if (raw != null) {
-      return UserStats.fromMap(
-        Map<String, dynamic>.from(jsonDecode(raw) as Map),
-      );
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('app_user_stats')
+          .select(
+            'total_exp, current_streak, last_study_date, total_words_mastered, total_favorites',
+          )
+          .eq('user_id', _userId)
+          .limit(1),
+    );
+
+    if (rows.isNotEmpty) {
+      return UserStats.fromMap({...rows.first, 'id': 1});
     }
 
     final stats = UserStats(
@@ -41,14 +56,26 @@ class UserStatsLocalDataSourceImpl implements UserStatsLocalDataSource {
 
   @override
   Future<void> updateUserStats(UserStats stats) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, jsonEncode(stats.toMap()));
+    await _client.from('app_user_stats').upsert(
+      {
+        'user_id': _userId,
+        'total_exp': stats.totalExp,
+        'current_streak': stats.currentStreak,
+        'last_study_date': stats.lastStudyDate.toUtc().toIso8601String(),
+        'total_words_mastered': stats.totalWordsMastered,
+        'total_favorites': stats.totalFavorites,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      onConflict: 'user_id',
+    );
   }
 
   @override
   Future<void> addExp(int exp) async {
     final stats = await getUserStats();
-    await updateUserStats(stats.copyWith(totalExp: stats.totalExp + exp));
+    await updateUserStats(
+      stats.copyWith(totalExp: stats.totalExp + exp.clamp(0, 1000000)),
+    );
   }
 
   @override

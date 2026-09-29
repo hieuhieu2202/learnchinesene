@@ -1,10 +1,11 @@
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/progress_model.dart';
 
+/// Compatibility name kept to avoid a broad presentation-layer rewrite.
+///
+/// Despite the historical "Local" name, this data source is cloud-only and
+/// stores learning progress in Supabase.
 abstract class ProgressLocalDataSource {
   Future<ProgressModel?> getProgressForWord(int wordId);
   Future<Map<int, ProgressModel>> getProgressForSection(int sectionId);
@@ -13,88 +14,140 @@ abstract class ProgressLocalDataSource {
 }
 
 class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
-  static const _prefix = 'v1_progress_v2_';
-
   SupabaseClient get _client => Supabase.instance.client;
+
+  String get _userId {
+    final id = _client.auth.currentUser?.id;
+    if (id == null) {
+      throw StateError('Supabase authentication is required.');
+    }
+    return id;
+  }
 
   @override
   Future<ProgressModel?> getProgressForWord(int wordId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('$_prefix$wordId');
-    if (raw == null) return null;
-    return _decode(raw);
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_user_progress')
+          .select(
+            'word_id, correct_count, wrong_count, level, mastered, last_review_at',
+          )
+          .eq('user_id', _userId)
+          .eq('word_id', wordId)
+          .limit(1),
+    );
+
+    return rows.isEmpty ? null : ProgressModel.fromMap(rows.first);
   }
 
   @override
   Future<Map<int, ProgressModel>> getProgressForSection(int sectionId) async {
-    final rows = List<Map<String, dynamic>>.from(
-      await _client
-          .from('lexicon_words')
-          .select('id')
-          .eq('hsk_level_id', sectionId)
-          .order('id')
-          .range(0, 999),
-    );
-    final prefs = await SharedPreferences.getInstance();
-    final result = <int, ProgressModel>{};
+    final wordIds = await _wordIdsForSection(sectionId);
+    if (wordIds.isEmpty) return <int, ProgressModel>{};
 
-    for (final row in rows) {
-      final id = (row['id'] as num?)?.toInt();
-      if (id == null) continue;
-      final raw = prefs.getString('$_prefix$id');
-      if (raw == null) continue;
-      result[id] = _decode(raw);
+    final result = <int, ProgressModel>{};
+    for (var i = 0; i < wordIds.length; i += 200) {
+      final end = i + 200 < wordIds.length ? i + 200 : wordIds.length;
+      final chunk = wordIds.sublist(i, end);
+      final rows = List<Map<String, dynamic>>.from(
+        await _client
+            .from('lexicon_user_progress')
+            .select(
+              'word_id, correct_count, wrong_count, level, mastered, last_review_at',
+            )
+            .eq('user_id', _userId)
+            .inFilter('word_id', chunk),
+      );
+
+      for (final row in rows) {
+        final progress = ProgressModel.fromMap(row);
+        result[progress.wordId] = progress;
+      }
     }
     return result;
   }
 
   @override
   Future<void> upsertProgress(ProgressModel progress) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      '$_prefix${progress.wordId}',
-      jsonEncode(progress.toMap()),
+    await _client.from('lexicon_user_progress').upsert(
+      {
+        'user_id': _userId,
+        'word_id': progress.wordId,
+        'correct_count': progress.correctCount,
+        'wrong_count': progress.wrongCount,
+        'level': progress.level,
+        'mastered': progress.mastered,
+        'last_review_at': progress.lastPractice?.toUtc().toIso8601String(),
+        'next_review_at': progress.mastered
+            ? DateTime.now()
+                .toUtc()
+                .add(const Duration(days: 7))
+                .toIso8601String()
+            : DateTime.now().toUtc().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      },
+      onConflict: 'user_id,word_id',
     );
   }
 
   @override
   Future<List<int>> getWordsToReviewToday(DateTime today) async {
-    final prefs = await SharedPreferences.getInstance();
-    final boundary = DateTime(today.year, today.month, today.day);
-    final result = <MapEntry<int, ProgressModel>>[];
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_user_progress')
+          .select('word_id, mastered, next_review_at, last_review_at')
+          .eq('user_id', _userId)
+          .eq('mastered', false)
+          .order('next_review_at')
+          .order('last_review_at'),
+    );
 
-    for (final key in prefs.getKeys()) {
-      if (!key.startsWith(_prefix)) continue;
-      final raw = prefs.getString(key);
-      if (raw == null) continue;
-      final progress = _decode(raw);
-      if (progress.mastered) continue;
+    final endOfToday = DateTime(
+      today.year,
+      today.month,
+      today.day,
+      23,
+      59,
+      59,
+      999,
+    ).toUtc();
 
-      final last = progress.lastPractice;
-      if (last == null || last.isBefore(boundary)) {
-        final id = int.tryParse(key.substring(_prefix.length));
-        if (id != null) result.add(MapEntry(id, progress));
-      }
-    }
-
-    result.sort((a, b) {
-      final aa = a.value.lastPractice;
-      final bb = b.value.lastPractice;
-      if (aa == null && bb == null) return 0;
-      if (aa == null) return -1;
-      if (bb == null) return 1;
-      return aa.compareTo(bb);
-    });
-
-    return result.map((entry) => entry.key).toList();
+    return rows
+        .where((row) {
+          final raw = row['next_review_at']?.toString();
+          if (raw == null || raw.isEmpty) return true;
+          final next = DateTime.tryParse(raw);
+          return next == null || !next.toUtc().isAfter(endOfToday);
+        })
+        .map((row) => (row['word_id'] as num?)?.toInt())
+        .whereType<int>()
+        .toList();
   }
 
-  ProgressModel _decode(String raw) {
-    final data = Map<String, Object?>.from(jsonDecode(raw) as Map);
-    final mastered = data['mastered'];
-    if (mastered is bool) {
-      data['mastered'] = mastered ? 1 : 0;
+  Future<List<int>> _wordIdsForSection(int sectionId) async {
+    final ids = <int>[];
+    var from = 0;
+
+    while (true) {
+      final page = List<Map<String, dynamic>>.from(
+        await _client
+            .from('lexicon_words')
+            .select('id')
+            .eq('hsk_level_id', sectionId)
+            .order('id')
+            .range(from, from + 999),
+      );
+
+      ids.addAll(
+        page
+            .map((row) => (row['id'] as num?)?.toInt())
+            .whereType<int>(),
+      );
+
+      if (page.length < 1000) break;
+      from += 1000;
     }
-    return ProgressModel.fromMap(data);
+
+    return ids;
   }
 }

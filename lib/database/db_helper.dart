@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:math';
 
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/example_sentence.dart';
@@ -16,11 +14,6 @@ class DbHelper {
   DbHelper._();
 
   static final DbHelper instance = DbHelper._();
-
-  static const _progressPrefix = 'learning_progress_v2_';
-  static const _speakingAttemptsKey = 'learning_speaking_attempts_v2';
-  static const _speakingScoreSumKey = 'learning_speaking_score_sum_v2';
-  static const _hanziProgressPrefix = 'hanzi_progress_v2_';
 
   SupabaseClient get _client => Supabase.instance.client;
 
@@ -221,23 +214,26 @@ class DbHelper {
   }
 
   Future<List<Word>> getReviewWords() async {
-    final prefs = await SharedPreferences.getInstance();
-    final ids = <int>[];
+    final userId = _requireUserId();
+    final rows = List<Map<String, dynamic>>.from(
+      await _client
+          .from('lexicon_user_progress')
+          .select('word_id, wrong_count, mastered, next_review_at')
+          .eq('user_id', userId)
+          .eq('mastered', false)
+          .order('next_review_at'),
+    );
 
-    for (final key in prefs.getKeys()) {
-      if (!key.startsWith(_progressPrefix)) continue;
-      final raw = prefs.getString(key);
-      if (raw == null) continue;
-
-      try {
-        final data = Map<String, dynamic>.from(jsonDecode(raw) as Map);
-        final wrong = (data['wrong_count'] as num?)?.toInt() ?? 0;
-        final mastered = data['mastered'] == true;
-        if (wrong > 0 && !mastered) {
-          ids.add(int.parse(key.substring(_progressPrefix.length)));
-        }
-      } catch (_) {}
-    }
+    final now = DateTime.now().toUtc();
+    final ids = rows
+        .where((row) {
+          final wrong = (row['wrong_count'] as num?)?.toInt() ?? 0;
+          final due = DateTime.tryParse('${row['next_review_at'] ?? ''}');
+          return wrong > 0 || due == null || !due.toUtc().isAfter(now);
+        })
+        .map((row) => (row['word_id'] as num?)?.toInt())
+        .whereType<int>()
+        .toList();
 
     return getWordsByIds(ids);
   }
@@ -246,6 +242,16 @@ class DbHelper {
     required int wordId,
     required bool isCorrect,
     int level = 1,
+  }) async {
+    _requireUserId();
+    await _client.rpc(
+      'record_word_progress',
+      params: {
+        'p_word_id': wordId,
+        'p_is_correct': isCorrect,
+        'p_level': level,
+      },
+    );
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final key = '$_progressPrefix$wordId';
@@ -270,82 +276,44 @@ class DbHelper {
   }
 
   Future<void> markLearned(int wordId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = '$_progressPrefix$wordId';
-    final existing = _decodeMap(prefs.getString(key));
-
-    await prefs.setString(
-      key,
-      jsonEncode({
-        'word_id': wordId,
-        'correct_count':
-            max(1, (existing['correct_count'] as num?)?.toInt() ?? 0),
-        'wrong_count': (existing['wrong_count'] as num?)?.toInt() ?? 0,
-        'level': (existing['level'] as num?)?.toInt() ?? 1,
-        'mastered': true,
-        'last_practice': DateTime.now().toIso8601String(),
-      }),
+    _requireUserId();
+    await _client.rpc(
+      'mark_word_learned',
+      params: {'p_word_id': wordId},
     );
   }
 
   Future<Map<String, num>> getStats() async {
-    final prefs = await SharedPreferences.getInstance();
-    var learned = 0;
-    var mastered = 0;
-    var correct = 0;
-    var wrong = 0;
-
-    for (final key in prefs.getKeys()) {
-      if (!key.startsWith(_progressPrefix)) continue;
-      final data = _decodeMap(prefs.getString(key));
-      learned += 1;
-      if (data['mastered'] == true) mastered += 1;
-      correct += (data['correct_count'] as num?)?.toInt() ?? 0;
-      wrong += (data['wrong_count'] as num?)?.toInt() ?? 0;
-    }
-
-    final attempts = prefs.getInt(_speakingAttemptsKey) ?? 0;
-    final scoreSum = prefs.getDouble(_speakingScoreSumKey) ?? 0;
+    _requireUserId();
+    final rows = List<Map<String, dynamic>>.from(
+      await _client.rpc('learning_stats'),
+    );
+    final row = rows.isEmpty ? <String, dynamic>{} : rows.first;
 
     return {
-      'learned': learned,
-      'mastered': mastered,
-      'correct': correct,
-      'wrong': wrong,
-      'speakingAttempts': attempts,
-      'speakingAverage': attempts == 0 ? 0 : scoreSum / attempts,
+      'learned': (row['learned'] as num?) ?? 0,
+      'mastered': (row['mastered'] as num?) ?? 0,
+      'correct': (row['correct'] as num?) ?? 0,
+      'wrong': (row['wrong'] as num?) ?? 0,
+      'speakingAttempts': (row['speaking_attempts'] as num?) ?? 0,
+      'speakingAverage': (row['speaking_average'] as num?) ?? 0,
     };
   }
 
   Future<Map<String, int>> getUnitMetrics(int unitId) async {
-    final links = List<Map<String, dynamic>>.from(
-      await _client
-          .from('lexicon_word_units')
-          .select('word_id')
-          .eq('unit_id', unitId),
+    _requireUserId();
+    final rows = List<Map<String, dynamic>>.from(
+      await _client.rpc(
+        'unit_learning_metrics',
+        params: {'p_unit_id': unitId},
+      ),
     );
-    final wordIds = links
-        .map((row) => (row['word_id'] as num?)?.toInt())
-        .whereType<int>()
-        .toSet();
-
-    final examples = List<Map<String, dynamic>>.from(
-      await _client
-          .from('lexicon_examples')
-          .select('id')
-          .eq('unit_id', unitId),
-    );
-
-    final prefs = await SharedPreferences.getInstance();
-    var learned = 0;
-    for (final id in wordIds) {
-      if (prefs.containsKey('$_progressPrefix$id')) learned++;
-    }
+    final row = rows.isEmpty ? <String, dynamic>{} : rows.first;
 
     return {
-      'words': wordIds.length,
-      'learned': learned,
-      'examples': examples.length,
+      'words': (row['words'] as num?)?.toInt() ?? 0,
+      'learned': (row['learned'] as num?)?.toInt() ?? 0,
+      'examples': (row['examples'] as num?)?.toInt() ?? 0,
     };
   }
 
@@ -360,23 +328,12 @@ class DbHelper {
   }
 
   Future<double> getLevelProgress(int levelId) async {
-    final rows = List<Map<String, dynamic>>.from(
-      await _client
-          .from('lexicon_words')
-          .select('id')
-          .eq('hsk_level_id', levelId)
-          .order('id')
-          .range(0, 999),
+    _requireUserId();
+    final value = await _client.rpc(
+      'level_learning_progress',
+      params: {'p_level_id': levelId},
     );
-    if (rows.isEmpty) return 0;
-
-    final prefs = await SharedPreferences.getInstance();
-    final learned = rows.where((row) {
-      final id = (row['id'] as num?)?.toInt();
-      return id != null && prefs.containsKey('$_progressPrefix$id');
-    }).length;
-
-    return learned / rows.length;
+    return (value as num?)?.toDouble() ?? 0;
   }
 
   Future<SpeakingPracticeItem?> getSpeakingItemByWordId(int wordId) async {
@@ -467,6 +424,17 @@ class DbHelper {
     required String recognizedText,
     required double score,
     required bool isCorrect,
+  }) async {
+    final userId = _requireUserId();
+    await _client.from('lexicon_speaking_practice').insert({
+      'user_id': userId,
+      'word_id': wordId,
+      'example_id': exampleId,
+      'target_text': targetText,
+      'recognized_text': recognizedText,
+      'accuracy_score': score,
+      'pronunciation_score': score,
+    });
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final attempts = prefs.getInt(_speakingAttemptsKey) ?? 0;
@@ -604,6 +572,16 @@ class DbHelper {
     required double score,
     required int attempts,
   }) async {
+    _requireUserId();
+    await _client.rpc(
+      'record_hanzi_progress',
+      params: {
+        'p_character_id': characterId,
+        'p_score': score,
+        'p_attempts': attempts,
+      },
+    );
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final key = '$_hanziProgressPrefix$characterId';
     final existing = _decodeMap(prefs.getString(key));
@@ -686,4 +664,12 @@ class DbHelper {
       return {};
     }
   }
+  String _requireUserId() {
+    final id = _client.auth.currentUser?.id;
+    if (id == null) {
+      throw StateError('Supabase authentication is required.');
+    }
+    return id;
+  }
+
 }

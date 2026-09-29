@@ -11,15 +11,21 @@ class ProgressModel extends Progress {
   });
 
   factory ProgressModel.fromMap(Map<String, Object?> map) {
+    final masteredValue = map['mastered'];
+    final lastPracticeValue =
+        map['last_practice'] ?? map['last_review_at'];
+
     return ProgressModel(
-      wordId: map['word_id'] as int,
-      correctCount: map['correct_count'] as int? ?? 0,
-      wrongCount: map['wrong_count'] as int? ?? 0,
-      lastPractice: map['last_practice'] == null
+      wordId: (map['word_id'] as num).toInt(),
+      correctCount: (map['correct_count'] as num?)?.toInt() ?? 0,
+      wrongCount: (map['wrong_count'] as num?)?.toInt() ?? 0,
+      lastPractice: lastPracticeValue == null
           ? null
-          : DateTime.tryParse(map['last_practice'] as String),
-      level: map['level'] as int? ?? 0,
-      mastered: (map['mastered'] as int? ?? 0) == 1,
+          : DateTime.tryParse(lastPracticeValue.toString()),
+      level: (map['level'] as num?)?.toInt() ?? 0,
+      mastered: masteredValue is bool
+          ? masteredValue
+          : (masteredValue as num?)?.toInt() == 1,
     );
   }
 
