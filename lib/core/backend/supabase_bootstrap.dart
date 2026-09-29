@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_config.dart';
 
 abstract final class SupabaseBootstrap {
+  static bool _initialized = false;
+
   static Future<void> initialize() async {
     if (!SupabaseConfig.isConfigured) {
       throw StateError(
@@ -11,10 +13,13 @@ abstract final class SupabaseBootstrap {
       );
     }
 
-    await Supabase.initialize(
-      url: SupabaseConfig.url,
-      publishableKey: SupabaseConfig.publishableKey,
-    );
+    if (!_initialized) {
+      await Supabase.initialize(
+        url: SupabaseConfig.url,
+        publishableKey: SupabaseConfig.publishableKey,
+      );
+      _initialized = true;
+    }
 
     final client = Supabase.instance.client;
     if (client.auth.currentSession != null) return;
