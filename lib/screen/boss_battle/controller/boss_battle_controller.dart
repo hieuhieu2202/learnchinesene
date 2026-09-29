@@ -60,6 +60,8 @@ class BossBattleController extends GetxController {
   final lastAnswerCorrect = RxnBool();
   final errorMessage = ''.obs;
   final sessionId = ''.obs;
+  final lastBossDamage = 0.obs;
+  final lastPlayerDamage = 0.obs;
 
   int _flowToken = 0;
 
@@ -82,6 +84,28 @@ class BossBattleController extends GetxController {
       phase.value == BossBattlePhase.result ||
       phase.value == BossBattlePhase.won ||
       phase.value == BossBattlePhase.lost;
+
+  bool get canAnswer =>
+      phase.value == BossBattlePhase.question &&
+      !isInputLocked.value &&
+      currentQuestion != null;
+
+  String get phaseHint {
+    switch (phase.value) {
+      case BossBattlePhase.question:
+        return 'Chạm một đáp án để ra đòn';
+      case BossBattlePhase.resolving:
+        return 'Đang kiểm tra đáp án...';
+      case BossBattlePhase.playerAttack:
+        return 'Đòn của bạn đang trúng boss!';
+      case BossBattlePhase.bossAttack:
+        return 'Boss đang phản công!';
+      case BossBattlePhase.transition:
+        return 'Chuẩn bị câu tiếp theo...';
+      default:
+        return '';
+    }
+  }
 
   String get feedbackText {
     final result = lastAnswerCorrect.value;
@@ -116,8 +140,8 @@ class BossBattleController extends GetxController {
       phase.value = BossBattlePhase.intro;
       if (!await _wait(resolveDelay, token)) return;
 
-      isInputLocked.value = false;
       phase.value = BossBattlePhase.question;
+      isInputLocked.value = false;
     } catch (_) {
       if (token != _flowToken) return;
       errorMessage.value =
@@ -128,7 +152,7 @@ class BossBattleController extends GetxController {
   }
 
   Future<void> answer(String answer) async {
-    if (phase.value != BossBattlePhase.question || isInputLocked.value) return;
+    if (!canAnswer) return;
 
     final question = currentQuestion;
     if (question == null) return;
@@ -148,13 +172,15 @@ class BossBattleController extends GetxController {
       combo.value += 1;
       maxCombo.value = max(maxCombo.value, combo.value);
       score.value += _rules.scoreForCorrect(combo.value);
+      lastBossDamage.value = _rules.damageToBoss(combo.value);
+      lastPlayerDamage.value = 0;
       phase.value = BossBattlePhase.playerAttack;
 
       if (!await _wait(attackDelay, token)) return;
 
       bossHp.value = max(
         0,
-        bossHp.value - _rules.damageToBoss(combo.value),
+        bossHp.value - lastBossDamage.value,
       );
 
       if (bossHp.value <= 0) {
@@ -164,13 +190,15 @@ class BossBattleController extends GetxController {
     } else {
       wrongCount.value += 1;
       combo.value = 0;
+      lastPlayerDamage.value = _rules.damageToPlayer();
+      lastBossDamage.value = 0;
       phase.value = BossBattlePhase.bossAttack;
 
       if (!await _wait(attackDelay, token)) return;
 
       playerHp.value = max(
         0,
-        playerHp.value - _rules.damageToPlayer(),
+        playerHp.value - lastPlayerDamage.value,
       );
 
       if (playerHp.value <= 0) {
@@ -199,8 +227,8 @@ class BossBattleController extends GetxController {
     currentIndex.value = nextIndex;
     selectedAnswer.value = null;
     lastAnswerCorrect.value = null;
-    isInputLocked.value = false;
     phase.value = BossBattlePhase.question;
+    isInputLocked.value = false;
   }
 
   Future<void> _finish({
@@ -243,6 +271,8 @@ class BossBattleController extends GetxController {
     selectedAnswer.value = null;
     lastAnswerCorrect.value = null;
     errorMessage.value = '';
+    lastBossDamage.value = 0;
+    lastPlayerDamage.value = 0;
   }
 
   @override
