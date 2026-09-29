@@ -46,13 +46,13 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
 
       if (phase == BossBattlePhase.loading) {
         return const Scaffold(
-          backgroundColor: Color(0xFF171018),
+          backgroundColor: Color(0xFF170F17),
           body: SafeArea(
-            child: _StatusOverlay(
-              icon: Icons.hourglass_top_rounded,
+            child: _CenteredStatus(
+              icon: Icons.local_fire_department_rounded,
               title: 'Đang triệu hồi Rồng Lửa',
               message: 'Đang tải câu hỏi trực tiếp từ Supabase...',
-              showProgress: true,
+              loading: true,
             ),
           ),
         );
@@ -60,30 +60,20 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
 
       if (phase == BossBattlePhase.intro) {
         return Scaffold(
-          backgroundColor: const Color(0xFF171018),
+          backgroundColor: const Color(0xFF170F17),
           body: SafeArea(
-            child: _BossIntroScreen(controller: controller),
+            child: _BossIntro(controller: controller),
           ),
         );
       }
 
       return Scaffold(
-        backgroundColor: const Color(0xFF140D13),
+        backgroundColor: const Color(0xFF170F17),
         body: SafeArea(
           child: Stack(
+            fit: StackFit.expand,
             children: [
-              Column(
-                children: [
-                  Expanded(
-                    flex: 59,
-                    child: _BattleStage(controller: controller),
-                  ),
-                  Expanded(
-                    flex: 41,
-                    child: _QuestionPanel(controller: controller),
-                  ),
-                ],
-              ),
+              _GameplayScene(controller: controller),
               if (phase == BossBattlePhase.error)
                 _ErrorOverlay(controller: controller),
               if (phase == BossBattlePhase.result)
@@ -96,8 +86,8 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
   }
 }
 
-class _BossIntroScreen extends StatelessWidget {
-  const _BossIntroScreen({required this.controller});
+class _BossIntro extends StatelessWidget {
+  const _BossIntro({required this.controller});
 
   final BossBattleController controller;
 
@@ -106,25 +96,25 @@ class _BossIntroScreen extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const CustomPaint(painter: _BattleBackdropPainter()),
+        const CustomPaint(painter: _ArenaPainter(intro: true)),
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0x22000000),
-                Color(0x33130C13),
-                Color(0xEB130C13),
+                Color(0x10000000),
+                Color(0x22120B12),
+                Color(0xEA120B12),
               ],
-              stops: [0, .48, 1],
+              stops: [0, .54, 1],
             ),
           ),
         ),
         Positioned(
           top: 12,
           left: 14,
-          child: _RoundIconButton(
+          child: _CircleAction(
             icon: Icons.arrow_back_rounded,
             onTap: () => Get.back<void>(),
           ),
@@ -132,23 +122,28 @@ class _BossIntroScreen extends StatelessWidget {
         Positioned(
           left: 18,
           right: 18,
-          top: 36,
+          top: 38,
           child: Column(
             children: [
               const Text(
                 'BOSS BATTLE',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 39,
+                  color: Color(0xFFFFE2A1),
+                  fontSize: 38,
                   height: 1,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: -1.2,
+                  letterSpacing: -1.1,
                   shadows: [
                     Shadow(
-                      color: Color(0xAA7C1A18),
+                      color: Color(0xFF8E2019),
+                      blurRadius: 4,
+                      offset: Offset(0, 3),
+                    ),
+                    Shadow(
+                      color: Color(0xAA000000),
                       blurRadius: 14,
-                      offset: Offset(0, 4),
+                      offset: Offset(0, 7),
                     ),
                   ],
                 ),
@@ -167,14 +162,15 @@ class _BossIntroScreen extends StatelessWidget {
           ),
         ),
         Positioned(
-          top: 120,
-          left: 12,
-          right: 12,
-          height: 300,
+          top: 105,
+          left: 0,
+          right: 0,
+          height: 330,
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
               Align(
-                alignment: const Alignment(-.88, .75),
+                alignment: const Alignment(-.76, .78),
                 child: BossBattleAnimatedCharacter(
                   kind: BossBattleCharacterKind.panda,
                   motion: BossBattleCharacterMotion.ready,
@@ -182,11 +178,25 @@ class _BossIntroScreen extends StatelessWidget {
                 ),
               ),
               Align(
-                alignment: const Alignment(.88, -.15),
+                alignment: const Alignment(.78, -.2),
                 child: BossBattleAnimatedCharacter(
                   kind: BossBattleCharacterKind.dragon,
                   motion: BossBattleCharacterMotion.idle,
-                  size: 205,
+                  size: 218,
+                ),
+              ),
+              Align(
+                alignment: const Alignment(.05, .2),
+                child: Transform.rotate(
+                  angle: -.22,
+                  child: const Icon(
+                    Icons.local_fire_department_rounded,
+                    color: Color(0xFFFFB32C),
+                    size: 54,
+                    shadows: [
+                      Shadow(color: Color(0xFFFF4B21), blurRadius: 24),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -195,65 +205,63 @@ class _BossIntroScreen extends StatelessWidget {
         Positioned(
           left: 18,
           right: 18,
-          bottom: 22,
+          bottom: 18,
           child: Container(
             padding: const EdgeInsets.fromLTRB(18, 17, 18, 16),
             decoration: BoxDecoration(
-              color: const Color(0xE8291B25),
-              borderRadius: BorderRadius.circular(25),
+              color: const Color(0xE82A1B25),
+              borderRadius: BorderRadius.circular(26),
               border: Border.all(
-                color: const Color(0x66FFD988),
+                color: const Color(0x66FFD989),
                 width: 1.2,
               ),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x99000000),
-                  blurRadius: 26,
-                  offset: Offset(0, 12),
+                  blurRadius: 28,
+                  offset: Offset(0, 14),
                 ),
               ],
             ),
             child: Column(
               children: [
-                const _IntroFeature(
-                  icon: Icons.psychology_alt_rounded,
+                const _IntroLine(
+                  icon: Icons.menu_book_rounded,
                   title: 'Học từ vựng qua trận chiến',
-                  subtitle: 'Câu hỏi thật lấy từ kho dữ liệu Supabase',
                 ),
                 const SizedBox(height: 11),
-                const _IntroFeature(
-                  icon: Icons.local_fire_department_rounded,
+                const _IntroLine(
+                  icon: Icons.sports_martial_arts_rounded,
                   title: 'Càng đúng càng mạnh',
-                  subtitle: 'Combo cao giúp đòn đánh gây nhiều sát thương hơn',
                 ),
                 const SizedBox(height: 11),
-                const _IntroFeature(
+                const _IntroLine(
                   icon: Icons.auto_awesome_rounded,
                   title: 'Phản hồi chiến đấu tức thì',
-                  subtitle: 'Đúng thì bạn tấn công, sai thì Boss phản công',
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  height: 54,
-                  child: FilledButton(
+                  height: 55,
+                  child: FilledButton.icon(
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFA726),
-                      foregroundColor: const Color(0xFF4D2400),
+                      backgroundColor: const Color(0xFFFFA321),
+                      foregroundColor: const Color(0xFF4B2300),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(17),
                         side: const BorderSide(
-                          color: Color(0xFFFFD46A),
+                          color: Color(0xFFFFD668),
                           width: 1.5,
                         ),
                       ),
                       textStyle: const TextStyle(
-                        fontSize: 17,
+                        fontSize: 18,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     onPressed: controller.beginBattle,
-                    child: const Text('Bắt đầu chơi'),
+                    icon: const Icon(Icons.swords_rounded),
+                    label: const Text('Bắt đầu chơi'),
                   ),
                 ),
               ],
@@ -265,16 +273,11 @@ class _BossIntroScreen extends StatelessWidget {
   }
 }
 
-class _IntroFeature extends StatelessWidget {
-  const _IntroFeature({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
+class _IntroLine extends StatelessWidget {
+  const _IntroLine({required this.icon, required this.title});
 
   final IconData icon;
   final String title;
-  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -284,34 +287,20 @@ class _IntroFeature extends StatelessWidget {
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: const Color(0x33FFCD67),
+            color: const Color(0x33FFD36D),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: const Color(0xFFFFD166), size: 21),
         ),
         const SizedBox(width: 11),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: .68),
-                  fontSize: 11,
-                  height: 1.3,
-                ),
-              ),
-            ],
+          child: Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+            ),
           ),
         ),
       ],
@@ -319,194 +308,8 @@ class _IntroFeature extends StatelessWidget {
   }
 }
 
-class _BattleStage extends StatelessWidget {
-  const _BattleStage({required this.controller});
-
-  final BossBattleController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      final phase = controller.phase.value;
-      final isImpact = phase == BossBattlePhase.playerAttack ||
-          phase == BossBattlePhase.bossAttack;
-
-      return TweenAnimationBuilder<double>(
-        key: ValueKey('stage_${phase.name}_${controller.currentIndex.value}'),
-        tween: Tween<double>(begin: 0, end: isImpact ? 1 : 0),
-        duration: const Duration(milliseconds: 420),
-        builder: (context, value, child) {
-          final shake = isImpact
-              ? math.sin(value * math.pi * 8) * (1 - value) * 5
-              : 0.0;
-          return Transform.translate(
-            offset: Offset(shake, 0),
-            child: child,
-          );
-        },
-        child: ClipRect(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              const CustomPaint(painter: _BattleBackdropPainter()),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        const Color(0xFF140D13).withValues(alpha: .12),
-                        const Color(0xFF140D13).withValues(alpha: .72),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 12,
-                right: 12,
-                top: 10,
-                child: Row(
-                  children: [
-                    _RoundIconButton(
-                      icon: Icons.arrow_back_rounded,
-                      onTap: () => Get.back<void>(),
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'BOSS BATTLE',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: .8,
-                            ),
-                          ),
-                          Text(
-                            'Rồng Hỏa • 火龙',
-                            style: TextStyle(
-                              color: Color(0xFFD7C7C6),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _ScoreChip(score: controller.score.value),
-                  ],
-                ),
-              ),
-              Positioned(
-                top: 68,
-                left: 42,
-                right: 42,
-                child: BossBattleHealthBar(
-                  label: 'Rồng Hỏa',
-                  current: controller.bossHp.value,
-                  max: BossBattleController.maxBossHp,
-                  color: const Color(0xFFE84545),
-                  icon: Icons.whatshot_rounded,
-                ),
-              ),
-              Positioned(
-                left: 22,
-                bottom: 72,
-                child: _BattleCharacter(
-                  kind: BossBattleCharacterKind.panda,
-                  label: 'Học giả',
-                  attacking: phase == BossBattlePhase.playerAttack,
-                  hit: phase == BossBattlePhase.bossAttack,
-                  victorious: phase == BossBattlePhase.won ||
-                      phase == BossBattlePhase.reward ||
-                      (phase == BossBattlePhase.result &&
-                          controller.bossHp.value <= 0),
-                  defeated: phase == BossBattlePhase.lost ||
-                      (phase == BossBattlePhase.result &&
-                          controller.playerHp.value <= 0),
-                  lowHealth: controller.playerHp.value <= 30,
-                  faceRight: true,
-                ),
-              ),
-              Positioned(
-                right: 18,
-                top: 112,
-                child: _BattleCharacter(
-                  kind: BossBattleCharacterKind.dragon,
-                  label: 'Boss',
-                  attacking: phase == BossBattlePhase.bossAttack,
-                  hit: phase == BossBattlePhase.playerAttack,
-                  victorious: phase == BossBattlePhase.lost ||
-                      (phase == BossBattlePhase.result &&
-                          controller.playerHp.value <= 0),
-                  defeated: phase == BossBattlePhase.won ||
-                      phase == BossBattlePhase.reward ||
-                      (phase == BossBattlePhase.result &&
-                          controller.bossHp.value <= 0),
-                  lowHealth: controller.bossHp.value <= 30,
-                  faceRight: false,
-                  boss: true,
-                ),
-              ),
-              if (phase == BossBattlePhase.playerAttack &&
-                  controller.lastBossDamage.value > 0)
-                Positioned(
-                  right: 38,
-                  top: 210,
-                  child: _DamagePopup(
-                    amount: controller.lastBossDamage.value,
-                    color: const Color(0xFFFFD34E),
-                  ),
-                ),
-              if (phase == BossBattlePhase.bossAttack &&
-                  controller.lastPlayerDamage.value > 0)
-                Positioned(
-                  left: 48,
-                  bottom: 170,
-                  child: _DamagePopup(
-                    amount: controller.lastPlayerDamage.value,
-                    color: const Color(0xFFFF6666),
-                  ),
-                ),
-              if (controller.combo.value >= 2)
-                Positioned(
-                  left: 18,
-                  top: 118,
-                  child: _ComboBadge(combo: controller.combo.value),
-                ),
-              _ProjectileFx(
-                phase: phase,
-                questionIndex: controller.currentIndex.value,
-                duration: controller.attackDelay,
-              ),
-              Positioned(
-                left: 28,
-                right: 28,
-                bottom: 18,
-                child: BossBattleHealthBar(
-                  label: 'Sinh lực',
-                  current: controller.playerHp.value,
-                  max: BossBattleController.maxPlayerHp,
-                  color: const Color(0xFF49C66B),
-                  icon: Icons.favorite_rounded,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-}
-
-class _QuestionPanel extends StatelessWidget {
-  const _QuestionPanel({required this.controller});
+class _GameplayScene extends StatelessWidget {
+  const _GameplayScene({required this.controller});
 
   final BossBattleController controller;
 
@@ -514,170 +317,376 @@ class _QuestionPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final question = controller.currentQuestion;
+      final phase = controller.phase.value;
+      final isImpact = phase == BossBattlePhase.playerAttack ||
+          phase == BossBattlePhase.bossAttack;
+
       if (question == null) {
-        return const ColoredBox(
-          color: Color(0xFFFFF8ED),
-          child: Center(child: CircularProgressIndicator()),
+        return const _CenteredStatus(
+          icon: Icons.hourglass_top_rounded,
+          title: 'Đang chuẩn bị câu hỏi',
+          message: 'Một chút nữa thôi...',
+          loading: true,
         );
       }
 
-      final canAnswer = controller.canAnswer;
-      final result = controller.lastAnswerCorrect.value;
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final h = constraints.maxHeight;
+          final compact = h < 700;
 
-      return Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFFBF4), Color(0xFFFFF3E3)],
-          ),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x66000000),
-              blurRadius: 26,
-              offset: Offset(0, -8),
+          return TweenAnimationBuilder<double>(
+            key: ValueKey(
+              'battle_${phase.name}_${controller.currentIndex.value}',
             ),
-          ],
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 4,
+            tween: Tween(begin: 0, end: isImpact ? 1 : 0),
+            duration: const Duration(milliseconds: 440),
+            builder: (context, value, child) {
+              final shake = isImpact
+                  ? math.sin(value * math.pi * 8) * (1 - value) * 5.5
+                  : 0.0;
+              return Transform.translate(
+                offset: Offset(shake, 0),
+                child: child,
+              );
+            },
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                const CustomPaint(painter: _ArenaPainter()),
+                const DecoratedBox(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD8C9B8),
-                    borderRadius: BorderRadius.circular(99),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0x08000000),
+                        Color(0x00000000),
+                        Color(0x50120B12),
+                        Color(0xD9120B12),
+                      ],
+                      stops: [0, .43, .73, 1],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _BattlePill(
-                    icon: Icons.quiz_rounded,
-                    label:
-                        'Câu ${controller.questionNumber}/${controller.questions.length}',
-                    color: AppColors.redDark,
+                Positioned(
+                  top: 10,
+                  left: 12,
+                  child: _CircleAction(
+                    icon: Icons.pause_rounded,
+                    onTap: () => Get.back<void>(),
                   ),
-                  const Spacer(),
-                  _BattlePill(
-                    icon: Icons.local_fire_department_rounded,
-                    label: 'Combo x${controller.combo.value}',
-                    color: const Color(0xFFD98218),
+                ),
+                const Positioned(
+                  top: 12,
+                  right: 12,
+                  child: _CircleAction(
+                    icon: Icons.settings_rounded,
+                    onTap: null,
+                  ),
+                ),
+                Positioned(
+                  top: 11,
+                  left: 66,
+                  right: 66,
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xCC4B2115),
+                              borderRadius: BorderRadius.circular(99),
+                              border: Border.all(
+                                color: const Color(0x88FFD16B),
+                              ),
+                            ),
+                            child: const Text(
+                              'Lv.3',
+                              style: TextStyle(
+                                color: Color(0xFFFFD974),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 7),
+                          const Text(
+                            'Rồng Lửa',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              shadows: [
+                                Shadow(color: Colors.black54, blurRadius: 5),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      BossBattleHealthBar(
+                        label: '',
+                        current: controller.bossHp.value,
+                        max: BossBattleController.maxBossHp,
+                        color: const Color(0xFFF23538),
+                        icon: Icons.local_fire_department_rounded,
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: compact ? 76 : 86,
+                  right: -4,
+                  child: BossBattleAnimatedCharacter(
+                    kind: BossBattleCharacterKind.dragon,
+                    motion: _dragonMotion(controller),
+                    size: compact ? 160 : 190,
+                    defeated: controller.bossHp.value <= 0,
+                  ),
+                ),
+                Positioned(
+                  top: compact ? 158 : 180,
+                  left: 4,
+                  child: BossBattleAnimatedCharacter(
+                    kind: BossBattleCharacterKind.panda,
+                    motion: _pandaMotion(controller),
+                    size: compact ? 103 : 118,
+                    defeated: controller.playerHp.value <= 0,
+                  ),
+                ),
+                _ProjectileFx(
+                  phase: phase,
+                  index: controller.currentIndex.value,
+                  duration: controller.attackDelay,
+                ),
+                if (phase == BossBattlePhase.playerAttack &&
+                    controller.lastBossDamage.value > 0)
+                  Positioned(
+                    right: 76,
+                    top: compact ? 150 : 170,
+                    child: _DamageText(
+                      amount: controller.lastBossDamage.value,
+                      color: const Color(0xFFFFD54A),
+                    ),
+                  ),
+                if (phase == BossBattlePhase.bossAttack &&
+                    controller.lastPlayerDamage.value > 0)
+                  Positioned(
+                    left: 68,
+                    top: compact ? 235 : 258,
+                    child: _DamageText(
+                      amount: controller.lastPlayerDamage.value,
+                      color: const Color(0xFFFF6464),
+                    ),
+                  ),
+                Positioned(
+                  left: 14,
+                  right: 14,
+                  bottom: compact ? 90 : 104,
+                  child: _QuestionOverlay(controller: controller),
+                ),
+                Positioned(
+                  left: 14,
+                  bottom: 16,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 54,
+                        height: 54,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2B1A1F),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFFFD36C),
+                            width: 2,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x77000000),
+                              blurRadius: 14,
+                              offset: Offset(0, 7),
+                            ),
+                          ],
+                        ),
+                        child: const BossBattleCharacterArt(
+                          kind: BossBattleCharacterKind.panda,
+                          size: 44,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: math.min(220, constraints.maxWidth * .52),
+                        child: BossBattleHealthBar(
+                          label: '',
+                          current: controller.playerHp.value,
+                          max: BossBattleController.maxPlayerHp,
+                          color: const Color(0xFF42D83D),
+                          icon: Icons.favorite_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (controller.combo.value >= 2)
+                  Positioned(
+                    right: 14,
+                    bottom: 20,
+                    child: _ComboBadge(combo: controller.combo.value),
+                  ),
+              ],
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  BossBattleCharacterMotion _pandaMotion(BossBattleController c) {
+    switch (c.phase.value) {
+      case BossBattlePhase.playerAttack:
+        return BossBattleCharacterMotion.attack;
+      case BossBattlePhase.bossAttack:
+        return BossBattleCharacterMotion.hit;
+      case BossBattlePhase.won:
+      case BossBattlePhase.reward:
+        return BossBattleCharacterMotion.victory;
+      case BossBattlePhase.lost:
+        return BossBattleCharacterMotion.defeat;
+      default:
+        return c.playerHp.value <= 30
+            ? BossBattleCharacterMotion.lowHp
+            : BossBattleCharacterMotion.ready;
+    }
+  }
+
+  BossBattleCharacterMotion _dragonMotion(BossBattleController c) {
+    switch (c.phase.value) {
+      case BossBattlePhase.bossAttack:
+        return BossBattleCharacterMotion.attack;
+      case BossBattlePhase.playerAttack:
+        return BossBattleCharacterMotion.hit;
+      case BossBattlePhase.lost:
+        return BossBattleCharacterMotion.victory;
+      case BossBattlePhase.won:
+      case BossBattlePhase.reward:
+        return BossBattleCharacterMotion.defeat;
+      default:
+        return c.bossHp.value <= 30
+            ? BossBattleCharacterMotion.lowHp
+            : BossBattleCharacterMotion.idle;
+    }
+  }
+}
+
+class _QuestionOverlay extends StatelessWidget {
+  const _QuestionOverlay({required this.controller});
+
+  final BossBattleController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final question = controller.currentQuestion!;
+    final canAnswer = controller.canAnswer;
+    final result = controller.lastAnswerCorrect.value;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 11),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFDF7EE),
+            borderRadius: BorderRadius.circular(19),
+            border: Border.all(
+              color: const Color(0xFFFFD6A1),
+              width: 1.2,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x66000000),
+                blurRadius: 20,
+                offset: Offset(0, 9),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.volume_up_rounded,
+                    color: Color(0xFF3B9AD9),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 7),
+                  Flexible(
+                    child: Text(
+                      question.prompt,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppColors.ink,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'CHỌN ĐÁP ÁN ĐÚNG',
+              const SizedBox(height: 3),
+              Text(
+                result == null
+                    ? (canAnswer
+                        ? 'Hãy chọn đáp án đúng'
+                        : controller.phaseHint)
+                    : controller.feedbackText,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF9B7651),
+                  color: result == true
+                      ? AppColors.success
+                      : result == false
+                          ? AppColors.error
+                          : AppColors.muted,
                   fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.1,
+                  fontWeight: FontWeight.w700,
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                question.prompt,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.ink,
-                  fontSize: 28,
-                  height: 1.15,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                child: result == null
-                    ? _PhaseHint(
-                        key: ValueKey(controller.phase.value),
-                        text: controller.phaseHint,
-                        active: canAnswer,
-                      )
-                    : _AnswerFeedback(
-                        key: ValueKey(
-                          '${controller.currentIndex.value}_$result',
-                        ),
-                        correct: result,
-                        text: controller.feedbackText,
-                      ),
-              ),
-              const SizedBox(height: 10),
-              IgnorePointer(
-                ignoring: !canAnswer,
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: question.answers.length,
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.92,
-                  ),
-                  itemBuilder: (context, index) {
-                    final answer = question.answers[index];
-                    return BossBattleAnswerButton(
-                      answer: answer,
-                      index: index,
-                      state: _answerState(answer, question.correctAnswer),
-                      onTap: canAnswer
-                          ? () {
-                              controller.answer(answer);
-                            }
-                          : null,
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _MiniStat(
-                      icon: Icons.stars_rounded,
-                      label: 'Điểm',
-                      value: '${controller.score.value}',
-                      color: const Color(0xFFE5A22A),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _MiniStat(
-                      icon: Icons.check_circle_rounded,
-                      label: 'Đúng',
-                      value: '${controller.correctCount.value}',
-                      color: AppColors.success,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _MiniStat(
-                      icon: Icons.close_rounded,
-                      label: 'Sai',
-                      value: '${controller.wrongCount.value}',
-                      color: AppColors.error,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
         ),
-      );
-    });
+        const SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: question.answers.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 9,
+            crossAxisSpacing: 9,
+            childAspectRatio: 2.2,
+          ),
+          itemBuilder: (context, index) {
+            final answer = question.answers[index];
+            return BossBattleAnswerButton(
+              answer: answer,
+              index: index,
+              state: _answerState(answer, question.correctAnswer),
+              onTap: canAnswer ? () => controller.answer(answer) : null,
+            );
+          },
+        ),
+      ],
+    );
   }
 
   BossBattleAnswerVisualState _answerState(
@@ -692,293 +701,23 @@ class _QuestionPanel extends StatelessWidget {
           ? BossBattleAnswerVisualState.idle
           : BossBattleAnswerVisualState.disabled;
     }
-
-    if (answer == correctAnswer) {
-      return BossBattleAnswerVisualState.correct;
-    }
-
+    if (answer == correctAnswer) return BossBattleAnswerVisualState.correct;
     if (answer == selected && result == false) {
       return BossBattleAnswerVisualState.wrong;
     }
-
     return BossBattleAnswerVisualState.disabled;
   }
 }
 
-class _BattlePill extends StatelessWidget {
-  const _BattlePill({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: .09),
-        borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: color.withValues(alpha: .15)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 15, color: color),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PhaseHint extends StatelessWidget {
-  const _PhaseHint({
-    super.key,
-    required this.text,
-    required this.active,
-  });
-
-  final String text;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 34),
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: active
-            ? const Color(0xFFFFEFCF)
-            : const Color(0xFFF2EAE0),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        text.isEmpty ? 'Chuẩn bị...' : text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: active ? const Color(0xFF8A5A15) : AppColors.muted,
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-}
-
-class _AnswerFeedback extends StatelessWidget {
-  const _AnswerFeedback({
-    super.key,
-    required this.correct,
-    required this.text,
-  });
-
-  final bool correct;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = correct ? AppColors.success : AppColors.error;
-    return Container(
-      constraints: const BoxConstraints(minHeight: 34),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: .09),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: .18)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            correct ? Icons.bolt_rounded : Icons.info_outline_rounded,
-            color: color,
-            size: 17,
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-class _BattleCharacter extends StatelessWidget {
-  const _BattleCharacter({
-    required this.kind,
-    required this.label,
-    required this.attacking,
-    required this.hit,
-    required this.victorious,
-    required this.defeated,
-    required this.lowHealth,
-    required this.faceRight,
-    this.boss = false,
-  });
-
-  final BossBattleCharacterKind kind;
-  final String label;
-  final bool attacking;
-  final bool hit;
-  final bool victorious;
-  final bool defeated;
-  final bool lowHealth;
-  final bool faceRight;
-  final bool boss;
-
-  @override
-  Widget build(BuildContext context) {
-    final shift = attacking ? (faceRight ? 18.0 : -18.0) : 0.0;
-    final artSize = boss ? 136.0 : 112.0;
-    final motion = defeated
-        ? BossBattleCharacterMotion.defeat
-        : victorious
-            ? BossBattleCharacterMotion.victory
-            : attacking
-                ? BossBattleCharacterMotion.attack
-                : hit
-                    ? BossBattleCharacterMotion.hit
-                    : lowHealth
-                        ? BossBattleCharacterMotion.lowHp
-                        : BossBattleCharacterMotion.idle;
-
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 260),
-      opacity: defeated ? .45 : 1,
-      child: AnimatedScale(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutBack,
-        scale: attacking ? 1.12 : (hit ? .94 : (defeated ? .86 : 1)),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          transform: Matrix4.translationValues(shift, 0, 0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                alignment: Alignment.bottomCenter,
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                    bottom: 4,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      width: boss ? 116 : 92,
-                      height: boss ? 30 : 24,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(99),
-                        gradient: RadialGradient(
-                          colors: hit
-                              ? const [
-                                  Color(0x99FF4747),
-                                  Color(0x33FF4747),
-                                  Color(0x00000000),
-                                ]
-                              : const [
-                                  Color(0x66000000),
-                                  Color(0x33000000),
-                                  Color(0x00000000),
-                                ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (attacking)
-                    Positioned(
-                      bottom: 18,
-                      child: Container(
-                        width: boss ? 138 : 112,
-                        height: boss ? 138 : 112,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              Color(0x55FFD35A),
-                              Color(0x11FFD35A),
-                              Color(0x00FFD35A),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  BossBattleAnimatedCharacter(
-                    kind: kind,
-                    motion: motion,
-                    size: artSize,
-                    defeated: defeated,
-                  ),
-                ],
-              ),
-              Transform.translate(
-                offset: const Offset(0, -4),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xB3181115),
-                    borderRadius: BorderRadius.circular(99),
-                    border: Border.all(color: const Color(0x55FFE2A5)),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x44000000),
-                        blurRadius: 8,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: .3,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
 class _ProjectileFx extends StatelessWidget {
   const _ProjectileFx({
     required this.phase,
-    required this.questionIndex,
+    required this.index,
     required this.duration,
   });
 
   final BossBattlePhase phase;
-  final int questionIndex;
+  final int index;
   final Duration duration;
 
   @override
@@ -992,40 +731,58 @@ class _ProjectileFx extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final from = playerAttack
-                ? Offset(constraints.maxWidth * .28, constraints.maxHeight * .67)
-                : Offset(constraints.maxWidth * .72, constraints.maxHeight * .38);
+                ? Offset(
+                    constraints.maxWidth * .28,
+                    constraints.maxHeight * .33,
+                  )
+                : Offset(
+                    constraints.maxWidth * .77,
+                    constraints.maxHeight * .23,
+                  );
             final to = playerAttack
-                ? Offset(constraints.maxWidth * .72, constraints.maxHeight * .38)
-                : Offset(constraints.maxWidth * .28, constraints.maxHeight * .67);
+                ? Offset(
+                    constraints.maxWidth * .73,
+                    constraints.maxHeight * .23,
+                  )
+                : Offset(
+                    constraints.maxWidth * .28,
+                    constraints.maxHeight * .33,
+                  );
             final color = playerAttack
                 ? const Color(0xFFFFC43D)
-                : const Color(0xFFFF4E62);
+                : const Color(0xFFFF4C2C);
 
             return TweenAnimationBuilder<double>(
-              key: ValueKey('${phase.name}_$questionIndex'),
-              tween: Tween<double>(begin: 0, end: 1),
+              key: ValueKey('${phase.name}_$index'),
+              tween: Tween(begin: 0, end: 1),
               duration: duration,
               curve: Curves.easeInOutCubic,
               builder: (context, value, _) {
-                final x = from.dx + ((to.dx - from.dx) * value);
-                final y = from.dy + ((to.dy - from.dy) * value);
-                final pulse = 18 + (math.sin(value * math.pi) * 14);
+                final x = from.dx + (to.dx - from.dx) * value;
+                final y = from.dy + (to.dy - from.dy) * value;
+                final size = 22 + math.sin(value * math.pi) * 20;
                 return Stack(
                   children: [
                     Positioned(
-                      left: x - pulse / 2,
-                      top: y - pulse / 2,
+                      left: x - size / 2,
+                      top: y - size / 2,
                       child: Container(
-                        width: pulse,
-                        height: pulse,
+                        width: size,
+                        height: size,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: color,
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.white,
+                              color,
+                              color.withValues(alpha: .2),
+                            ],
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: color.withValues(alpha: .75),
-                              blurRadius: 26,
-                              spreadRadius: 8,
+                              color: color.withValues(alpha: .95),
+                              blurRadius: 30,
+                              spreadRadius: 10,
                             ),
                           ],
                         ),
@@ -1042,11 +799,8 @@ class _ProjectileFx extends StatelessWidget {
   }
 }
 
-class _DamagePopup extends StatelessWidget {
-  const _DamagePopup({
-    required this.amount,
-    required this.color,
-  });
+class _DamageText extends StatelessWidget {
+  const _DamageText({required this.amount, required this.color});
 
   final int amount;
   final Color color;
@@ -1054,14 +808,13 @@ class _DamagePopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
-      key: ValueKey('$amount-${color.value}'),
       tween: Tween(begin: 0, end: 1),
       duration: const Duration(milliseconds: 520),
       curve: Curves.easeOutCubic,
       builder: (context, value, child) => Transform.translate(
-        offset: Offset(0, -20 * value),
+        offset: Offset(0, -24 * value),
         child: Opacity(
-          opacity: (1 - (value * .35)).clamp(0.0, 1.0),
+          opacity: (1 - value * .32).clamp(0.0, 1.0),
           child: child,
         ),
       ),
@@ -1069,10 +822,10 @@ class _DamagePopup extends StatelessWidget {
         '-$amount',
         style: TextStyle(
           color: color,
-          fontSize: 26,
+          fontSize: 31,
           fontWeight: FontWeight.w900,
           shadows: const [
-            Shadow(color: Color(0xCC000000), blurRadius: 8, offset: Offset(0, 2)),
+            Shadow(color: Color(0xCC000000), blurRadius: 8),
           ],
         ),
       ),
@@ -1089,186 +842,34 @@ class _ComboBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Transform.rotate(
       angle: -.08,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFD43A), Color(0xFFFF6A2D)],
-          ),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white, width: 2),
-          boxShadow: const [
-            BoxShadow(color: Color(0x66FF8D2E), blurRadius: 16),
-          ],
-        ),
-        child: Text(
-          'COMBO x$combo',
-          style: const TextStyle(
-            color: Color(0xFF5B1B0F),
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ScoreChip extends StatelessWidget {
-  const _ScoreChip({required this.score});
-
-  final int score;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: const Color(0xCC20171C),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          const Icon(Icons.stars_rounded, color: Color(0xFFFFD85A), size: 17),
-          const SizedBox(width: 5),
-          Text(
-            '$score',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
+          const Text(
+            'Combo',
+            style: TextStyle(
+              color: Color(0xFFFFF2D1),
+              fontSize: 14,
               fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RoundIconButton extends StatelessWidget {
-  const _RoundIconButton({required this.icon, required this.onTap});
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0xCC20171C),
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(9),
-          child: Icon(icon, color: Colors.white, size: 20),
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniStat extends StatelessWidget {
-  const _MiniStat({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: .08),
-        borderRadius: BorderRadius.circular(13),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 15),
-          const SizedBox(width: 5),
-          Flexible(
-            child: Text(
-              '$label $value',
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusOverlay extends StatelessWidget {
-  const _StatusOverlay({
-    required this.icon,
-    required this.title,
-    required this.message,
-    this.showProgress = false,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final bool showProgress;
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: const Color(0xB30B070A),
-      child: Center(
-        child: Container(
-          margin: const EdgeInsets.all(28),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFDF6E9),
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(color: const Color(0xFFE8B65B), width: 2),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: AppColors.red, size: 52),
-              const SizedBox(height: 14),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.ink,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.muted,
-                  height: 1.45,
-                ),
-              ),
-              if (showProgress) ...[
-                const SizedBox(height: 18),
-                const CircularProgressIndicator(color: AppColors.red),
+              shadows: [
+                Shadow(color: Color(0xFFFF5A2A), blurRadius: 12),
               ],
-            ],
+            ),
           ),
-        ),
+          Text(
+            'x$combo',
+            style: const TextStyle(
+              color: Color(0xFFFFA21C),
+              fontSize: 31,
+              height: .9,
+              fontWeight: FontWeight.w900,
+              shadows: [
+                Shadow(color: Color(0xFFFF4A1E), blurRadius: 18),
+                Shadow(color: Colors.black, blurRadius: 4),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1282,31 +883,42 @@ class _ErrorOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: const Color(0xD10B070A),
+      color: const Color(0xD9120B12),
       child: Center(
         child: Container(
-          margin: const EdgeInsets.all(28),
-          padding: const EdgeInsets.all(24),
+          margin: const EdgeInsets.all(26),
+          padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFFFF8ED),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 52),
-              const SizedBox(height: 12),
+              const Icon(
+                Icons.error_outline_rounded,
+                color: AppColors.error,
+                size: 50,
+              ),
+              const SizedBox(height: 10),
               const Text(
                 'Không thể bắt đầu trận đấu',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                style: TextStyle(
+                  color: AppColors.ink,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 controller.errorMessage.value,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.muted, height: 1.4),
+                style: const TextStyle(
+                  color: AppColors.muted,
+                  height: 1.4,
+                ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 17),
               Row(
                 children: [
                   Expanded(
@@ -1342,131 +954,155 @@ class _ResultOverlay extends StatelessWidget {
     final won = controller.bossHp.value < controller.playerHp.value;
 
     return ColoredBox(
-      color: const Color(0xD911080E),
-      child: Center(
-        child: Container(
-          margin: const EdgeInsets.all(22),
-          constraints: const BoxConstraints(maxWidth: 430),
-          padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
-          decoration: BoxDecoration(
-            gradient: won
-                ? const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFFFFF1B7), Color(0xFFFFF9EA)],
-                  )
-                : const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF3A151D), Color(0xFF1C1117)],
-                  ),
-            borderRadius: BorderRadius.circular(29),
-            border: Border.all(
-              color: won ? const Color(0xFFFFC84B) : const Color(0xFFB64A55),
-              width: 2,
+      color: const Color(0xDD120B12),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const CustomPaint(painter: _ArenaPainter()),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: won
+                    ? const [
+                        Color(0x33FFD968),
+                        Color(0x88000000),
+                        Color(0xE6120B12),
+                      ]
+                    : const [
+                        Color(0x55A4141A),
+                        Color(0x99000000),
+                        Color(0xF0120B12),
+                      ],
+              ),
             ),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x99000000),
-                blurRadius: 36,
-                offset: Offset(0, 16),
-              ),
-            ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                won ? Icons.emoji_events_rounded : Icons.heart_broken_rounded,
-                color: won ? const Color(0xFFFFB300) : const Color(0xFFFF7A7A),
-                size: 65,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                won ? 'Chiến thắng!' : 'Thất bại!',
-                style: TextStyle(
-                  color: won ? AppColors.redDark : Colors.white,
-                  fontSize: 31,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 7),
-              Text(
-                won
-                    ? 'Rồng Lửa đã bị đánh bại. Kiến thức của bạn mạnh hơn!'
-                    : 'Đừng bỏ cuộc! Luyện thêm rồi quay lại phục thù nhé.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
+          Center(
+            child: Container(
+              margin: const EdgeInsets.all(22),
+              constraints: const BoxConstraints(maxWidth: 430),
+              padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
+              decoration: BoxDecoration(
+                color: won
+                    ? const Color(0xFFFDF3D3)
+                    : const Color(0xE62B171E),
+                borderRadius: BorderRadius.circular(29),
+                border: Border.all(
                   color: won
-                      ? AppColors.muted
-                      : Colors.white.withValues(alpha: .72),
-                  height: 1.4,
-                  fontSize: 13,
+                      ? const Color(0xFFFFC64C)
+                      : const Color(0xFF9E3D48),
+                  width: 2,
                 ),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: _ResultStat(
-                      label: 'Điểm',
-                      value: '${controller.score.value}',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _ResultStat(
-                      label: 'Đúng',
-                      value: '${controller.correctCount.value}',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _ResultStat(
-                      label: 'Combo',
-                      value: 'x${controller.maxCombo.value}',
-                    ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x99000000),
+                    blurRadius: 38,
+                    offset: Offset(0, 17),
                   ),
                 ],
               ),
-              const SizedBox(height: 19),
-              Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor:
-                            won ? AppColors.ink : const Color(0xFFFFD7D7),
-                        side: BorderSide(
-                          color: won
-                              ? const Color(0xFFD8C9B8)
-                              : const Color(0xFF6F3A43),
+                  Icon(
+                    won
+                        ? Icons.emoji_events_rounded
+                        : Icons.heart_broken_rounded,
+                    color: won
+                        ? const Color(0xFFFFB000)
+                        : const Color(0xFFFF7373),
+                    size: 68,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    won ? 'Chiến thắng!' : 'Thất bại!',
+                    style: TextStyle(
+                      color: won ? AppColors.redDark : Colors.white,
+                      fontSize: 31,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    won
+                        ? 'Rồng Lửa đã bị đánh bại!'
+                        : 'Đừng bỏ cuộc! Hãy luyện tập thêm để mạnh hơn nhé!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: won
+                          ? AppColors.muted
+                          : Colors.white.withValues(alpha: .74),
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _ResultStat(
+                          label: 'Điểm',
+                          value: '${controller.score.value}',
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      onPressed: () => Get.back<void>(),
-                      child: const Text('Về Game Hub'),
-                    ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _ResultStat(
+                          label: 'Đúng',
+                          value: '${controller.correctCount.value}',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _ResultStat(
+                          label: 'Combo',
+                          value: 'x${controller.maxCombo.value}',
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: won
-                            ? const Color(0xFF29C76F)
-                            : const Color(0xFFFFA12B),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: won
+                                ? const Color(0xFF2CC970)
+                                : const Color(0xFFFFA224),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: controller.startBattle,
+                          child: Text(won ? 'Tiếp tục' : 'Thử lại'),
+                        ),
                       ),
-                      onPressed: controller.startBattle,
-                      child: Text(won ? 'Tiếp tục' : 'Thử lại'),
-                    ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: won
+                                ? AppColors.ink
+                                : const Color(0xFFFFD7D7),
+                            side: BorderSide(
+                              color: won
+                                  ? const Color(0xFFD8C9B8)
+                                  : const Color(0xFF6D3942),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () => Get.back<void>(),
+                          child: const Text('Về Game Hub'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -1481,10 +1117,10 @@ class _ResultStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 7),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withValues(alpha: .88),
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
         children: [
@@ -1492,14 +1128,13 @@ class _ResultStat extends StatelessWidget {
             value,
             style: const TextStyle(
               color: AppColors.redDark,
-              fontSize: 19,
+              fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 2),
           Text(
             label,
-            textAlign: TextAlign.center,
             style: const TextStyle(
               color: AppColors.muted,
               fontSize: 10,
@@ -1512,286 +1147,371 @@ class _ResultStat extends StatelessWidget {
   }
 }
 
-class _BattleBackdropPainter extends CustomPainter {
-  const _BattleBackdropPainter();
+class _CenteredStatus extends StatelessWidget {
+  const _CenteredStatus({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.loading = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: const Color(0xFFFFA52A), size: 54),
+            const SizedBox(height: 13),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFFCDBFC7),
+                height: 1.4,
+              ),
+            ),
+            if (loading) ...[
+              const SizedBox(height: 18),
+              const CircularProgressIndicator(
+                color: Color(0xFFFFA52A),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CircleAction extends StatelessWidget {
+  const _CircleAction({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xB9201820),
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ArenaPainter extends CustomPainter {
+  const _ArenaPainter({this.intro = false});
+
+  final bool intro;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final skyPaint = Paint()
-      ..shader = const LinearGradient(
+    final rect = Offset.zero & size;
+
+    final sky = Paint()
+      ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF4DB8E6),
-          Color(0xFF9EDCE6),
-          Color(0xFFF7C7B0),
-        ],
-        stops: [0, .52, 1],
-      ).createShader(Offset.zero & size);
-    canvas.drawRect(Offset.zero & size, skyPaint);
+        colors: intro
+            ? const [
+                Color(0xFF2F57A0),
+                Color(0xFF8B4B91),
+                Color(0xFFF69A5E),
+                Color(0xFF41222A),
+              ]
+            : const [
+                Color(0xFF27548E),
+                Color(0xFF7E4C83),
+                Color(0xFFDB7456),
+                Color(0xFF2E1D24),
+              ],
+        stops: const [0, .34, .65, 1],
+      ).createShader(rect);
+    canvas.drawRect(rect, sky);
 
-    final sunPaint = Paint()
+    final moon = Paint()
       ..shader = const RadialGradient(
         colors: [
-          Color(0xFFFFF0B0),
-          Color(0x99FFD56A),
-          Color(0x00FFD56A),
+          Color(0xFFFFF1C0),
+          Color(0x99FFD87A),
+          Color(0x00FFD87A),
         ],
       ).createShader(
         Rect.fromCircle(
-          center: Offset(size.width * .79, size.height * .16),
-          radius: size.width * .18,
+          center: Offset(size.width * .68, size.height * .16),
+          radius: size.width * .19,
         ),
       );
     canvas.drawCircle(
-      Offset(size.width * .79, size.height * .16),
-      size.width * .18,
-      sunPaint,
+      Offset(size.width * .68, size.height * .16),
+      size.width * .19,
+      moon,
     );
 
-    _paintCloud(
-      canvas,
-      Offset(size.width * .18, size.height * .20),
-      size.width * .16,
-      const Color(0xB3FFFFFF),
-    );
-    _paintCloud(
-      canvas,
-      Offset(size.width * .63, size.height * .29),
-      size.width * .13,
-      const Color(0x8FFFFFFF),
-    );
+    _mountains(canvas, size);
+    _pagodas(canvas, size);
+    _bridge(canvas, size);
+    _blossoms(canvas, size);
+    _lantern(canvas, Offset(size.width * .08, size.height * .47), 9);
+    _lantern(canvas, Offset(size.width * .92, size.height * .45), 10);
 
-    final farMountain = Paint()..color = const Color(0xFF789CA3);
-    final farPath = Path()
-      ..moveTo(0, size.height * .60)
-      ..lineTo(size.width * .12, size.height * .27)
-      ..lineTo(size.width * .25, size.height * .53)
-      ..lineTo(size.width * .41, size.height * .20)
-      ..lineTo(size.width * .56, size.height * .55)
-      ..lineTo(size.width * .76, size.height * .25)
-      ..lineTo(size.width, size.height * .58)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(farPath, farMountain);
-
-    final mistPaint = Paint()..color = const Color(0x52FFFFFF);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * .51, size.height * .56),
-        width: size.width * .95,
-        height: size.height * .16,
-      ),
-      mistPaint,
-    );
-
-    final nearMountain = Paint()..color = const Color(0xFF436D61);
-    final nearPath = Path()
-      ..moveTo(0, size.height * .75)
-      ..lineTo(size.width * .18, size.height * .48)
-      ..lineTo(size.width * .33, size.height * .70)
-      ..lineTo(size.width * .50, size.height * .44)
-      ..lineTo(size.width * .65, size.height * .71)
-      ..lineTo(size.width * .83, size.height * .48)
-      ..lineTo(size.width, size.height * .69)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(nearPath, nearMountain);
-
-    final templePaint = Paint()..color = const Color(0xFF9B3E34);
-    final roofPaint = Paint()..color = const Color(0xFF2B3237);
-    final roofEdge = Paint()
-      ..color = const Color(0xFFE4B953)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    for (final x in <double>[.14, .48, .82]) {
-      final cx = size.width * x;
-      final baseY = size.height * (.50 + ((x * 10).round().isEven ? .03 : 0));
-      final templeRect = Rect.fromCenter(
-        center: Offset(cx, baseY),
-        width: size.width * .08,
-        height: size.height * .11,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(templeRect, const Radius.circular(3)),
-        templePaint,
-      );
-
-      final roof = Path()
-        ..moveTo(cx - size.width * .058, baseY - size.height * .061)
-        ..quadraticBezierTo(
-          cx - size.width * .020,
-          baseY - size.height * .105,
-          cx,
-          baseY - size.height * .108,
-        )
-        ..quadraticBezierTo(
-          cx + size.width * .020,
-          baseY - size.height * .105,
-          cx + size.width * .058,
-          baseY - size.height * .061,
-        )
-        ..quadraticBezierTo(
-          cx,
-          baseY - size.height * .074,
-          cx - size.width * .058,
-          baseY - size.height * .061,
-        )
-        ..close();
-      canvas.drawPath(roof, roofPaint);
-      canvas.drawPath(roof, roofEdge);
-    }
-
-    final arenaShadow = Paint()..color = const Color(0x55000000);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * .50, size.height * .82),
-        width: size.width * .78,
-        height: size.height * .12,
-      ),
-      arenaShadow,
-    );
-
-    final arenaPaint = Paint()
+    final ground = Paint()
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Color(0xFFE4C48F),
-          Color(0xFFB77D4C),
+          Color(0x006A403B),
+          Color(0xFF2E242A),
+          Color(0xFF171015),
         ],
       ).createShader(
-        Rect.fromLTWH(
-          size.width * .08,
-          size.height * .73,
-          size.width * .84,
-          size.height * .17,
-        ),
+        Rect.fromLTWH(0, size.height * .47, size.width, size.height * .53),
       );
-    final arenaRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(
-        size.width * .08,
-        size.height * .74,
-        size.width * .84,
-        size.height * .13,
-      ),
-      const Radius.circular(22),
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height * .47, size.width, size.height * .53),
+      ground,
     );
-    canvas.drawRRect(arenaRect, arenaPaint);
 
-    final arenaLine = Paint()
-      ..color = const Color(0x99FFE7B1)
+    final path = Paint()
+      ..color = const Color(0xFF59423B)
+      ..style = PaintingStyle.fill;
+    final pathShape = Path()
+      ..moveTo(size.width * .2, size.height)
+      ..lineTo(size.width * .39, size.height * .44)
+      ..lineTo(size.width * .63, size.height * .44)
+      ..lineTo(size.width * .86, size.height)
+      ..close();
+    canvas.drawPath(pathShape, path);
+
+    final stones = Paint()
+      ..color = const Color(0x665D6970)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    canvas.drawRRect(arenaRect, arenaLine);
-
-    final blossom = Paint()..color = const Color(0xFFFFA8C5);
-    final blossomDark = Paint()..color = const Color(0xFFE66E9A);
-    final points = <Offset>[
-      Offset(size.width * .08, size.height * .18),
-      Offset(size.width * .18, size.height * .34),
-      Offset(size.width * .31, size.height * .13),
-      Offset(size.width * .58, size.height * .16),
-      Offset(size.width * .71, size.height * .31),
-      Offset(size.width * .90, size.height * .20),
-      Offset(size.width * .84, size.height * .46),
-      Offset(size.width * .13, size.height * .58),
-      Offset(size.width * .90, size.height * .60),
-    ];
-    for (var i = 0; i < points.length; i++) {
-      final point = points[i];
-      canvas.drawCircle(point, i.isEven ? 3.8 : 3.0, blossom);
-      canvas.drawCircle(point.translate(2.2, -1.7), 1.4, blossomDark);
+      ..strokeWidth = 1.1;
+    for (var i = 0; i < 8; i++) {
+      final y = size.height * (.52 + i * .058);
+      final width = size.width * (.22 + i * .055);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(size.width * .52, y),
+          width: width,
+          height: 12 + i * 2,
+        ),
+        stones,
+      );
     }
+  }
 
-    _paintLantern(
+  void _mountains(Canvas canvas, Size size) {
+    final far = Paint()..color = const Color(0x88405A78);
+    final p1 = Path()
+      ..moveTo(0, size.height * .45)
+      ..lineTo(size.width * .14, size.height * .18)
+      ..lineTo(size.width * .3, size.height * .4)
+      ..lineTo(size.width * .47, size.height * .15)
+      ..lineTo(size.width * .63, size.height * .42)
+      ..lineTo(size.width * .82, size.height * .18)
+      ..lineTo(size.width, size.height * .42)
+      ..lineTo(size.width, size.height * .58)
+      ..lineTo(0, size.height * .58)
+      ..close();
+    canvas.drawPath(p1, far);
+
+    final near = Paint()..color = const Color(0xAA263A42);
+    final p2 = Path()
+      ..moveTo(0, size.height * .53)
+      ..lineTo(size.width * .18, size.height * .32)
+      ..lineTo(size.width * .34, size.height * .49)
+      ..lineTo(size.width * .52, size.height * .29)
+      ..lineTo(size.width * .72, size.height * .51)
+      ..lineTo(size.width * .89, size.height * .34)
+      ..lineTo(size.width, size.height * .5)
+      ..lineTo(size.width, size.height * .62)
+      ..lineTo(0, size.height * .62)
+      ..close();
+    canvas.drawPath(p2, near);
+  }
+
+  void _pagodas(Canvas canvas, Size size) {
+    _pagoda(
       canvas,
-      Offset(size.width * .055, size.height * .43),
-      size.width * .035,
+      Offset(size.width * .15, size.height * .35),
+      size.width * .105,
     );
-    _paintLantern(
+    _pagoda(
       canvas,
-      Offset(size.width * .945, size.height * .39),
-      size.width * .035,
+      Offset(size.width * .34, size.height * .3),
+      size.width * .075,
+    );
+    _pagoda(
+      canvas,
+      Offset(size.width * .82, size.height * .31),
+      size.width * .095,
     );
   }
 
-  void _paintCloud(
-    Canvas canvas,
-    Offset center,
-    double width,
-    Color color,
-  ) {
-    final paint = Paint()..color = color;
-    final h = width * .32;
-    canvas.drawOval(
-      Rect.fromCenter(center: center, width: width, height: h),
-      paint,
+  void _pagoda(Canvas canvas, Offset center, double scale) {
+    final wall = Paint()..color = const Color(0xFF6F3029);
+    final roof = Paint()..color = const Color(0xFF17252E);
+    final gold = Paint()..color = const Color(0xFFFFBE4B);
+
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: center.translate(0, scale * .18),
+        width: scale * .8,
+        height: scale * .62,
+      ),
+      wall,
     );
-    canvas.drawCircle(
-      center.translate(-width * .22, -h * .20),
-      h * .42,
-      paint,
-    );
-    canvas.drawCircle(
-      center.translate(width * .02, -h * .32),
-      h * .55,
-      paint,
-    );
-    canvas.drawCircle(
-      center.translate(width * .25, -h * .14),
-      h * .38,
-      paint,
+
+    for (var floor = 0; floor < 3; floor++) {
+      final y = center.dy - scale * (.15 + floor * .28);
+      final roofPath = Path()
+        ..moveTo(center.dx - scale * (.62 - floor * .06), y)
+        ..lineTo(center.dx, y - scale * .16)
+        ..lineTo(center.dx + scale * (.62 - floor * .06), y)
+        ..lineTo(center.dx + scale * .46, y + scale * .06)
+        ..lineTo(center.dx - scale * .46, y + scale * .06)
+        ..close();
+      canvas.drawPath(roofPath, roof);
+      canvas.drawCircle(
+        Offset(center.dx - scale * .32, y + scale * .03),
+        scale * .035,
+        gold,
+      );
+      canvas.drawCircle(
+        Offset(center.dx + scale * .32, y + scale * .03),
+        scale * .035,
+        gold,
+      );
+    }
+  }
+
+  void _bridge(Canvas canvas, Size size) {
+    final rail = Paint()
+      ..color = const Color(0xAA7A3934)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawArc(
+      Rect.fromLTWH(
+        size.width * .15,
+        size.height * .4,
+        size.width * .7,
+        size.height * .19,
+      ),
+      math.pi,
+      math.pi,
+      false,
+      rail,
     );
   }
 
-  void _paintLantern(Canvas canvas, Offset center, double radius) {
+  void _blossoms(Canvas canvas, Size size) {
+    final branch = Paint()
+      ..color = const Color(0xFF3B201E)
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(
+      Offset(0, size.height * .12),
+      Offset(size.width * .22, size.height * .29),
+      branch,
+    );
+    canvas.drawLine(
+      Offset(size.width, size.height * .13),
+      Offset(size.width * .79, size.height * .3),
+      branch,
+    );
+
+    final petal = Paint()..color = const Color(0xFFFF8FB6);
+    for (var i = 0; i < 16; i++) {
+      final left = i.isEven;
+      final x = left
+          ? size.width * (.025 + (i % 5) * .034)
+          : size.width * (.96 - (i % 5) * .035);
+      final y = size.height * (.12 + (i % 7) * .026);
+      canvas.drawCircle(Offset(x, y), 4 + (i % 3).toDouble(), petal);
+    }
+  }
+
+  void _lantern(Canvas canvas, Offset center, double radius) {
     final glow = Paint()
-      ..shader = RadialGradient(
-        colors: const [
-          Color(0x99FFD56C),
-          Color(0x33FF8F3A),
-          Color(0x00FF8F3A),
+      ..shader = const RadialGradient(
+        colors: [
+          Color(0xAAFFB129),
+          Color(0x33FF7A21),
+          Color(0x00FF7A21),
         ],
       ).createShader(
-        Rect.fromCircle(center: center, radius: radius * 2.5),
+        Rect.fromCircle(center: center, radius: radius * 3.2),
       );
-    canvas.drawCircle(center, radius * 2.5, glow);
+    canvas.drawCircle(center, radius * 3.2, glow);
 
-    final red = Paint()..color = const Color(0xFFE04E3D);
-    final gold = Paint()..color = const Color(0xFFF4C867);
+    final body = Paint()..color = const Color(0xFFFF6B2C);
+    final edge = Paint()..color = const Color(0xFFFFD160);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(
           center: center,
-          width: radius * 1.55,
+          width: radius * 1.5,
           height: radius * 2.05,
         ),
         Radius.circular(radius * .35),
       ),
-      red,
+      body,
     );
     canvas.drawRect(
       Rect.fromCenter(
         center: center.translate(0, -radius * 1.08),
-        width: radius * 1.18,
-        height: radius * .18,
+        width: radius * 1.15,
+        height: radius * .16,
       ),
-      gold,
+      edge,
     );
     canvas.drawRect(
       Rect.fromCenter(
         center: center.translate(0, radius * 1.08),
-        width: radius * 1.18,
-        height: radius * .18,
+        width: radius * 1.15,
+        height: radius * .16,
       ),
-      gold,
+      edge,
     );
   }
 
   @override
-  bool shouldRepaint(covariant _BattleBackdropPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _ArenaPainter oldDelegate) {
+    return oldDelegate.intro != intro;
+  }
 }

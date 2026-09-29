@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
+import '../../core/theme/app_colors.dart';
 import '../boss_battle/boss_battle_screen.dart';
 import '../boss_battle/view/boss_battle_character_art.dart';
 
@@ -12,46 +12,32 @@ class GameHubScreen extends StatelessWidget {
   static const _games = <_GamePreview>[
     _GamePreview(
       title: 'Boss Battle',
-      subtitle: 'Trả lời đúng để tung đòn, phá giáp và hạ Rồng Lửa.',
+      subtitle: 'Trả lời đúng để đánh bại Boss và tăng combo.',
       icon: Icons.local_fire_department_rounded,
-      accent: Color(0xFFE44B37),
+      accent: Color(0xFFE24A36),
+      status: 'Hot nhất',
       playable: true,
-      badge: 'Ưu tiên phát triển',
     ),
     _GamePreview(
       title: 'Radical Builder',
-      subtitle: 'Xây chữ Hán từ bộ thủ và thành phần.',
+      subtitle: 'Xây chữ Hán từ bộ thủ.',
       icon: Icons.extension_rounded,
-      accent: Color(0xFF8C62C9),
-      badge: 'Sắp ra mắt',
+      accent: Color(0xFF7864C7),
+      status: 'Sắp ra mắt',
     ),
     _GamePreview(
       title: 'Tone Ninja',
-      subtitle: 'Luyện thanh điệu nhanh như một ninja.',
+      subtitle: 'Luyện thanh điệu như ninja.',
       icon: Icons.bolt_rounded,
-      accent: Color(0xFF377ED8),
-      badge: 'Sắp ra mắt',
+      accent: Color(0xFF2D7DCB),
+      status: 'Sắp ra mắt',
     ),
     _GamePreview(
       title: 'Chinese Restaurant',
       subtitle: 'Phục vụ món ăn bằng tiếng Trung.',
       icon: Icons.ramen_dining_rounded,
-      accent: Color(0xFFF08B38),
-      badge: 'Sắp ra mắt',
-    ),
-    _GamePreview(
-      title: 'Stroke Order Dojo',
-      subtitle: 'Luyện thứ tự nét và cấu trúc chữ Hán.',
-      icon: Icons.draw_rounded,
-      accent: Color(0xFFC75058),
-      badge: 'Đang phát triển',
-    ),
-    _GamePreview(
-      title: 'Listening Detective',
-      subtitle: 'Nghe câu và tìm bối cảnh phù hợp.',
-      icon: Icons.hearing_rounded,
-      accent: Color(0xFF318E8A),
-      badge: 'Đang phát triển',
+      accent: Color(0xFFF08A38),
+      status: 'Sắp ra mắt',
     ),
   ];
 
@@ -66,13 +52,13 @@ class GameHubScreen extends StatelessWidget {
           ),
           child: CustomScrollView(
             slivers: [
-              const SliverToBoxAdapter(child: SizedBox(height: 10)),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              const SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: 18),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      const Text(
+                      Text(
                         'Trò chơi',
                         style: TextStyle(
                           color: AppColors.ink,
@@ -80,28 +66,27 @@ class GameHubScreen extends StatelessWidget {
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
+                      SizedBox(height: 4),
+                      Text(
                         'Học tiếng Trung qua những trò chơi thú vị!',
-                        textAlign: TextAlign.center,
                         style: TextStyle(
                           color: AppColors.muted,
                           fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      const _FilterBar(),
+                      SizedBox(height: 15),
+                      _Tabs(),
                     ],
                   ),
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(18, 10, 18, 28),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
                 sliver: SliverList.separated(
                   itemCount: _games.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, __) => const SizedBox(height: 11),
                   itemBuilder: (context, index) =>
-                      _GameCard(game: _games[index], index: index),
+                      _GameCard(game: _games[index], featured: index == 0),
                 ),
               ),
             ],
@@ -112,30 +97,30 @@ class GameHubScreen extends StatelessWidget {
   }
 }
 
-class _FilterBar extends StatelessWidget {
-  const _FilterBar();
+class _Tabs extends StatelessWidget {
+  const _Tabs();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4EEE5),
+        color: const Color(0xFFF3EEE7),
         borderRadius: BorderRadius.circular(16),
       ),
       child: const Row(
         children: [
-          Expanded(child: _FilterChip(label: 'Tất cả', active: true)),
-          Expanded(child: _FilterChip(label: 'Đang phát triển')),
-          Expanded(child: _FilterChip(label: 'Sắp ra mắt')),
+          Expanded(child: _Tab(label: 'Tất cả', active: true)),
+          Expanded(child: _Tab(label: 'Đang phát triển')),
+          Expanded(child: _Tab(label: 'Sắp ra mắt')),
         ],
       ),
     );
   }
 }
 
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.label, this.active = false});
+class _Tab extends StatelessWidget {
+  const _Tab({required this.label, this.active = false});
 
   final String label;
   final bool active;
@@ -143,23 +128,16 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 9),
       alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 9),
       decoration: BoxDecoration(
-        color: active ? const Color(0xFF5AA9E6) : Colors.transparent,
+        color: active ? const Color(0xFF3194EA) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: active
-            ? const [
-                BoxShadow(
-                  color: Color(0x225AA9E6),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ]
-            : null,
       ),
       child: Text(
         label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: active ? Colors.white : AppColors.muted,
           fontSize: 11,
@@ -171,15 +149,13 @@ class _FilterChip extends StatelessWidget {
 }
 
 class _GameCard extends StatelessWidget {
-  const _GameCard({required this.game, required this.index});
+  const _GameCard({required this.game, required this.featured});
 
   final _GamePreview game;
-  final int index;
+  final bool featured;
 
   @override
   Widget build(BuildContext context) {
-    final isBoss = index == 0;
-
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(19),
@@ -187,17 +163,17 @@ class _GameCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(19),
         onTap: game.playable
             ? () => Get.to(() => const BossBattleScreen())
-            : () => _showPlanned(context),
+            : () => _planned(context),
         child: Container(
-          height: isBoss ? 118 : 94,
+          height: featured ? 116 : 92,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(19),
             border: Border.all(
-              color: game.accent.withValues(alpha: isBoss ? .28 : .12),
+              color: game.accent.withValues(alpha: featured ? .28 : .12),
             ),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x12000000),
+                color: Color(0x13000000),
                 blurRadius: 13,
                 offset: Offset(0, 6),
               ),
@@ -207,18 +183,17 @@ class _GameCard extends StatelessWidget {
           child: Row(
             children: [
               SizedBox(
-                width: isBoss ? 118 : 92,
+                width: featured ? 116 : 92,
                 height: double.infinity,
-                child: _GameArtwork(
+                child: _Artwork(
                   accent: game.accent,
                   icon: game.icon,
-                  boss: isBoss,
-                  index: index,
+                  featured: featured,
                 ),
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 12, 10),
+                  padding: const EdgeInsets.fromLTRB(14, 11, 9, 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -228,8 +203,6 @@ class _GameCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               game.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: AppColors.ink,
                                 fontSize: 16,
@@ -237,25 +210,28 @@ class _GameCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (isBoss)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFE2E0),
-                                borderRadius: BorderRadius.circular(99),
-                              ),
-                              child: const Text(
-                                'Ưu tiên phát triển',
-                                style: TextStyle(
-                                  color: Color(0xFFD84A45),
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w900,
-                                ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: featured
+                                  ? const Color(0xFFFFE2DE)
+                                  : const Color(0xFFF2F0ED),
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                            child: Text(
+                              game.status,
+                              style: TextStyle(
+                                color: featured
+                                    ? const Color(0xFFD84A43)
+                                    : AppColors.muted,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
                               ),
                             ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 7),
@@ -269,26 +245,15 @@ class _GameCard extends StatelessWidget {
                           height: 1.35,
                         ),
                       ),
-                      if (!isBoss) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          game.badge,
-                          style: TextStyle(
-                            color: game.accent.withValues(alpha: .88),
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
               ),
               const Padding(
-                padding: EdgeInsets.only(right: 10),
+                padding: EdgeInsets.only(right: 8),
                 child: Icon(
                   Icons.chevron_right_rounded,
-                  color: Color(0xFFB7AAA0),
+                  color: Color(0xFFB9ADA4),
                 ),
               ),
             ],
@@ -298,7 +263,7 @@ class _GameCard extends StatelessWidget {
     );
   }
 
-  void _showPlanned(BuildContext context) {
+  void _planned(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -313,6 +278,7 @@ class _GameCard extends StatelessWidget {
             Text(
               game.title,
               style: const TextStyle(
+                color: AppColors.ink,
                 fontSize: 21,
                 fontWeight: FontWeight.w900,
               ),
@@ -341,18 +307,16 @@ class _GameCard extends StatelessWidget {
   }
 }
 
-class _GameArtwork extends StatelessWidget {
-  const _GameArtwork({
+class _Artwork extends StatelessWidget {
+  const _Artwork({
     required this.accent,
     required this.icon,
-    required this.boss,
-    required this.index,
+    required this.featured,
   });
 
   final Color accent;
   final IconData icon;
-  final bool boss;
-  final int index;
+  final bool featured;
 
   @override
   Widget build(BuildContext context) {
@@ -362,8 +326,8 @@ class _GameArtwork extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            accent.withValues(alpha: .98),
-            Color.lerp(accent, const Color(0xFF251A2C), .35)!,
+            accent,
+            Color.lerp(accent, const Color(0xFF211826), .42)!,
           ],
         ),
       ),
@@ -371,31 +335,31 @@ class _GameArtwork extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Positioned(
-            right: -16,
-            top: -14,
+            right: -14,
+            top: -12,
             child: Icon(
               icon,
-              size: boss ? 94 : 78,
-              color: Colors.white.withValues(alpha: .12),
+              size: featured ? 92 : 74,
+              color: Colors.white.withValues(alpha: .13),
             ),
           ),
-          if (boss)
+          if (featured)
             const Center(
               child: BossBattleCharacterArt(
                 kind: BossBattleCharacterKind.panda,
-                size: 86,
+                size: 84,
               ),
             )
           else
             Center(
               child: Container(
-                width: 54,
-                height: 54,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .18),
-                  borderRadius: BorderRadius.circular(18),
+                  color: Colors.white.withValues(alpha: .16),
+                  borderRadius: BorderRadius.circular(17),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: .28),
+                    color: Colors.white.withValues(alpha: .25),
                   ),
                 ),
                 child: Icon(icon, color: Colors.white, size: 30),
@@ -413,7 +377,7 @@ class _GamePreview {
     required this.subtitle,
     required this.icon,
     required this.accent,
-    required this.badge,
+    required this.status,
     this.playable = false,
   });
 
@@ -421,6 +385,6 @@ class _GamePreview {
   final String subtitle;
   final IconData icon;
   final Color accent;
-  final String badge;
+  final String status;
   final bool playable;
 }
