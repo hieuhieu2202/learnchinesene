@@ -18,7 +18,9 @@ class BossBattleHealthBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fraction = max <= 0 ? 0.0 : (current / max).clamp(0.0, 1.0);
+    final fraction = max <= 0
+        ? 0.0
+        : (current / max).clamp(0.0, 1.0).toDouble();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
