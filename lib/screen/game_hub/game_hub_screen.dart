@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/responsive/responsive_layout.dart';
@@ -447,8 +448,7 @@ class _GameCard extends StatelessWidget {
                   height: 1.4,
                 ),
               ),
-              const Spacer(),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
@@ -534,7 +534,7 @@ class _GameCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => Get.back<void>(),
                   child: const Text('Đã hiểu'),
                 ),
               ),
