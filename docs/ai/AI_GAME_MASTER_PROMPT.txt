@@ -1,0 +1,104 @@
+MASTER PROMPT — APP TIẾNG TRUNG GAME DEVELOPMENT
+
+Đọc trước:
+1. AGENTS.md nếu tồn tại.
+2. .agents/skills/getx_architecture/SKILL.md.
+3. docs/ai/BOSS_BATTLE_AI_IMPLEMENTATION_GUIDE.txt.
+4. docs/ai/GAME_VISUAL_REFERENCE_GUIDE.md.
+5. docs/ai/GAME_IMPLEMENTATION_ROADMAP.md.
+6. pubspec.yaml, lib/di.dart và project rules hiện tại.
+
+Bạn đang làm trên repository thật. Không tạo project giả.
+
+MỤC TIÊU HIỆN TẠI:
+Triển khai production-quality Boss Battle vertical slice trước, theo visual direction 2D/2.5D cartoon của GAME_VISUAL_REFERENCE_GUIDE.md.
+
+BẮT BUỘC:
+- GetX là state management/DI/navigation.
+- Reuse architecture hiện tại.
+- Không thêm Riverpod/BLoC/Provider.
+- Không hardcode production vocabulary.
+- Inspect SQLite/database thật và repository thật.
+- Không tạo database thứ hai cho game.
+- UI không query SQLite trực tiếp.
+- Game logic tách rendering.
+- Scoring tách reward/economy.
+- Không fake FSRS.
+- Client không authoritative XP/Coins/Gems/Hearts/Streak.
+- Không rewrite ngoài scope.
+- Không thêm Flame/Rive/Spine nếu chưa chứng minh cần.
+- Không tạo framework game lớn trước khi Boss Battle chạy.
+- Nếu dữ liệu radical/stroke/polyphonic/context chưa có: report MISSING, không bịa.
+
+QUY TRÌNH:
+
+PHASE A — AUDIT ONLY
+Chưa code.
+
+Trả về:
+1. Current project architecture.
+2. GetX/DI/navigation convention thật.
+3. Database file thật app đang dùng.
+4. Tables/models/repositories liên quan.
+5. Data source cho Boss Battle questions.
+6. Existing audio/TTS/theme/assets.
+7. Existing reusable components.
+8. Missing capabilities.
+9. Files to reuse.
+10. Files to modify.
+11. Files to create.
+12. Implementation plan từng bước.
+13. Các điểm docs không khớp repo thật.
+
+STOP sau plan để tôi duyệt.
+
+SAU KHI TÔI TRẢ LỜI "APPROVED":
+PHASE B — IMPLEMENT
+
+Implement code thật theo plan.
+
+Boss Battle phải có:
+- Loading / Intro / Question / Resolving / Attack / Transition / Win/Lose / Reward/Result states hoặc state machine tương đương.
+- Boss HP.
+- Player HP.
+- Combo.
+- Score.
+- 4 answers khi data cho phép.
+- Correct flow: answer feedback → mascot attack → projectile/trail → boss hit → damage → particles → HP.
+- Wrong flow: wrong feedback → boss attack → player hit → HP.
+- Input locking.
+- Anti-repeat.
+- Distractors hợp lý.
+- Question source IDs preserved.
+- Result/session event.
+- Learning review boundary.
+- Reward idempotency boundary.
+- Responsive UI.
+- Asset requirements nếu production asset chưa có.
+- Performance-conscious rendering.
+
+PHASE C — VERIFY
+
+Chạy:
+dart format .
+flutter analyze
+flutter test
+
+Report PASS / FAIL / NOT RUN chính xác.
+Sửa lỗi do task tạo ra.
+
+FINAL REPORT:
+- IMPLEMENTED
+- ARCHITECTURE
+- DATA SOURCE
+- FILES CREATED
+- FILES MODIFIED
+- REUSED COMPONENTS
+- GAMEPLAY
+- LEARNING INTEGRATION
+- SECURITY / REWARD
+- PERFORMANCE
+- VERIFICATION
+- REMAINING ISSUES
+
+Không dừng ở pseudocode nếu repository cho phép implement thật.
