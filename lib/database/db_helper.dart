@@ -252,6 +252,7 @@ class DbHelper {
         'p_level': level,
       },
     );
+  }
 
   Future<void> markLearned(int wordId) async {
     _requireUserId();
@@ -413,6 +414,7 @@ class DbHelper {
       'accuracy_score': score,
       'pronunciation_score': score,
     });
+  }
 
   Future<List<HanziCharacter>> getCharactersForWriting({
     String? keyword,
@@ -552,6 +554,7 @@ class DbHelper {
         'p_attempts': attempts,
       },
     );
+  }
 
   Future<List<Map<String, dynamic>>> _fetchWordCatalog() async {
     final out = <Map<String, dynamic>>[];
