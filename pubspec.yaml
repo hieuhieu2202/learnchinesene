@@ -31,6 +31,7 @@ dependencies:
   cherry_toast: ^1.13.0
   shared_preferences: ^2.5.5
   rive: ^0.14.11
+  supabase_flutter: ^2.0.0
 
 dev_dependencies:
   flutter_test:
