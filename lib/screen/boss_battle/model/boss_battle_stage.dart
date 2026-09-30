@@ -59,7 +59,7 @@ class BossBattleStage {
       unitNumber: asInt(map['unit_number']),
       title: '${map['title'] ?? ''}'.trim(),
       questionCount: asInt(map['question_count'], 4),
-      difficulty: asInt(map['difficulty'], 1).clamp(1, 5),
+      difficulty: asInt(map['difficulty'], 1).clamp(1, 5).toInt(),
       bossName: '${map['boss_name'] ?? 'Rồng Lửa'}'.trim(),
       bossHp: asInt(map['boss_hp'], 100),
       playerHp: asInt(map['player_hp'], 100),

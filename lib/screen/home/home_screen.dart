@@ -282,6 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: () => Get.to(() => const HskScreen()),
                           borderRadius: BorderRadius.circular(18),
                           child: Container(
+                            height: 80,
                             padding: const EdgeInsets.all(11),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(18),
@@ -307,6 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 const SizedBox(width: 11),
                                 const Expanded(
                                   child: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [

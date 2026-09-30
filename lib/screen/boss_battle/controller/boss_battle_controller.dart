@@ -143,7 +143,7 @@ class BossBattleController extends GetxController {
     try {
       final requested = stage == null
           ? 16
-          : min(16, max(4, stage!.questionCount));
+          : min(16, max(3, stage!.questionCount));
       final seeds = await _source.loadQuestionSeeds(
         limit: stage == null ? 48 : requested,
         stageId: stage?.id,
@@ -155,7 +155,7 @@ class BossBattleController extends GetxController {
         count: min(requested, seeds.length),
       );
       if (built.isEmpty) {
-        throw StateError('No usable select challenges found.');
+        throw StateError('No usable Boss Battle questions found.');
       }
 
       questions.assignAll(built);
