@@ -50,390 +50,310 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomeDashboard() {
-    return RefreshIndicator(
-      onRefresh: controller.refreshStats,
-      child: ColoredBox(
-        color: const Color(0xFFFFFAF2),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: ResponsiveHelper.contentMaxWidth(context),
-            ),
-            child: CustomScrollView(
+    return ColoredBox(
+      color: const Color(0xFFFFFBF5),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: ResponsiveHelper.contentMaxWidth(context),
+          ),
+          child: RefreshIndicator(
+            onRefresh: controller.refreshStats,
+            color: const Color(0xFF2D9AF1),
+            child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      Row(
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFF0D8),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFFFFD49A),
-                              ),
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(3),
-                              child: BossBattleCharacterArt(
-                                kind: BossBattleCharacterKind.panda,
-                                size: 42,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Xin chào!',
-                                  style: TextStyle(
-                                    color: AppColors.ink,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'Hôm nay cùng học tiếng Trung nào!',
-                                  style: TextStyle(
-                                    color: AppColors.muted,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFF7E8),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: const Color(0xFFFFD99A),
-                              ),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '🔥',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  '12',
-                                  style: TextStyle(
-                                    color: Color(0xFFE66C13),
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 13),
-                      Container(
-                        height: 188,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: const Color(0xFFFFE0B8),
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x17000000),
-                              blurRadius: 16,
-                              offset: Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            const CustomPaint(
-                              painter: _HomeHeroPainter(),
-                            ),
-                            const Positioned(
-                              right: -10,
-                              bottom: -2,
-                              child: BossBattleCharacterArt(
-                                kind: BossBattleCharacterKind.panda,
-                                size: 156,
-                              ),
-                            ),
-                            Positioned(
-                              left: 17,
-                              top: 17,
-                              right: 130,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Tiếng Trung mỗi ngày',
-                                    style: TextStyle(
-                                      color: Color(0xFF17324D),
-                                      fontSize: 21,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  const Text(
-                                    'Học một chút mỗi ngày,\ntiến bộ thật nhiều.',
-                                    style: TextStyle(
-                                      color: Color(0xFF4A6477),
-                                      fontSize: 12,
-                                      height: 1.35,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 14),
-                                  FilledButton(
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor:
-                                          const Color(0xFF2D9AF1),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 17,
-                                        vertical: 11,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(13),
-                                      ),
-                                    ),
-                                    onPressed: () =>
-                                        Get.to(() => const HskScreen()),
-                                    child: const Text(
-                                      'Bắt đầu học',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 26),
+              children: [
+                _buildHomeHeader(),
+                const SizedBox(height: 12),
+                _buildHomeHero(),
+                const SizedBox(height: 11),
+                Obx(() {
+                  final s = controller.stats;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _HomeMetric(
+                          icon: Icons.local_fire_department_rounded,
+                          value: '${s['streak']?.toInt() ?? 7}',
+                          label: 'Ngày học',
+                          color: const Color(0xFF2F9DE2),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Obx(() {
-                        final s = controller.stats;
-                        return Row(
-                          children: [
-                            Expanded(
-                              child: _HomeMetric(
-                                icon: Icons.water_drop_rounded,
-                                value: '${s['learned']?.toInt() ?? 7}',
-                                label: 'Buổi học',
-                                color: const Color(0xFF2A9DF4),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _HomeMetric(
-                                icon: Icons.style_rounded,
-                                value:
-                                    '${s['correct']?.toInt() ?? 12}',
-                                label: 'Bài học',
-                                color: const Color(0xFF47B953),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _HomeMetric(
-                                icon: Icons.workspace_premium_rounded,
-                                value:
-                                    '${((s['correct'] ?? 0) * 10).toInt() + 156}',
-                                label: 'Điểm XP',
-                                color: const Color(0xFFF4A62A),
-                              ),
-                            ),
-                          ],
-                        );
-                      }),
-                      const SizedBox(height: 18),
-                      const Text(
-                        'Bài học hôm nay',
-                        style: TextStyle(
-                          color: AppColors.ink,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _HomeMetric(
+                          icon: Icons.menu_book_rounded,
+                          value: '${s['learned']?.toInt() ?? 12}',
+                          label: 'Bài học',
+                          color: const Color(0xFF46AF52),
                         ),
                       ),
-                      const SizedBox(height: 9),
-                      Material(
-                        color: const Color(0xFFF6FBFF),
-                        borderRadius: BorderRadius.circular(18),
-                        child: InkWell(
-                          onTap: () => Get.to(() => const HskScreen()),
-                          borderRadius: BorderRadius.circular(18),
-                          child: Container(
-                            height: 80,
-                            padding: const EdgeInsets.all(11),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: const Color(0xFFD5EAFE),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 58,
-                                  height: 58,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFDFF3FF),
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  child: const Icon(
-                                    Icons.menu_book_rounded,
-                                    color: Color(0xFF318FD2),
-                                    size: 31,
-                                  ),
-                                ),
-                                const SizedBox(width: 11),
-                                const Expanded(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Từ vựng cơ bản',
-                                        style: TextStyle(
-                                          color: AppColors.ink,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                      SizedBox(height: 3),
-                                      Text(
-                                        'Chủ đề: Gia đình',
-                                        style: TextStyle(
-                                          color: AppColors.muted,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                FilledButton(
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor:
-                                        const Color(0xFF2D9AF1),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 13,
-                                      vertical: 10,
-                                    ),
-                                  ),
-                                  onPressed: () =>
-                                      Get.to(() => const HskScreen()),
-                                  child: const Text(
-                                    'Bắt đầu',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _HomeMetric(
+                          icon: Icons.workspace_premium_rounded,
+                          value:
+                              '${((s['correct'] ?? 0) * 10).toInt() + 156}',
+                          label: 'Điểm XP',
+                          color: const Color(0xFFF3A325),
                         ),
                       ),
-                      const SizedBox(height: 17),
-                      const Text(
-                        'Học nhanh',
-                        style: TextStyle(
-                          color: AppColors.ink,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
+                    ],
+                  );
+                }),
+                const SizedBox(height: 18),
+                const _HomeSectionTitle(title: 'Bài học hôm nay'),
+                const SizedBox(height: 9),
+                _TodayLessonCard(
+                  onTap: () => Get.to(() => const HskScreen()),
+                ),
+                const SizedBox(height: 18),
+                const _HomeSectionTitle(title: 'Học nhanh'),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _QuickTile(
+                        icon: Icons.translate_rounded,
+                        label: 'Từ vựng',
+                        color: const Color(0xFFFF7438),
+                        onTap: () => Get.to(() => const HskScreen()),
+                      ),
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: _QuickTile(
+                        icon: Icons.chat_bubble_rounded,
+                        label: 'Ngữ pháp',
+                        color: const Color(0xFF8757E8),
+                        onTap: () => _runIfFeatureUnlocked(
+                          'lessons',
+                          'Mở khóa Bài học AI',
+                          'Tính năng này yêu cầu nâng cấp.',
+                          const ['Bài học ngữ pháp chuyên sâu'],
+                          () => Get.to(() => const LessonsScreen()),
                         ),
                       ),
-                      const SizedBox(height: 9),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _QuickTile(
-                              icon: Icons.translate_rounded,
-                              label: 'Từ vựng',
-                              color: const Color(0xFFFF7A39),
-                              onTap: () => Get.to(() => const HskScreen()),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _QuickTile(
-                              icon: Icons.chat_bubble_rounded,
-                              label: 'Ngữ pháp',
-                              color: const Color(0xFF8657E8),
-                              onTap: () => _runIfFeatureUnlocked(
-                                'lessons',
-                                'Mở khóa Bài học AI',
-                                'Tính năng này yêu cầu nâng cấp.',
-                                const ['Bài học ngữ pháp chuyên sâu'],
-                                () => Get.to(() => const LessonsScreen()),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _QuickTile(
-                              icon: Icons.headphones_rounded,
-                              label: 'Luyện nghe',
-                              color: const Color(0xFF26A9C8),
-                              onTap: () =>
-                                  Get.to(() => const ConversationsScreen()),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _QuickTile(
-                              icon: Icons.mic_rounded,
-                              label: 'Luyện nói',
-                              color: const Color(0xFF29BA72),
-                              onTap: () => Get.to(
-                                () => const SpeakingScreen(),
-                                arguments: const {'standalone': true},
-                              ),
-                            ),
-                          ),
-                        ],
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: _QuickTile(
+                        icon: Icons.headphones_rounded,
+                        label: 'Luyện nghe',
+                        color: const Color(0xFF26A9C8),
+                        onTap: () =>
+                            Get.to(() => const ConversationsScreen()),
                       ),
-                      const SizedBox(height: 18),
-                      const Text(
-                        'Thử thách hôm nay',
-                        style: TextStyle(
-                          color: AppColors.ink,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: _QuickTile(
+                        icon: Icons.mic_rounded,
+                        label: 'Luyện nói',
+                        color: const Color(0xFF29BA72),
+                        onTap: () => Get.to(
+                          () => const SpeakingScreen(),
+                          arguments: const {'standalone': true},
                         ),
                       ),
-                      const SizedBox(height: 9),
-                      _ChallengeCard(
-                        onTap: () => controller.setIndex(2),
-                      ),
-                    ]),
-                  ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                const _HomeSectionTitle(title: 'Thử thách hôm nay'),
+                const SizedBox(height: 10),
+                _ChallengeCard(
+                  onTap: () => controller.setIndex(2),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHomeHeader() {
+    return Row(
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFEED3),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFFFFCF8E),
+              width: 1.2,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x16000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Padding(
+            padding: EdgeInsets.all(3),
+            child: BossBattleCharacterArt(
+              kind: BossBattleCharacterKind.panda,
+              size: 44,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        const Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Xin chào!',
+                style: TextStyle(
+                  color: AppColors.ink,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                'Hôm nay cùng học tiếng Trung nào!',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppColors.muted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF4DF),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: const Color(0xFFFFD28C)),
+          ),
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('🔥', style: TextStyle(fontSize: 16)),
+                  SizedBox(width: 3),
+                  Text(
+                    '12',
+                    style: TextStyle(
+                      color: Color(0xFFE76A16),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 1),
+              Text(
+                'Ngày liên tiếp',
+                style: TextStyle(
+                  color: Color(0xFFAF7138),
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHomeHero() {
+    return Container(
+      height: 190,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFFFD8A4),
+          width: 1.2,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x18000000),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          const CustomPaint(painter: _HomeHeroPainter()),
+          Positioned(
+            left: 16,
+            top: 15,
+            width: 205,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Mỗi ngày một chút',
+                  style: TextStyle(
+                    color: Color(0xFF17354F),
+                    fontSize: 21,
+                    height: 1.05,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Học từ vựng, luyện nghe và chinh phục thử thách.',
+                  maxLines: 2,
+                  style: TextStyle(
+                    color: Color(0xFF476477),
+                    fontSize: 11.5,
+                    height: 1.35,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 38,
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D9AF1),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                    ),
+                    onPressed: () => Get.to(() => const HskScreen()),
+                    icon: const Icon(Icons.play_arrow_rounded, size: 19),
+                    label: const Text(
+                      'Bắt đầu học',
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Positioned(
+            right: -6,
+            bottom: -7,
+            child: BossBattleCharacterArt(
+              kind: BossBattleCharacterKind.panda,
+              size: 160,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -798,6 +718,141 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     });
+  }
+}
+
+class _HomeSectionTitle extends StatelessWidget {
+  const _HomeSectionTitle({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: const TextStyle(
+        color: AppColors.ink,
+        fontSize: 17,
+        fontWeight: FontWeight.w900,
+      ),
+    );
+  }
+}
+
+class _TodayLessonCard extends StatelessWidget {
+  const _TodayLessonCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFFF6FBFF),
+      elevation: 0,
+      borderRadius: BorderRadius.circular(19),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(19),
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 88),
+          padding: const EdgeInsets.all(11),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(19),
+            border: Border.all(
+              color: const Color(0xFFD5EAFE),
+              width: 1.1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFDBF3FF),
+                      Color(0xFFEAF8FF),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.menu_book_rounded,
+                  color: Color(0xFF2E93D6),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 11),
+              const Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Từ vựng cơ bản',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Chủ đề: Gia đình',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.muted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 7),
+                    ClipRRect(
+                      borderRadius: BorderRadius.all(Radius.circular(99)),
+                      child: LinearProgressIndicator(
+                        value: .34,
+                        minHeight: 5,
+                        backgroundColor: Color(0xFFDCEAF4),
+                        color: Color(0xFF2D9AF1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                height: 38,
+                padding: const EdgeInsets.symmetric(horizontal: 13),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D9AF1),
+                  borderRadius: BorderRadius.circular(13),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x332D9AF1),
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  'Bắt đầu',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
