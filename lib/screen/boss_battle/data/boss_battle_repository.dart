@@ -92,11 +92,18 @@ class BossBattleRepository implements BossBattleQuestionSource {
           prompt: prompt,
           answers: answers,
           correctAnswer: correctAnswer,
+          audioUrl: _cleanUrl(row['tts']),
+          slowAudioUrl: _cleanUrl(row['slow_tts']),
         ),
       );
     }
 
     return questions;
+  }
+
+  static String? _cleanUrl(dynamic value) {
+    final url = '${value ?? ''}'.trim();
+    return url.isEmpty ? null : url;
   }
 
   static List<dynamic>? _asList(dynamic value) {
