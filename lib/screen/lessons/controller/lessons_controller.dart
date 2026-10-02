@@ -1,10 +1,10 @@
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
+import '../../../services/tts_service.dart';
 import '../../../services/gemini_service.dart';
 
 class LessonsController extends GetxController {
   final GeminiService _gemini = Get.find<GeminiService>();
-  final FlutterTts _tts = FlutterTts();
+  final TtsService _tts = Get.find<TtsService>();
 
   final selectedLevel = 1.obs;
 
@@ -22,14 +22,13 @@ class LessonsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _tts.setLanguage('zh-CN');
-    _tts.setSpeechRate(0.85);
+    _tts.ensureReady();
     loadTopics();
   }
 
   Future<void> speak(String text) async {
     if (text.trim().isNotEmpty) {
-      await _tts.speak(text);
+      await _tts.speakChinese(text);
     }
   }
 
@@ -121,7 +120,6 @@ class LessonsController extends GetxController {
 
   @override
   void onClose() {
-    _tts.stop();
     super.onClose();
   }
 }
