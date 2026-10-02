@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../services/tts_service.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/gemini_service.dart';
@@ -19,7 +19,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   final TextEditingController _inputController = TextEditingController();
   final GeminiService _gemini = GeminiService();
   final HistoryService _history = Get.find<HistoryService>();
-  final FlutterTts _tts = FlutterTts();
+  final TtsService _tts = Get.find<TtsService>();
   final stt.SpeechToText _speech = stt.SpeechToText();
 
   bool _isLoading = false;
@@ -90,9 +90,8 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
 
   Future<void> _playAudio(String text) async {
     try {
-      await _tts.setLanguage('zh-CN');
-      await _tts.setSpeechRate(0.4);
-      await _tts.speak(text);
+      await _tts.ensureReady();
+      await _tts.speakChinese(text);
     } catch (_) {}
   }
 
