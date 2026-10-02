@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/gemini_service.dart';
 import '../../core/responsive/responsive_layout.dart';
@@ -16,7 +15,7 @@ enum QuizState { setup, playing, finished }
 
 class _HskQuizScreenState extends State<HskQuizScreen> {
   final GeminiService _gemini = GeminiService();
-  final FlutterTts _tts = FlutterTts();
+  final TtsService _tts = Get.find<TtsService>();
 
   int _selectedLevel = 1;
   QuizState _state = QuizState.setup;
@@ -141,7 +140,7 @@ class _HskQuizScreenState extends State<HskQuizScreen> {
   Future<void> _playTts(String text) async {
     try {
       await _tts.setLanguage('zh-CN');
-      await _tts.speak(text);
+      await _tts.speakChinese(text);
     } catch (_) {}
   }
 
