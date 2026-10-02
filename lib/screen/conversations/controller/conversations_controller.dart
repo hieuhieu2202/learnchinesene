@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
+import '../../../services/tts_service.dart';
 import '../../../services/gemini_service.dart';
 import '../../../services/history_service.dart';
 
 class ConversationsController extends GetxController {
   final GeminiService _gemini = Get.find<GeminiService>();
   final HistoryService _history = Get.find<HistoryService>();
-  final FlutterTts _tts = FlutterTts();
+  final TtsService _tts = Get.find<TtsService>();
 
   final selectedLevel = 1.obs;
   final topicController = TextEditingController();
@@ -20,13 +20,12 @@ class ConversationsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _tts.setLanguage('zh-CN');
-    _tts.setSpeechRate(0.8);
+    _tts.ensureReady();
   }
 
   Future<void> speak(String text) async {
     if (text.trim().isNotEmpty) {
-      await _tts.speak(text);
+      await _tts.speakChinese(text);
     }
   }
 
@@ -101,7 +100,6 @@ class ConversationsController extends GetxController {
   @override
   void onClose() {
     topicController.dispose();
-    _tts.stop();
     super.onClose();
   }
 }
