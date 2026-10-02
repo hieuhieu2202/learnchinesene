@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
+import '../../../services/tts_service.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../services/gemini_service.dart';
 import '../../../services/history_service.dart';
@@ -10,7 +10,7 @@ import '../../../services/history_service.dart';
 class TranslatorController extends GetxController {
   final GeminiService _gemini = Get.find<GeminiService>();
   final HistoryService _history = Get.find<HistoryService>();
-  final FlutterTts _tts = FlutterTts();
+  final TtsService _tts = Get.find<TtsService>();
 
   final inputController = TextEditingController();
   final isLoading = false.obs;
@@ -32,13 +32,12 @@ class TranslatorController extends GetxController {
   }
 
   Future<void> _initTts() async {
-    await _tts.setLanguage('zh-CN');
-    await _tts.setSpeechRate(0.85);
+    await _tts.ensureReady();
   }
 
   Future<void> speak(String text) async {
     if (text.trim().isNotEmpty) {
-      await _tts.speak(text);
+      await _tts.speakChinese(text);
     }
   }
 
@@ -139,7 +138,6 @@ class TranslatorController extends GetxController {
   @override
   void onClose() {
     inputController.dispose();
-    _tts.stop();
     super.onClose();
   }
 }
