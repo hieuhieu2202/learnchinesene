@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
@@ -31,6 +32,9 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
   late final String _controllerTag;
   late final BossBattleController controller;
   final FlutterTts _tts = FlutterTts();
+  final AudioPlayer _voicePlayer = AudioPlayer();
+  bool _ttsReady = false;
+  bool _ttsInitAttempted = false;
 
   @override
   void initState() {
@@ -47,24 +51,71 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
   }
 
   Future<void> _configureTts() async {
+    if (_ttsInitAttempted) return;
+    _ttsInitAttempted = true;
+
     try {
+      final engines = await _tts.getEngines;
+      if (engines is List && engines.isEmpty) return;
+
+      final available = await _tts.isLanguageAvailable('zh-CN');
+      final languageAvailable =
+          available == true || available == 1 || '$available' == '1';
+      if (!languageAvailable) return;
+
       await _tts.setLanguage('zh-CN');
       await _tts.setSpeechRate(0.42);
       await _tts.setPitch(1.0);
       await _tts.setVolume(1.0);
-    } catch (_) {}
+      _ttsReady = true;
+    } catch (_) {
+      _ttsReady = false;
+    }
   }
 
   Future<void> _speakCurrentPrompt() async {
-    final text = controller.currentQuestion?.prompt.trim() ?? '';
-    if (text.isEmpty) return;
+    final question = controller.currentQuestion;
+    final text = question?.prompt.trim() ?? '';
+    if (question == null || text.isEmpty) return;
+
+    await _voicePlayer.stop();
+
+    final remoteAudio = question.audioUrl;
+    if (remoteAudio != null && remoteAudio.isNotEmpty) {
+      try {
+        await _voicePlayer.play(UrlSource(remoteAudio));
+        return;
+      } catch (_) {
+        // Fall back to the device TTS engine.
+      }
+    }
+
+    if (!_ttsInitAttempted) {
+      await _configureTts();
+    }
+
+    if (!_ttsReady) {
+      Get.snackbar(
+        'Chưa có giọng đọc tiếng Trung',
+        'Dữ liệu hiện chưa có file audio. Hãy cài hoặc bật Google Speech '
+            'Services và giọng tiếng Trung, hoặc bổ sung URL audio vào Supabase.',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
     try {
       await _tts.stop();
-      await _tts.speak(text);
+      final result = await _tts.speak(text);
+      if (result != 1) {
+        throw StateError('TTS speak request failed.');
+      }
     } catch (_) {
+      _ttsReady = false;
       Get.snackbar(
         'Không phát được âm thanh',
-        'Thiết bị chưa có giọng đọc tiếng Trung.',
+        'TTS trên thiết bị không hoạt động. Audio URL từ Supabase sẽ ổn định hơn.',
         snackPosition: SnackPosition.BOTTOM,
       );
     }
@@ -72,7 +123,10 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
 
   @override
   void dispose() {
-    _tts.stop();
+    _voicePlayer.dispose();
+    if (_ttsReady) {
+      _tts.stop();
+    }
     Get.delete<BossBattleController>(tag: _controllerTag, force: true);
     super.dispose();
   }
