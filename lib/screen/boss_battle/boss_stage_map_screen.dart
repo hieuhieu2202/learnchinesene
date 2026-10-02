@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/game_visual_tokens.dart';
 import 'boss_battle_screen.dart';
 import 'data/boss_battle_repository.dart';
 import 'model/boss_battle_stage.dart';
@@ -34,7 +35,7 @@ class _BossBattleStageMapScreenState extends State<BossBattleStageMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF160D16),
+      backgroundColor: GameVisualTokens.night,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -77,7 +78,7 @@ class _BossBattleStageMapScreenState extends State<BossBattleStageMapScreen> {
                     _StageHeader(stageCount: stages.length),
                     Expanded(
                       child: ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
+                        padding: const EdgeInsets.fromLTRB(18, 10, 18, 34),
                         itemCount: stages.length,
                         itemBuilder: (context, index) {
                           final stage = stages[index];
@@ -113,8 +114,21 @@ class _StageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      decoration: BoxDecoration(
+        color: const Color(0xB5261925),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0x44FFD271)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x55000000),
+            blurRadius: 22,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Material(
@@ -207,8 +221,8 @@ class _StagePathItem extends StatelessWidget {
             child: SizedBox(
               width: MediaQuery.sizeOf(context).width * .76,
               child: Material(
-                color: const Color(0xEAF9F2E7),
-                borderRadius: BorderRadius.circular(22),
+                color: const Color(0xF8FFF9EF),
+                borderRadius: BorderRadius.circular(24),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(22),
                   onTap: onTap,

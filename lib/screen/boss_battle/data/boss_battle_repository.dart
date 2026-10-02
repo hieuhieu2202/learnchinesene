@@ -44,7 +44,7 @@ class BossBattleRepository implements BossBattleQuestionSource {
             'boss_stage_questions',
             params: {
               'p_stage_id': stageId,
-              'p_limit': limit.clamp(4, 16),
+              'p_limit': limit.clamp(3, 16),
             },
           );
 

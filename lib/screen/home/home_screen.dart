@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/game_visual_tokens.dart';
 import '../boss_battle/view/boss_battle_character_art.dart';
 import 'package:get/get.dart';
 import '../hsk/hsk_screen.dart';
@@ -51,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHomeDashboard() {
     return ColoredBox(
-      color: const Color(0xFFFFFBF5),
+      color: GameVisualTokens.cream,
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -59,10 +60,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: RefreshIndicator(
             onRefresh: controller.refreshStats,
-            color: const Color(0xFF2D9AF1),
+            color: GameVisualTokens.blue,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 26),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 30),
               children: [
                 _buildHomeHeader(),
                 const SizedBox(height: 12),
@@ -622,18 +623,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
       return ResponsiveLayout(
         mobile: Scaffold(
-          backgroundColor: const Color(0xFFFFFAF2),
+          backgroundColor: GameVisualTokens.cream,
           body: body,
-          bottomNavigationBar: NavigationBar(
-            height: 68,
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
-            indicatorColor: const Color(0xFFDCEEFF),
-            selectedIndex: index,
-            onDestinationSelected: controller.setIndex,
-            labelBehavior:
-                NavigationDestinationLabelBehavior.alwaysShow,
-            destinations: destinations,
+          bottomNavigationBar: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(color: Color(0xFFEDE4DB)),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x16000000),
+                  blurRadius: 20,
+                  offset: Offset(0, -5),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: NavigationBar(
+                selectedIndex: index,
+                onDestinationSelected: controller.setIndex,
+                labelBehavior:
+                    NavigationDestinationLabelBehavior.alwaysShow,
+                destinations: destinations,
+              ),
+            ),
           ),
         ),
         tablet: Scaffold(

@@ -6,6 +6,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/game_visual_tokens.dart';
 import 'animation/boss_battle_rive_contract.dart';
 import 'controller/boss_battle_controller.dart';
 import 'data/boss_battle_repository.dart';
@@ -152,7 +153,7 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
 
       if (phase == BossBattlePhase.intro) {
         return Scaffold(
-          backgroundColor: const Color(0xFF170F17),
+          backgroundColor: GameVisualTokens.night,
           body: SafeArea(
             child: _BossIntro(controller: controller),
           ),
@@ -160,7 +161,7 @@ class _BossBattleScreenState extends State<BossBattleScreen> {
       }
 
       return Scaffold(
-        backgroundColor: const Color(0xFF170F17),
+        backgroundColor: GameVisualTokens.night,
         body: SafeArea(
           child: Stack(
             fit: StackFit.expand,
@@ -732,18 +733,18 @@ class _QuestionOverlay extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          color: const Color(0xFFFDF7EE),
-          borderRadius: BorderRadius.circular(19),
-          elevation: 10,
+          color: GameVisualTokens.cream,
+          borderRadius: BorderRadius.circular(22),
+          elevation: 14,
           shadowColor: const Color(0x66000000),
           child: InkWell(
-            borderRadius: BorderRadius.circular(19),
+            borderRadius: BorderRadius.circular(22),
             onTap: onSpeakPrompt,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 11),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(19),
+                borderRadius: BorderRadius.circular(22),
                 border: Border.all(
                   color: const Color(0xFFFFD6A1),
                   width: 1.2,
@@ -759,15 +760,30 @@ class _QuestionOverlay extends StatelessWidget {
                         height: 34,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE2F1FF),
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFF58B6F6),
+                              Color(0xFF277DCC),
+                            ],
+                          ),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFF7BB9EA),
+                            color: const Color(0xFFBCE6FF),
                           ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x44318FD2),
+                              blurRadius: 12,
+                            ),
+                          ],
                         ),
-                        child: const Icon(
-                          Icons.volume_up_rounded,
-                          color: Color(0xFF318FD2),
+                        child: Icon(
+                          question.audioUrl != null
+                              ? Icons.graphic_eq_rounded
+                              : Icons.volume_up_rounded,
+                          color: Colors.white,
                           size: 20,
                         ),
                       ),
@@ -775,12 +791,13 @@ class _QuestionOverlay extends StatelessWidget {
                       Flexible(
                         child: Text(
                           question.prompt,
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: AppColors.ink,
-                            fontSize: 25,
+                            fontSize: 27,
+                            height: 1.08,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -791,7 +808,9 @@ class _QuestionOverlay extends StatelessWidget {
                   Text(
                     result == null
                         ? (canAnswer
-                            ? 'Chạm vào từ để nghe • Chọn đáp án đúng'
+                            ? question.audioUrl != null
+                                ? 'Audio thật • Chạm để nghe • Chọn đáp án đúng'
+                                : 'Chạm để nghe • Chọn đáp án đúng'
                             : controller.phaseHint)
                         : controller.feedbackText,
                     textAlign: TextAlign.center,
@@ -819,7 +838,7 @@ class _QuestionOverlay extends StatelessWidget {
             crossAxisCount: 2,
             mainAxisSpacing: 9,
             crossAxisSpacing: 9,
-            childAspectRatio: 2.2,
+            childAspectRatio: 2.28,
           ),
           itemBuilder: (context, index) {
             final answer = question.answers[index];
