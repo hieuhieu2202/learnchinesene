@@ -20,14 +20,13 @@ class GameArtImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.network(
+    return Image.asset(
       url,
       width: width,
       height: height,
       fit: fit,
       alignment: alignment,
       filterQuality: FilterQuality.high,
-      gaplessPlayback: true,
       errorBuilder: (_, __, ___) => SizedBox(
         width: width,
         height: height,

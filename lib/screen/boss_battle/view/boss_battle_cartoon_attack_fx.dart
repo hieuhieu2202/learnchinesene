@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../core/game/game_art.dart';
+import '../../../widgets/game_art_image.dart';
 import '../controller/boss_battle_controller.dart';
 
 class BossBattleCartoonAttackFx extends StatelessWidget {
@@ -33,11 +35,58 @@ class BossBattleCartoonAttackFx extends StatelessWidget {
             duration: duration,
             curve: Curves.easeInOutCubic,
             builder: (context, progress, _) {
-              return CustomPaint(
-                painter: _CartoonAttackPainter(
-                  progress: progress,
-                  dragonAttack: dragonAttack,
-                ),
+              final impact = ((progress - .68) / .32).clamp(0.0, 1.0);
+              final visible = progress > .68;
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  CustomPaint(
+                    painter: _CartoonAttackPainter(
+                      progress: progress,
+                      dragonAttack: dragonAttack,
+                    ),
+                  ),
+                  if (visible)
+                    Align(
+                      alignment: dragonAttack
+                          ? const Alignment(-.42, -.30)
+                          : const Alignment(.44, -.53),
+                      child: Opacity(
+                        opacity: (1 - impact).clamp(0.0, 1.0),
+                        child: Transform.scale(
+                          scale: .55 + impact * 1.5,
+                          child: GameArtImage(
+                            url: dragonAttack
+                                ? GameArt.fireParticle
+                                : GameArt.hitFlash,
+                            width: 96,
+                            height: 96,
+                            fit: BoxFit.contain,
+                            fallbackEmoji: dragonAttack ? '🔥' : '✨',
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (visible)
+                    Align(
+                      alignment: dragonAttack
+                          ? const Alignment(-.28, -.18)
+                          : const Alignment(.32, -.42),
+                      child: Opacity(
+                        opacity: (1 - impact * .8).clamp(0.0, 1.0),
+                        child: Transform.rotate(
+                          angle: progress * math.pi,
+                          child: const GameArtImage(
+                            url: GameArt.spark,
+                            width: 72,
+                            height: 72,
+                            fit: BoxFit.contain,
+                            fallbackEmoji: '✨',
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               );
             },
           ),

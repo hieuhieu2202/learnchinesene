@@ -462,11 +462,11 @@ class _GameplayScene extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                const GameArtImage(
-          url: GameArt.bossBattleBackground,
-          fit: BoxFit.cover,
-          fallbackEmoji: '🔥',
-        ),
+                GameArtImage(
+            url: won ? GameArt.victoryBackground : GameArt.defeatBackground,
+            fit: BoxFit.cover,
+            fallbackEmoji: won ? '🏆' : '🔥',
+          ),
                 const DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -1320,16 +1320,16 @@ class _ResultOverlay extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    won
-                        ? Icons.emoji_events_rounded
-                        : Icons.heart_broken_rounded,
-                    color: won
-                        ? const Color(0xFFFFB000)
-                        : const Color(0xFFFF7373),
-                    size: 68,
+                  SizedBox(
+                    width: 166,
+                    height: 124,
+                    child: GameArtImage(
+                      url: won ? GameArt.pandaVictory : GameArt.pandaDizzy,
+                      fit: BoxFit.contain,
+                      fallbackEmoji: won ? '🐼🏆' : '🐼',
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     won ? 'Chiến thắng!' : 'Thất bại!',
                     style: TextStyle(

@@ -10,6 +10,14 @@ import '../../core/game/game_art.dart';
 import '../../widgets/game_art_image.dart';
 import '../boss_battle/boss_stage_map_screen.dart';
 import '../boss_battle/view/boss_battle_character_art.dart';
+import '../../dragon_panda/screens/radical_builder/radical_builder_screen.dart'
+    as dragon_radical;
+import '../../dragon_panda/screens/tone_ninja/tone_ninja_screen.dart'
+    as dragon_tone;
+import '../../dragon_panda/screens/chinese_restaurant/chinese_restaurant_screen.dart'
+    as dragon_restaurant;
+import '../../dragon_panda/screens/quick_answer/quick_answer_screen.dart'
+    as dragon_quick;
 
 class GameHubScreen extends StatelessWidget {
   const GameHubScreen({super.key});
@@ -28,29 +36,47 @@ class GameHubScreen extends StatelessWidget {
       subtitle: 'Xây chữ Hán từ bộ thủ và ghi nhớ cấu tạo chữ.',
       icon: Icons.extension_rounded,
       accent: Color(0xFF7A64D5),
-      status: 'SẮP RA MẮT',
+      status: 'CHƠI NGAY',
+      playable: true,
     ),
     _GamePreview(
       title: 'Tone Ninja',
       subtitle: 'Luyện thanh điệu nhanh, chính xác như một ninja.',
       icon: Icons.bolt_rounded,
       accent: Color(0xFF2C84D4),
-      status: 'SẮP RA MẮT',
+      status: 'CHƠI NGAY',
+      playable: true,
     ),
     _GamePreview(
       title: 'Chinese Restaurant',
       subtitle: 'Phục vụ món ăn và luyện hội thoại nhà hàng bằng tiếng Trung.',
       icon: Icons.ramen_dining_rounded,
       accent: Color(0xFFF08A38),
-      status: 'SẮP RA MẮT',
+      status: 'CHƠI NGAY',
+      playable: true,
+    ),
+    _GamePreview(
+      title: 'Quick Answer',
+      subtitle: 'Thử phản xạ từ vựng trong bối cảnh fantasy tốc độ cao.',
+      icon: Icons.speed_rounded,
+      accent: Color(0xFF0EA5E9),
+      status: 'CHƠI NGAY',
+      playable: true,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: GameVisualTokens.cream,
-      child: Center(
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const GameArtImage(
+          url: GameArt.gameHubBackground,
+          fit: BoxFit.cover,
+          fallbackEmoji: '🏯',
+        ),
+        const ColoredBox(color: Color(0xE8FFF8ED)),
+        Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: ResponsiveHelper.contentMaxWidth(context),
@@ -80,7 +106,8 @@ class GameHubScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ],
+  );
   }
 }
 
@@ -402,7 +429,7 @@ class _GameCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => _planned(context),
+        onTap: () => _openGame(context),
         child: Container(
           minHeight: 96,
           padding: const EdgeInsets.all(10),
@@ -446,10 +473,12 @@ class _GameCard extends StatelessWidget {
                             color: const Color(0xFFF1EFEC),
                             borderRadius: BorderRadius.circular(99),
                           ),
-                          child: const Text(
-                            'Sắp ra mắt',
+                          child: Text(
+                            game.playable ? 'Chơi ngay' : 'Sắp ra mắt',
                             style: TextStyle(
-                              color: AppColors.muted,
+                              color: game.playable
+                                  ? game.accent
+                                  : AppColors.muted,
                               fontSize: 8.5,
                               fontWeight: FontWeight.w900,
                             ),
@@ -484,48 +513,46 @@ class _GameCard extends StatelessWidget {
     );
   }
 
-  void _planned(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: GameVisualTokens.cream,
-      builder: (context) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 26),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _SmallArtwork(game: game, large: true),
-            const SizedBox(height: 12),
-            Text(
-              game.title,
-              style: const TextStyle(
-                color: AppColors.ink,
-                fontSize: 21,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              game.subtitle,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.muted,
-                height: 1.4,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 18),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Get.back<void>(),
-                child: const Text('Đã hiểu'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  void _openGame(BuildContext context) {
+    switch (game.title) {
+      case 'Radical Builder':
+        Get.to(
+          () => dragon_radical.RadicalBuilderScreen(
+            onBack: () => Get.back<void>(),
+          ),
+        );
+        return;
+      case 'Tone Ninja':
+        Get.to(
+          () => dragon_tone.ToneNinjaScreen(
+            onBack: () => Get.back<void>(),
+          ),
+        );
+        return;
+      case 'Chinese Restaurant':
+        Get.to(
+          () => dragon_restaurant.ChineseRestaurantScreen(
+            onBack: () => Get.back<void>(),
+          ),
+        );
+        return;
+      case 'Quick Answer':
+        Get.to(
+          () => dragon_quick.QuickAnswerScreen(
+            onBack: () => Get.back<void>(),
+          ),
+        );
+        return;
+      default:
+        showModalBottomSheet<void>(
+          context: context,
+          showDragHandle: true,
+          builder: (_) => const Padding(
+            padding: EdgeInsets.all(24),
+            child: Text('Chế độ này đang được tích hợp.'),
+          ),
+        );
+    }
   }
 }
 
