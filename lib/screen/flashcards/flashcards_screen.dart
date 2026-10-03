@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/game/game_art.dart';
+import '../../widgets/game_network_image.dart';
 import '../../database/db_helper.dart';
 import '../../models/word.dart';
 import '../../core/responsive/responsive_layout.dart';
@@ -124,9 +126,24 @@ class _FlashcardsScreenState extends State<FlashcardsScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Flashcards ôn tập',
-          style: TextStyle(fontWeight: FontWeight.w800),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 34,
+              height: 34,
+              child: GameNetworkImage(
+                url: GameArt.pandaNinja,
+                fit: BoxFit.contain,
+                fallbackEmoji: '🐼',
+              ),
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Flashcard Quest',
+              style: TextStyle(fontWeight: FontWeight.w900),
+            ),
+          ],
         ),
       ),
       body: Center(
@@ -239,9 +256,16 @@ class _FlashcardsScreenState extends State<FlashcardsScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.celebration_rounded,
-                    size: 72, color: AppColors.orange),
-                const SizedBox(height: 16),
+                const SizedBox(
+                  width: 150,
+                  height: 130,
+                  child: GameNetworkImage(
+                    url: GameArt.pandaVictory,
+                    fit: BoxFit.contain,
+                    fallbackEmoji: '🐼',
+                  ),
+                ),
+                const SizedBox(height: 10),
                 const Text(
                   '🎉 Hoàn thành session! 🎉',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
@@ -383,9 +407,26 @@ class _FlashcardsScreenState extends State<FlashcardsScreen>
           border: Border.all(color: const Color(0xFFF0E7E5)),
         ),
         alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
+            const Positioned(
+              right: -12,
+              bottom: -10,
+              width: 125,
+              height: 125,
+              child: Opacity(
+                opacity: .10,
+                child: GameNetworkImage(
+                  url: GameArt.pandaArcher,
+                  fit: BoxFit.contain,
+                  fallbackEmoji: '🐼',
+                ),
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
             Text(
               word.chinese,
               style: const TextStyle(
@@ -406,6 +447,9 @@ class _FlashcardsScreenState extends State<FlashcardsScreen>
                       color: AppColors.muted, fontWeight: FontWeight.w500),
                 ),
               ],
+            ),
+                ],
+              ),
             ),
           ],
         ),
