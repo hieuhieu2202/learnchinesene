@@ -67,9 +67,16 @@ class GameHubScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: GameVisualTokens.cream,
-      child: Center(
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const GameArtImage(
+          url: GameArt.gameHubBackground,
+          fit: BoxFit.cover,
+          fallbackEmoji: '🏯',
+        ),
+        const ColoredBox(color: Color(0xE8FFF8ED)),
+        Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: ResponsiveHelper.contentMaxWidth(context),
@@ -98,7 +105,7 @@ class GameHubScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 }
