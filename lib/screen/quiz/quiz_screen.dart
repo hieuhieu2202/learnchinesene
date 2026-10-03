@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/game/game_art.dart';
+import '../../widgets/game_network_image.dart';
 import '../../models/quiz_question.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../widgets/empty_state_widget.dart';
@@ -211,32 +213,87 @@ class QuizScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.all(28),
+              height: 330,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.redDark, AppColors.red, AppColors.orange],
-                ),
                 borderRadius: BorderRadius.circular(30),
-              ),
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.emoji_events_rounded,
-                    size: 58,
-                    color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .18),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '$percent%',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 52,
-                      fontWeight: FontWeight.w900,
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  const GameNetworkImage(
+                    url: GameArt.victoryBackground,
+                    fit: BoxFit.cover,
+                    fallbackEmoji: '🏆',
+                  ),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: .08),
+                          Colors.black.withValues(alpha: .62),
+                        ],
+                      ),
                     ),
                   ),
-                  Text(
-                    'Đúng ${controller.score.value}/${controller.questions.length} câu',
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  const Positioned(
+                    top: 4,
+                    right: 6,
+                    width: 190,
+                    height: 220,
+                    child: GameNetworkImage(
+                      url: GameArt.pandaVictory,
+                      fit: BoxFit.contain,
+                      fallbackEmoji: '🐼',
+                    ),
+                  ),
+                  Positioned(
+                    left: 24,
+                    bottom: 24,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'VICTORY!',
+                          style: TextStyle(
+                            color: Color(0xFFFFD65A),
+                            fontSize: 14,
+                            letterSpacing: 2,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        Text(
+                          '$percent%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 54,
+                            height: 1,
+                            fontWeight: FontWeight.w900,
+                            shadows: [
+                              Shadow(color: Colors.black54, blurRadius: 8),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Đúng ${controller.score.value}/${controller.questions.length} câu',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
