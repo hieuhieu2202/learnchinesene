@@ -105,8 +105,9 @@ class GameHubScreen extends StatelessWidget {
             ],
           ),
         ),
-      ],
-    );
+      ),
+    ],
+  );
   }
 }
 
