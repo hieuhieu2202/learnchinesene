@@ -31,10 +31,23 @@ class QuizOptionButton extends StatelessWidget {
       QuizOptionState.selected => const Color(0xFFFFF1E7),
       _ => Colors.white,
     };
-    return Material(
-      color: fill,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 180),
+      tween: Tween(
+        begin: .96,
+        end: state == QuizOptionState.idle ? 1 : 1.015,
+      ),
+      curve: Curves.easeOutBack,
+      builder: (context, scale, child) => Transform.scale(
+        scale: scale,
+        child: child,
+      ),
+      child: Material(
+        color: fill,
+        borderRadius: BorderRadius.circular(18),
+        elevation: state == QuizOptionState.idle ? 0 : 2,
+        shadowColor: color.withValues(alpha: .28),
+        child: InkWell(
         onTap: enabled ? onPressed : null,
         borderRadius: BorderRadius.circular(18),
         child: Container(
@@ -96,6 +109,7 @@ class QuizOptionButton extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }
