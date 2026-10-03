@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/game_visual_tokens.dart';
+import '../../core/game/game_art.dart';
+import '../../widgets/game_art_image.dart';
 import '../boss_battle/view/boss_battle_character_art.dart';
 import 'package:get/get.dart';
 import '../hsk/hsk_screen.dart';
@@ -275,18 +277,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHomeHero() {
     return Container(
-      height: 190,
+      height: 248,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: const Color(0xFFFFD8A4),
+          color: const Color(0xFFFFD595),
           width: 1.2,
         ),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x18000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
+            color: const Color(0xFF9A5A24).withValues(alpha: .22),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
@@ -294,64 +296,129 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const CustomPaint(painter: _HomeHeroPainter()),
+          const GameArtImage(
+            url: GameArt.homeBackground,
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+            fallbackEmoji: '🏯',
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF10283F).withValues(alpha: .76),
+                  const Color(0xFF10283F).withValues(alpha: .28),
+                  Colors.transparent,
+                ],
+                stops: const [0, .56, 1],
+              ),
+            ),
+          ),
+          const Positioned(
+            right: -10,
+            top: 10,
+            bottom: 18,
+            width: 185,
+            child: GameArtImage(
+              url: GameArt.pandaArcher,
+              fit: BoxFit.contain,
+              alignment: Alignment.bottomCenter,
+              fallbackEmoji: '🐼',
+            ),
+          ),
           Positioned(
-            left: 16,
-            top: 15,
-            width: 205,
+            left: 18,
+            top: 18,
+            right: 142,
+            bottom: 18,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Mỗi ngày một chút',
-                  style: TextStyle(
-                    color: Color(0xFF17354F),
-                    fontSize: 21,
-                    height: 1.05,
-                    fontWeight: FontWeight.w900,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD267),
+                    borderRadius: BorderRadius.circular(999),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x44C77813),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    'DAILY QUEST',
+                    style: TextStyle(
+                      color: Color(0xFF5B3400),
+                      fontSize: 9,
+                      letterSpacing: 1.1,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 10),
                 const Text(
-                  'Học từ vựng, luyện nghe và chinh phục thử thách.',
-                  maxLines: 2,
+                  'Mỗi ngày\nmạnh hơn một chút',
                   style: TextStyle(
-                    color: Color(0xFF476477),
+                    color: Colors.white,
+                    fontSize: 25,
+                    height: 1.02,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -.5,
+                    shadows: [
+                      Shadow(
+                        color: Color(0x88000000),
+                        blurRadius: 10,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Học từ vựng, luyện nghe và mở khóa thử thách mới.',
+                  maxLines: 3,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: .88),
                     fontSize: 11.5,
-                    height: 1.35,
+                    height: 1.4,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const Spacer(),
                 SizedBox(
-                  height: 38,
+                  height: 44,
                   child: FilledButton.icon(
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D9AF1),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      backgroundColor: const Color(0xFFFFB52F),
+                      foregroundColor: const Color(0xFF4A2800),
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(13),
+                        borderRadius: BorderRadius.circular(15),
+                        side: const BorderSide(
+                          color: Color(0xFFFFE08B),
+                          width: 1.2,
+                        ),
                       ),
                     ),
                     onPressed: () => Get.to(() => const HskScreen()),
-                    icon: const Icon(Icons.play_arrow_rounded, size: 19),
+                    icon: const Icon(Icons.play_arrow_rounded, size: 20),
                     label: const Text(
                       'Bắt đầu học',
-                      style: TextStyle(fontWeight: FontWeight.w900),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ),
               ],
-            ),
-          ),
-          const Positioned(
-            right: -6,
-            bottom: -7,
-            child: BossBattleCharacterArt(
-              kind: BossBattleCharacterKind.panda,
-              size: 160,
             ),
           ),
         ],

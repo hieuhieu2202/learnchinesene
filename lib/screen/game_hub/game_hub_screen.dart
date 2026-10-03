@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import '../../core/responsive/responsive_layout.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/game_visual_tokens.dart';
+import '../../core/game/game_art.dart';
+import '../../widgets/game_art_image.dart';
 import '../boss_battle/boss_stage_map_screen.dart';
 import '../boss_battle/view/boss_battle_character_art.dart';
 
@@ -203,7 +205,12 @@ class _FeaturedBossCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              const CustomPaint(painter: _BossPreviewPainter()),
+              const GameArtImage(
+                url: GameArt.gameHubBackground,
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+                fallbackEmoji: '🏯',
+              ),
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -528,6 +535,16 @@ class _SmallArtwork extends StatelessWidget {
   final _GamePreview game;
   final bool large;
 
+  String get _art {
+    return switch (game.title) {
+      'Boss Battle' => GameArt.bossBattleThumb,
+      'Radical Builder' => GameArt.radicalBuilderThumb,
+      'Tone Ninja' => GameArt.toneNinjaThumb,
+      'Chinese Restaurant' => GameArt.restaurantThumb,
+      _ => GameArt.quickAnswerThumb,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = large ? 80.0 : 76.0;
@@ -537,36 +554,33 @@ class _SmallArtwork extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.lerp(game.accent, Colors.white, .18)!,
-            Color.lerp(game.accent, const Color(0xFF241A25), .4)!,
-          ],
-        ),
+        color: game.accent.withValues(alpha: .16),
+        boxShadow: [
+          BoxShadow(
+            color: game.accent.withValues(alpha: .22),
+            blurRadius: 16,
+            offset: const Offset(0, 7),
+          ),
+        ],
       ),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          CustomPaint(
-            painter: _MiniScenePainter(accent: game.accent),
+          GameArtImage(
+            url: _art,
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+            fallbackEmoji: '🎮',
           ),
-          Center(
-            child: Container(
-              width: large ? 46 : 42,
-              height: large ? 46 : 42,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: .16),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: .32),
-                ),
-              ),
-              child: Icon(
-                game.icon,
-                color: Colors.white,
-                size: large ? 28 : 25,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: .18),
+                ],
               ),
             ),
           ),

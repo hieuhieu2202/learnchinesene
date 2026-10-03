@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/game_visual_tokens.dart';
+import '../../core/game/game_art.dart';
+import '../../widgets/game_art_image.dart';
 import 'animation/boss_battle_rive_contract.dart';
 import 'controller/boss_battle_controller.dart';
 import 'data/boss_battle_repository.dart';
@@ -192,7 +194,11 @@ class _BossIntro extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const CustomPaint(painter: _ArenaPainter(intro: true)),
+        const GameArtImage(
+          url: GameArt.bossIntroBackground,
+          fit: BoxFit.cover,
+          fallbackEmoji: '🐉',
+        ),
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -456,7 +462,11 @@ class _GameplayScene extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                const CustomPaint(painter: _ArenaPainter()),
+                const GameArtImage(
+          url: GameArt.bossBattleBackground,
+          fit: BoxFit.cover,
+          fallbackEmoji: '🔥',
+        ),
                 const DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -1259,7 +1269,11 @@ class _ResultOverlay extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const CustomPaint(painter: _ArenaPainter()),
+          const GameArtImage(
+          url: GameArt.bossBattleBackground,
+          fit: BoxFit.cover,
+          fallbackEmoji: '🔥',
+        ),
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
