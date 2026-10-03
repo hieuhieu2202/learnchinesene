@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/game/game_art.dart';
+import '../../widgets/game_network_image.dart';
+import '../../widgets/game_button.dart';
+import '../../widgets/game_stat_pill.dart';
 import '../../widgets/stat_card.dart';
 import 'package:get/get.dart';
 import '../hsk/hsk_screen.dart';
@@ -17,6 +21,7 @@ import '../history/history_screen.dart';
 import '../dictionary/dictionary_screen.dart';
 import '../flashcards/flashcards_screen.dart';
 import '../hsk_quiz/hsk_quiz_screen.dart';
+import '../game_hub/game_hub_screen.dart';
 import '../../features/system/presentation/pages/profile_page.dart';
 import '../../features/system/presentation/pages/settings_page.dart';
 
@@ -43,102 +48,147 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.red,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            '学',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '你好!',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              Text(
-                                'Sẵn sàng cho bài học hôm nay?',
-                                style: TextStyle(color: AppColors.muted),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton.filledTonal(
-                          onPressed: () => Get.to(() => const StatsScreen()),
-                          icon: const Icon(Icons.insights_rounded),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 26),
                     Container(
-                      padding: const EdgeInsets.all(22),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            AppColors.redDark,
-                            AppColors.red,
-                            AppColors.orange,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: const [
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
                           BoxShadow(
-                            color: Color(0x30B4232C),
-                            blurRadius: 24,
-                            offset: Offset(0, 12),
+                            color: Colors.black.withValues(alpha: .07),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          const Text(
-                            'TIẾP TỤC HỌC',
-                            style: TextStyle(
-                              color: Color(0xCCFFFFFF),
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
-                              fontSize: 12,
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: const BoxDecoration(
+                              color: AppColors.gold,
+                              shape: BoxShape.circle,
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: const GameNetworkImage(
+                              url: GameArt.pandaAvatar,
+                              fit: BoxFit.cover,
+                              fallbackEmoji: '🐼',
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'Chinh phục tiếng Trung\ntừng từ mỗi ngày',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 25,
-                              height: 1.2,
-                              fontWeight: FontWeight.w800,
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '你好，勇士!',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Hôm nay chinh phục thêm một chút nhé.',
+                                  style: TextStyle(
+                                    color: AppColors.muted,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 22),
-                          FilledButton.icon(
-                            onPressed: () => Get.to(() => const HskScreen()),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: AppColors.redDark,
-                              minimumSize: const Size(0, 48),
+                          IconButton.filledTonal(
+                            onPressed: () => Get.to(() => const StatsScreen()),
+                            icon: const Icon(Icons.insights_rounded),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 26),
+                    Container(
+                      height: 300,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: .18),
+                            blurRadius: 24,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          const GameNetworkImage(
+                            url: GameArt.homeBackground,
+                            fit: BoxFit.cover,
+                            fallbackEmoji: '🏯',
+                          ),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withValues(alpha: .08),
+                                  Colors.black.withValues(alpha: .56),
+                                ],
+                              ),
                             ),
-                            icon: const Icon(Icons.play_arrow_rounded),
-                            label: const Text('Bắt đầu học'),
+                          ),
+                          const Positioned(
+                            right: -6,
+                            top: 8,
+                            width: 190,
+                            height: 220,
+                            child: GameNetworkImage(
+                              url: GameArt.pandaArcher,
+                              fit: BoxFit.contain,
+                              fallbackEmoji: '🐼',
+                            ),
+                          ),
+                          Positioned(
+                            left: 20,
+                            right: 20,
+                            bottom: 18,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'HÀNH TRÌNH HÔM NAY',
+                                  style: TextStyle(
+                                    color: Color(0xFFFFE8A3),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.4,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'Lên cấp tiếng Trung\nqua từng thử thách',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 25,
+                                    height: 1.08,
+                                    fontWeight: FontWeight.w900,
+                                    shadows: [
+                                      Shadow(color: Colors.black54, blurRadius: 8),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                GameButton(
+                                  label: 'Tiếp tục học',
+                                  onPressed: () => Get.to(() => const HskScreen()),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -154,34 +204,34 @@ class _HomeScreenState extends State<HomeScreen> {
                       final s = controller.stats;
                       return Row(
                         children: [
-                          Expanded(
-                            child: StatCard(
-                              icon: Icons.auto_stories_rounded,
-                              value: '${s['learned']?.toInt() ?? 0}',
-                              label: 'Từ đã học',
-                            ),
+                          GameStatPill(
+                            emoji: '📖',
+                            value: '${s['learned']?.toInt() ?? 0}',
+                            label: 'Từ đã học',
                           ),
                           const SizedBox(width: 10),
-                          Expanded(
-                            child: StatCard(
-                              icon: Icons.mic_rounded,
-                              value: '${(s['speakingAverage'] ?? 0).round()}%',
-                              label: 'Phát âm',
-                              color: AppColors.orange,
-                            ),
+                          GameStatPill(
+                            emoji: '🎤',
+                            value: '${(s['speakingAverage'] ?? 0).round()}%',
+                            label: 'Phát âm',
                           ),
                           const SizedBox(width: 10),
-                          Expanded(
-                            child: StatCard(
-                              icon: Icons.task_alt_rounded,
-                              value: '${s['correct']?.toInt() ?? 0}',
-                              label: 'Đúng',
-                              color: AppColors.success,
-                            ),
+                          GameStatPill(
+                            emoji: '⭐',
+                            value: '${s['correct']?.toInt() ?? 0}',
+                            label: 'Câu đúng',
                           ),
                         ],
                       );
                     }),
+                    const SizedBox(height: 20),
+                    _Action(
+                      icon: Icons.sports_esports_rounded,
+                      title: 'Game Hub · 冒险模式',
+                      subtitle: 'Boss Battle, Tone Ninja, Flashcard Quest và hơn thế nữa',
+                      color: AppColors.orange,
+                      onTap: () => Get.to(() => const GameHubScreen()),
+                    ),
                     const SizedBox(height: 26),
                     const Text(
                       'Luyện tập theo cách của bạn',
